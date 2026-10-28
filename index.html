@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Prompt Generator for Education</title>
+
+  <!-- Google Fonts: Playfair Display, Inter, and Anuphan for harmonious Thai typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500&family=Anuphan:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Tailwind CSS CDN configured with the exact Design System CSS Variables -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: "hsl(var(--background))",
+            foreground: "hsl(var(--foreground))",
+            primary: {
+              DEFAULT: "hsl(var(--primary))",
+              foreground: "hsl(var(--primary-foreground))",
+            },
+            accent: {
+              DEFAULT: "hsl(var(--accent))",
+              foreground: "hsl(var(--foreground))",
+            },
+            surface: "hsl(var(--surface))",
+            muted: {
+              DEFAULT: "hsl(var(--surface))",
+              foreground: "hsl(var(--muted-foreground))",
+            },
+            border: "hsl(var(--border))",
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', '"Anuphan"', "Georgia", "serif"],
+            sans: ['"Inter"', '"Anuphan"', "system-ui", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root {
+      --background: 38 20% 97%;         /* warm off-white #faf8f4 */
+      --foreground: 270 18% 14%;        /* deep warm near-black */
+      --primary: 265 45% 42%;           /* deep plum #5a3480 */
+      --primary-foreground: 0 0% 100%;
+      --accent: 38 65% 60%;             /* warm gold #c9913a */
+      --surface: 38 15% 91%;            /* warm linen */
+      --muted-foreground: 270 8% 52%;
+      --border: 38 12% 82%;
+    }
+
+    * {
+      border-color: hsl(var(--border));
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: hsl(var(--background));
+      color: hsl(var(--foreground));
+      font-family: 'Inter', 'Anuphan', system-ui, -apple-system, sans-serif;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+    }
+
+    h1, h2, h3, .font-headline {
+      font-family: 'Playfair Display', 'Anuphan', Georgia, serif;
+    }
+
+    .label-eyebrow {
+      font-family: 'Inter', 'Anuphan', sans-serif;
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .animate-fade-up {
+      animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-scale-in {
+      animation: scaleIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+
+  <!-- React 18 + Babel for zero-build standalone execution -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    /* Clean inline Lucide SVG Icons */
+    const Icons = {
+      Sparkles: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+          <path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>
+        </svg>
+      ),
+      Film: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>
+        </svg>
+      ),
+      Gamepad2: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/>
+          <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>
+        </svg>
+      ),
+      ScanEye: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+          <circle cx="12" cy="12" r="1"/><path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0"/>
+        </svg>
+      ),
+      Joystick: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M21 17a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2Z"/>
+          <path d="M6 15v-2"/><path d="M12 15V9"/><circle cx="12" cy="6" r="3"/>
+        </svg>
+      ),
+      Languages: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/>
+          <path d="m22 22-5-10-5 10"/><path d="M14 18h6"/>
+        </svg>
+      ),
+      Music: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+        </svg>
+      ),
+      ImageIcon: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/>
+          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+        </svg>
+      ),
+      Briefcase: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>
+        </svg>
+      ),
+      Search: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+      ),
+      ArrowUpRight: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M7 7h10v10"/><path d="M7 17 17 7"/>
+        </svg>
+      ),
+      ExternalLink: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        </svg>
+      ),
+      AppWindow: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 4v4"/><path d="M2 8h20"/><path d="M6 4v4"/>
+        </svg>
+      ),
+      CheckCircle2: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
+        </svg>
+      ),
+      Play: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <polygon points="6 3 20 12 6 21 6 3"/>
+        </svg>
+      ),
+      Menu: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>
+        </svg>
+      ),
+      X: ({ className = "w-5 h-5" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      ),
+      Maximize2: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/>
+        </svg>
+      ),
+      Minimize2: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" x2="21" y1="10" y2="3"/><line x1="3" x2="10" y1="21" y2="14"/>
+        </svg>
+      ),
+      Wand2: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>
+        </svg>
+      ),
+      Compass: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+        </svg>
+      ),
+      Layers: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
+        </svg>
+      ),
+      BookOpen: ({ className = "w-4 h-4" }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          <path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>
+        </svg>
+      ),
+    };
+
+    const STUDIO_MENUS = [
+      {
+        id: "motion-graphic",
+        number: "01",
+        category: "multimedia",
+        menuTitle: "สร้าง Motion Graphic",
+        englishSubtitle: "Motion Prompt Studio",
+        badgeText: "JS Animation & Kinetic Storytelling",
+        description:
+          "ออกแบบโครงเรื่องและสร้าง Prompt สำหรับผลิตแอนิเมชันและ Motion Graphic เพื่อการเรียนรู้ กำหนดฉาก ตัวละคร จังหวะเวลา และเอฟเฟกต์ภาพเคลื่อนไหวได้อย่างเป็นระบบ",
+        highlights: [
+          "มีรูปแบบตั้งต้น (Presets) สำหรับสื่อการสอนหลากหลายสไตล์",
+          "กำหนด Scene, โทนสี, อัตราส่วนภาพ และความยาววิดีโอได้ละเอียด",
+          "สร้างโค้ด HTML/JS Animation ไฟล์เดียวพร้อมนำเสนอในชั้นเรียนทันที",
+        ],
+        coverImage: "./public/images/cover-motion.jpg",
+        fallbackCoverImage: "./images/cover-motion.jpg",
+        fileUrl: "motion_prompt_studio.html",
+        fileName: "motion_prompt_studio.html",
+        icon: Icons.Film,
+        accentTag: "MOTION GRAPHIC STUDIO",
+        idealFor: "สื่อนำเข้าสู่บทเรียน • สรุปแนวคิดสำคัญ • แอนิเมชันอธิบายกระบวนการ",
+        examples: [
+          {
+            title: "ตัวอย่างชิ้นงาน: การผันวรรณยุกต์ (Interactive HTML)",
+            type: "html",
+            url: "AI Motion Studio/วรรณยุกต์.html",
+          },
+          {
+            title: "วิดีโอ: หลักการสร้าง Animation",
+            type: "video",
+            url: "AI Motion Studio/หลักการสร้าง Animation.mp4",
+          },
+          {
+            title: "วิดีโอ: การผันวรรณยุกต์ (Opus)",
+            type: "video",
+            url: "AI Motion Studio/การผันวรรณยุกต์ Opus5.5.mp4",
+          },
+          {
+            title: "วิดีโอ: Animation by ChatGPT Pro",
+            type: "video",
+            url: "AI Motion Studio/1 Animation by ChatGPT Pro.mp4",
+          },
+          {
+            title: "วิดีโอ: Animation by Gemini Free",
+            type: "video",
+            url: "AI Motion Studio/2 Animation by Gemini Free.mp4",
+          },
+          {
+            title: "วิดีโอ: Animation by Deepseek Free",
+            type: "video",
+            url: "AI Motion Studio/3 Animation by Deepseek Free.mp4",
+          },
+        ],
+      },
+      {
+        id: "general-game",
+        number: "02",
+        category: "games",
+        menuTitle: "สร้างเกมการเรียนรู้ทั่วไป",
+        englishSubtitle: "Primary & Classroom Game Creator",
+        badgeText: "Interactive Classroom Games",
+        description:
+          "คลังแม่แบบและเครื่องมือสร้าง Prompt เกมการศึกษาสำหรับห้องเรียน เปลี่ยนเนื้อหาวิชาการให้กลายเป็นเกมฝึกทักษะ แข่งขันตอบคำถาม และผจญภัยที่นักเรียนมีส่วนร่วมได้ทันที",
+        highlights: [
+          "ครอบคลุมแม่แบบเกมหลากหลายแนว ทั้งจับคู่ ตอบคำถาม เขาวงกต และบอร์ดเกม",
+          "ปรับระดับชั้น วิชา เนื้อหา และกติกาการให้คะแนนตามวัตถุประสงค์การเรียนรู้",
+          "รองรับการเล่นบนคอมพิวเตอร์ แท็บเล็ต และสมาร์ตโฟนในห้องเรียน",
+        ],
+        coverImage: "./public/images/cover-game.jpg",
+        fallbackCoverImage: "./images/cover-game.jpg",
+        fileUrl: "ห้องสร้างเกมประถม.html",
+        fileName: "ห้องสร้างเกมประถม.html",
+        icon: Icons.Gamepad2,
+        accentTag: "CLASSROOM GAME LAB",
+        idealFor: "เกมทบทวนบทเรียน • กิจกรรมกลุ่มในชั้นเรียน • แบบฝึกหัดเชิงรุก (Active Learning)",
+        examples: [],
+      },
+      {
+        id: "ar-game",
+        number: "03",
+        category: "games",
+        menuTitle: "สร้างเกมการเรียนรู้ด้วย AR",
+        englishSubtitle: "Educational AR Game Prompt Generator",
+        badgeText: "Augmented Reality & Camera Tracking",
+        description:
+          "ยกระดับห้องเรียนด้วยเกมเสมือนจริง (WebAR) และระบบตรวจจับการเคลื่อนไหวผ่านกล้องเว็บแคมหรือแท็บเล็ต ให้ผู้เรียนขยับร่างกาย หยิบจับวัตถุ และทดลองในโลกเสมือนจริง",
+        highlights: [
+          "รวมกรณีศึกษาเกม AR ระดับโลก พร้อมโครงสร้าง Prompt ที่พร้อมใช้งาน",
+          "รองรับการโต้ตอบด้วยกล้อง (Hand Tracking, Face/Pose Detection, Object Sorting)",
+          "สร้างเกมต้นแบบ WebAR ที่เปิดเล่นผ่านเบราว์เซอร์ได้ทันทีโดยไม่ต้องลงแอป",
+        ],
+        coverImage: "./public/images/cover-ar.jpg",
+        fallbackCoverImage: "./images/cover-ar.jpg",
+        fileUrl: "Educational AR Game Prompt Generator.html",
+        fileName: "Educational AR Game Prompt Generator.html",
+        icon: Icons.ScanEye,
+        accentTag: "AUGMENTED REALITY STUDIO",
+        idealFor: "การทดลองวิทยาศาสตร์เสมือนจริง • เกมคัดแยกด้วยท่าทาง • การเรียนรู้นอกสถานที่",
+        examples: [
+          {
+            title: "ตัวอย่างเกม AR: Plant Lab (ChatGPT)",
+            type: "html",
+            url: "AI เกมใช้ AR/ตัวอย่างเกม plant-lab ChatGPT.html",
+          },
+          {
+            title: "ตัวอย่างเกม AR: เกมแยกขยะ (Gemini)",
+            type: "html",
+            url: "AI เกมใช้ AR/ตัวอย่างเกมแยกขยะ Gemini.html",
+          },
+          {
+            title: "ตัวอย่างเกม AR: เกมแยกขยะ (Deepseek)",
+            type: "html",
+            url: "AI เกมใช้ AR/ตัวอย่างเกมแยกขยะ Deepseek.html",
+          },
+        ],
+      },
+      {
+        id: "game-prototypes",
+        number: "04",
+        category: "games",
+        menuTitle: "ต้นแบบเกมแบบต่าง ๆ",
+        englishSubtitle: "Educational Game Prototypes Showcase",
+        badgeText: "Playable Educational Game Templates",
+        description:
+          "สำรวจและทดลองเล่นต้นแบบเกมเพื่อการศึกษารูปแบบต่าง ๆ ที่พัฒนาสำเร็จพร้อมใช้งาน ช่วยจุดประกายไอเดียกลไกเกม (Game Mechanics) ก่อนนำไปออกแบบสื่อการสอนของตนเอง",
+        highlights: [
+          "รวบรวมตัวอย่างเกมหลากหลายแนวให้ทดลองเล่นจริงผ่านหน้าเว็บ",
+          "เห็นภาพแนวทางการออกแบบ UI, ระบบคะแนน และความท้าทายสำหรับผู้เรียน",
+          "ใช้เป็นต้นแบบอ้างอิงในการสั่ง AI สร้างเกมการเรียนรู้ในวิชาต่าง ๆ",
+        ],
+        coverImage: "./public/images/cover-game-prototypes.jpg",
+        fallbackCoverImage: "./images/cover-game-prototypes.jpg",
+        fileUrl: "https://pchanut-ship-it.github.io/myEducationalGame",
+        fileName: "pchanut-ship-it.github.io/myEducationalGame",
+        isExternal: true,
+        icon: Icons.Joystick,
+        accentTag: "GAME PROTOTYPES GALLERY",
+        idealFor: "ศึกษาแนวทางกลไกเกม • ทดลองเล่นตัวอย่างเกมจริง • ค้นหาแรงบันดาลใจก่อนสร้างเกม",
+        examples: [],
+      },
+      {
+        id: "thai-gbl-studio",
+        number: "05",
+        category: "games",
+        menuTitle: "สร้างเกมการเรียนรู้ สำหรับวิชาภาษาไทย",
+        englishSubtitle: "Thai GBL Prompt Studio",
+        badgeText: "Thai Language Game-Based Learning",
+        description:
+          "เครื่องมือออกแบบ Prompt เกมการเรียนรู้ที่ปรับแต่งมาเพื่อกลุ่มสาระการเรียนรู้ภาษาไทยโดยเฉพาะ รองรับทั้งเรื่องหลักภาษา การสะกดคำ วรรณยุกต์ คำราชาศัพท์ และวรรณคดีไทย",
+        highlights: [
+          "ออกแบบเนื้อหาสอดคล้องกับทักษะการอ่าน เขียน และหลักภาษาไทย",
+          "มีโครงสร้างเกมที่ช่วยฝึกการจำแนกคำ การแต่งประโยค และการวิเคราะห์วรรณคดี",
+          "สร้างเกมภาษาไทยที่สนุก เข้าใจง่าย และลดความน่าเบื่อในการท่องจำ",
+        ],
+        coverImage: "./public/images/cover-thai-game.jpg",
+        fallbackCoverImage: "./images/cover-thai-game.jpg",
+        fileUrl: "https://pchanut-ship-it.github.io/Thai-GBL-Prompt-Studio",
+        fileName: "pchanut-ship-it.github.io/Thai-GBL-Prompt-Studio",
+        isExternal: true,
+        icon: Icons.Languages,
+        accentTag: "THAI LANGUAGE GAME STUDIO",
+        idealFor: "วิชาภาษาไทยทุกระดับชั้น • เกมฝึกสะกดคำและวรรณยุกต์ • เกมผจญภัยวรรณคดีไทย",
+        examples: [],
+      },
+      {
+        id: "musical-prompt",
+        number: "06",
+        category: "multimedia",
+        menuTitle: "สร้างเพลงประกอบ",
+        englishSubtitle: "Educational Musical Prompt Studio",
+        badgeText: "AI Music & Classroom Song Generator",
+        description:
+          "สร้างสรรค์ Prompt สำหรับแต่งเพลงเพื่อการเรียนรู้ เพลงช่วยจำเนื้อหาบทเรียน และดนตรีบรรเลงประกอบสื่อการสอนหรือเกมห้องเรียน รองรับการใช้งานร่วมกับ Suno, Udio และ AI สร้างเสียงดนตรี",
+        highlights: [
+          "กำหนดแนวเพลง (Genre), จังหวะ (Tempo), อารมณ์เพลง และเครื่องดนตรีได้ตามต้องการ",
+          "ช่วยร่างเนื้อร้องเพลงเพื่อการศึกษาที่คล้องจองและจดจำเนื้อหาสำคัญได้ง่าย",
+          "เหมาะทั้งการสร้างเพลงเปิดชั้นเรียน เพลงสรุปบทเรียน และ BGM ประกอบเกม",
+        ],
+        coverImage: "./public/images/cover-music.jpg",
+        fallbackCoverImage: "./images/cover-music.jpg",
+        fileUrl: "https://pchanut-ship-it.github.io/MusicalPrompt",
+        fileName: "pchanut-ship-it.github.io/MusicalPrompt",
+        isExternal: true,
+        icon: Icons.Music,
+        accentTag: "AI MUSIC & SOUNDTRACK LAB",
+        idealFor: "เพลงช่วยจำเนื้อหา • ดนตรีประกอบเกมและแอนิเมชัน • กิจกรรมจังหวะและดนตรีในห้องเรียน",
+        examples: [],
+      },
+      {
+        id: "edu-image-gallery",
+        number: "07",
+        category: "multimedia",
+        menuTitle: "สร้างรูปภาพสื่อการสอน",
+        englishSubtitle: "EduImage Prompt Gallery",
+        badgeText: "Visual Media & Illustration Prompts",
+        description:
+          "คลัง Prompt สำหรับสร้างภาพประกอบสื่อการสอน แผนภาพอินโฟกราฟิก บัตรคำศัพท์ (Flashcards) ตัวละครการ์ตูน และฉากประกอบนิทานด้วย AI วาดภาพคุณภาพสูง",
+        highlights: [
+          "รวมสไตล์ภาพหลากหลายสำหรับการศึกษา เช่น ภาพวาดสีน้ำ เวกเตอร์ 3D และแผนภาพวิทย์",
+          "คัดลอกโครงสร้าง Prompt พร้อมปรับเปลี่ยนหัวข้อบทเรียนได้ทันที",
+          "ช่วยให้ครูสร้างภาพประกอบใบงาน สไลด์นำเสนอ และสื่อทำมือได้อย่างสวยงาม",
+        ],
+        coverImage: "./public/images/cover-image-gallery.jpg",
+        fallbackCoverImage: "./images/cover-image-gallery.jpg",
+        fileUrl: "https://pchanut-ship-it.github.io/EduImagePromptGallery",
+        fileName: "pchanut-ship-it.github.io/EduImagePromptGallery",
+        isExternal: true,
+        icon: Icons.ImageIcon,
+        accentTag: "VISUAL MEDIA PROMPT GALLERY",
+        idealFor: "ภาพประกอบสไลด์และใบงาน • บัตรคำศัพท์ (Flashcards) • แผนภาพและอินโฟกราฟิก",
+        examples: [],
+      },
+      {
+        id: "edu-prompt-library",
+        number: "08",
+        category: "teacher",
+        menuTitle: "การเตรียมสอน/งานทั่วไปสำหรับครู",
+        englishSubtitle: "EduPrompt Library for Teachers",
+        badgeText: "Lesson Planning & Teacher Productivity",
+        description:
+          "คลัง Prompt ผู้ช่วยส่วนตัวสำหรับคุณครู ครอบคลุมการออกแบบแผนการจัดการเรียนรู้ การสร้างข้อสอบและเกณฑ์การประเมิน (Rubrics) การทำวิจัยในชั้นเรียน และงานเอกสารธุรการครู",
+        highlights: [
+          "ช่วยร่างแผนการสอนเชิงรุก (Active Learning) ที่สอดคล้องกับตัวชี้วัด",
+          "ออกข้อสอบปรนัย-อัตนัย พร้อมเฉลยละเอียดและเกณฑ์ให้คะแนนอัตโนมัติ",
+          "ลดเวลาการทำงานเอกสารและงานบริหารจัดการในชั้นเรียนได้อย่างมีประสิทธิภาพ",
+        ],
+        coverImage: "./public/images/cover-teacher-library.jpg",
+        fallbackCoverImage: "./images/cover-teacher-library.jpg",
+        fileUrl: "https://pchanut-ship-it.github.io/EduPromptLibrary",
+        fileName: "pchanut-ship-it.github.io/EduPromptLibrary",
+        isExternal: true,
+        icon: Icons.Briefcase,
+        accentTag: "TEACHER PRODUCTIVITY LIBRARY",
+        idealFor: "ออกแบบแผนการจัดการเรียนรู้ • สร้างข้อสอบและ Rubrics • งานบริหารชั้นเรียนและธุรการครู",
+        examples: [],
+      },
+    ];
+
+    const CATEGORIES = [
+      { id: "all", label: "เมนูทั้งหมด (All Studios)", count: STUDIO_MENUS.length },
+      {
+        id: "games",
+        label: "เกมการเรียนรู้ (Games)",
+        count: STUDIO_MENUS.filter((m) => m.category === "games").length,
+      },
+      {
+        id: "multimedia",
+        label: "ภาพ แอนิเมชัน และเสียง (Multimedia)",
+        count: STUDIO_MENUS.filter((m) => m.category === "multimedia").length,
+      },
+      {
+        id: "teacher",
+        label: "เตรียมสอนและงานครู (Teacher Prep)",
+        count: STUDIO_MENUS.filter((m) => m.category === "teacher").length,
+      },
+    ];
+
+    function App() {
+      const [selectedStudio, setSelectedStudio] = useState(null);
+      const [activeIframeUrl, setActiveIframeUrl] = useState("");
+      const [activeIframeTitle, setActiveIframeTitle] = useState("");
+      const [isFullscreenModal, setIsFullscreenModal] = useState(false);
+      const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+      const [activeCategory, setActiveCategory] = useState("all");
+      const [searchQuery, setSearchQuery] = useState("");
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.key === "Escape" && selectedStudio) {
+            setSelectedStudio(null);
+          }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+      }, [selectedStudio]);
+
+      const filteredStudios = useMemo(() => {
+        return STUDIO_MENUS.filter((item) => {
+          const matchesCategory =
+            activeCategory === "all" || item.category === activeCategory;
+          const q = searchQuery.trim().toLowerCase();
+          const matchesSearch =
+            !q ||
+            item.menuTitle.toLowerCase().includes(q) ||
+            item.englishSubtitle.toLowerCase().includes(q) ||
+            item.description.toLowerCase().includes(q) ||
+            item.idealFor.toLowerCase().includes(q);
+          return matchesCategory && matchesSearch;
+        });
+      }, [activeCategory, searchQuery]);
+
+      const handleOpenStudioPopup = (studio) => {
+        setSelectedStudio(studio);
+        setActiveIframeUrl(studio.fileUrl);
+        setActiveIframeTitle(studio.menuTitle);
+        setIsFullscreenModal(false);
+        setMobileMenuOpen(false);
+      };
+
+      const handleOpenBrowserPopupWindow = (url, title, e) => {
+        if (e) e.stopPropagation();
+        const width = Math.min(1360, window.screen.availWidth - 60);
+        const height = Math.min(880, window.screen.availHeight - 60);
+        const left = Math.max(0, (window.screen.availWidth - width) / 2);
+        const top = Math.max(0, (window.screen.availHeight - height) / 2);
+        window.open(
+          url,
+          title,
+          `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`
+        );
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
+          {/* Sticky Header Navigation */}
+          <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur-md">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="h-20 flex items-center justify-between gap-4">
+                {/* Brand */}
+                <a href="#top" className="flex items-center gap-3.5 group focus:outline-none shrink-0">
+                  <div className="w-11 h-11 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-md shadow-primary/20 group-hover:scale-105 transition-transform">
+                    <Icons.Sparkles className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <span className="label-eyebrow text-accent block">
+                      EDUCATIONAL INNOVATION HUB • 8 STUDIOS
+                    </span>
+                    <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-foreground">
+                      AI Prompt Generator{" "}
+                      <em className="italic font-normal text-accent">for Education</em>
+                    </span>
+                  </div>
+                </a>
+
+                {/* Desktop Search & Jump */}
+                <div className="hidden lg:flex items-center gap-3">
+                  <div className="relative w-64">
+                    <Icons.Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="ค้นหาเครื่องมือสร้างสื่อการสอน..."
+                      className="w-full h-10 pl-9 pr-4 rounded-xl border border-border bg-surface/50 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all"
+                    />
+                  </div>
+                  <a
+                    href="#studios"
+                    className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-medium shadow-sm hover:opacity-95 transition-opacity"
+                  >
+                    <Icons.Compass className="w-3.5 h-3.5 text-accent" />
+                    <span>ดูทั้ง 8 เมนูหลัก</span>
+                  </a>
+                </div>
+
+                {/* Mobile Hamburger Nav Toggle */}
+                <div className="flex items-center lg:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen((prev) => !prev)}
+                    className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl border border-border bg-surface/60 text-foreground hover:bg-surface focus:outline-none focus:ring-2 focus:ring-primary text-xs font-medium"
+                    aria-expanded={mobileMenuOpen}
+                    aria-label="Toggle Navigation Menu"
+                  >
+                    {mobileMenuOpen ? (
+                      <>
+                        <Icons.X className="w-4 h-4" />
+                        <span>ปิดเมนู</span>
+                      </>
+                    ) : (
+                      <>
+                        <Icons.Menu className="w-4 h-4" />
+                        <span>เมนูทั้งหมด (8)</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Hamburger Dropdown (All 8 Menus) */}
+            {mobileMenuOpen && (
+              <div className="lg:hidden border-t border-border bg-background/95 backdrop-blur-lg animate-scale-in">
+                <div className="px-4 py-4 space-y-2 max-h-[75vh] overflow-y-auto">
+                  <p className="label-eyebrow text-muted-foreground px-2 pb-1">
+                    เลือกเครื่องมือสร้างสื่อการสอนทั้ง 8 เมนู (SELECT STUDIO)
+                  </p>
+                  {STUDIO_MENUS.map((item) => {
+                    const IconComp = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleOpenStudioPopup(item)}
+                        className="w-full flex items-center justify-between p-3 rounded-xl bg-surface/60 hover:bg-surface border border-border/70 text-left transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                            <IconComp className="w-4 h-4 text-accent" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm text-foreground truncate">
+                              {item.number}. {item.menuTitle}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {item.englishSubtitle}
+                            </div>
+                          </div>
+                        </div>
+                        <Icons.ArrowUpRight className="w-4 h-4 text-primary shrink-0 ml-2" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </header>
+
+          {/* Main Content */}
+          <main id="top" className="flex-1">
+            {/* Hero Section */}
+            <section className="relative overflow-hidden pt-10 pb-12 md:pt-14 md:pb-16 border-b border-border/60">
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[420px] rounded-full bg-gradient-to-tr from-primary/10 via-accent/15 to-transparent blur-3xl -z-10"
+              />
+
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-3xl mx-auto text-center space-y-5 animate-fade-up">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/40 bg-surface/80 shadow-sm">
+                    <Icons.Wand2 className="w-3.5 h-3.5 text-accent" />
+                    <span className="label-eyebrow text-primary">
+                      EMPOWERING EDUCATORS WITH GENERATIVE AI • 8 CREATIVE STUDIOS
+                    </span>
+                  </div>
+
+                  <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.15]">
+                    AI Prompt Generator{" "}
+                    <span className="block sm:inline italic font-semibold text-accent">
+                      for Education
+                    </span>
+                  </h1>
+
+                  <p className="text-base sm:text-lg text-muted-foreground font-light leading-relaxed max-w-2xl mx-auto">
+                    ศูนย์รวมเครื่องมือสร้าง Prompt และต้นแบบสื่อการเรียนรู้ด้วย AI สำหรับครูยุคใหม่
+                    ครอบคลุมทั้ง{" "}
+                    <span className="text-foreground font-medium">
+                      Motion Graphic, เกมการเรียนรู้ทั่วไป, เกม AR, เกมภาษาไทย, ต้นแบบเกม, เพลงประกอบ, รูปภาพสื่อการสอน
+                    </span>{" "}
+                    ไปจนถึง{" "}
+                    <span className="text-foreground font-medium">
+                      การเตรียมสอนและงานครู
+                    </span>
+                  </p>
+
+                  {/* 8 Quick Menu Buttons in Hero */}
+                  <div className="pt-3 flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto">
+                    {STUDIO_MENUS.map((studio, idx) => {
+                      const IconComp = studio.icon;
+                      const isPrimary = idx === 0;
+                      return (
+                        <button
+                          key={studio.id}
+                          onClick={() => handleOpenStudioPopup(studio)}
+                          className={`group inline-flex items-center gap-2 h-10 px-4 rounded-xl text-xs sm:text-sm font-medium transition-all shadow-sm ${
+                            isPrimary
+                              ? "bg-primary text-primary-foreground hover:opacity-95"
+                              : "bg-background text-foreground border border-border hover:bg-surface hover:border-primary/60"
+                          }`}
+                        >
+                          <IconComp className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <span>{studio.menuTitle}</span>
+                          <Icons.ArrowUpRight className="w-3.5 h-3.5 opacity-75 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 8 Menu Cards Section */}
+            <section id="studios" className="py-12 md:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                <div>
+                  <span className="label-eyebrow text-accent block mb-2">
+                    SELECT YOUR CREATIVE STUDIO • 8 EDUCATIONAL MENUS
+                  </span>
+                  <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground">
+                    เลือกเครื่องมือสร้างสื่อการเรียนรู้{" "}
+                    <em className="italic font-normal text-accent">ที่คุณต้องการ</em>
+                  </h2>
+                </div>
+                <p className="text-sm text-muted-foreground max-w-md font-light">
+                  คลิกที่เมนูการ์ดด้านล่างเพื่อเปิดหน้าต่าง{" "}
+                  <strong className="font-medium text-foreground">Popup Window</strong>{" "}
+                  สำหรับใช้งานเครื่องมือและคัดลอก Prompt ได้ทันที
+                </p>
+              </div>
+
+              {/* Category Filter Tabs & Mobile Search */}
+              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8 pb-4 border-b border-border/70">
+                <div className="flex flex-wrap items-center gap-2">
+                  {CATEGORIES.map((cat) => {
+                    const isActive = activeCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "bg-surface/70 text-foreground hover:bg-surface border border-border/70"
+                        }`}
+                      >
+                        <span>{cat.label}</span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded-full text-[11px] ${
+                            isActive
+                              ? "bg-white/20 text-white"
+                              : "bg-background text-muted-foreground"
+                          }`}
+                        >
+                          {cat.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="relative w-full md:w-64 lg:hidden">
+                  <Icons.Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="ค้นหาชื่อเมนูหรือคำสำคัญ..."
+                    className="w-full h-10 pl-9 pr-4 rounded-xl border border-border bg-white text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              {/* Responsive Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 items-stretch">
+                {filteredStudios.map((studio) => {
+                  const IconComp = studio.icon;
+                  return (
+                    <div
+                      key={studio.id}
+                      onClick={() => handleOpenStudioPopup(studio)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleOpenStudioPopup(studio);
+                        }
+                      }}
+                      className="group cursor-pointer flex flex-col w-full rounded-2xl border border-border/90 bg-white/95 text-foreground shadow-sm hover:-translate-y-1.5 hover:border-primary/60 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 overflow-hidden"
+                    >
+                      {/* Cover Image */}
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface border-b border-border/60">
+                        <img
+                          src={studio.coverImage}
+                          alt={studio.menuTitle}
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.dataset.fallback) {
+                              target.dataset.fallback = "true";
+                              target.src = studio.fallbackCoverImage;
+                            }
+                          }}
+                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/15 to-transparent" />
+
+                        {/* Top Overlay Badges */}
+                        <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between gap-2">
+                          <span className="px-3 py-1 rounded-full bg-background/95 text-primary label-eyebrow shadow-sm backdrop-blur-md">
+                            MENU {studio.number} • {studio.accentTag}
+                          </span>
+                          <span className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md group-hover:bg-accent transition-colors">
+                            <IconComp className="w-4 h-4" />
+                          </span>
+                        </div>
+
+                        {/* Bottom Overlay Info */}
+                        <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-white">
+                          <p className="text-xs font-medium text-white/90 truncate pr-2">
+                            {studio.englishSubtitle}
+                          </p>
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/25 shrink-0">
+                            <Icons.AppWindow className="w-3.5 h-3.5 text-accent" />
+                            เปิด Popup
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Header */}
+                      <div className="flex flex-col space-y-1.5 p-6 pb-3">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="inline-flex items-center rounded-full border border-accent/30 bg-accent/15 text-[#9a681c] px-3 py-1 label-eyebrow">
+                            {studio.badgeText}
+                          </span>
+                        </div>
+                        <h3 className="font-serif text-xl sm:text-2xl font-semibold leading-tight tracking-tight text-foreground group-hover:text-primary transition-colors flex items-start justify-between gap-2 pt-1">
+                          <span>{studio.menuTitle}</span>
+                          <Icons.ArrowUpRight className="w-5 h-5 text-accent shrink-0 mt-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </h3>
+                        <p className="text-sm text-muted-foreground pt-1.5 leading-relaxed font-light">
+                          {studio.description}
+                        </p>
+                      </div>
+
+                      {/* Card Highlights */}
+                      <div className="p-6 pt-0 flex-1 flex flex-col justify-between space-y-4">
+                        <ul className="space-y-2 text-xs sm:text-sm text-foreground/85">
+                          {studio.highlights.map((point, i) => (
+                            <li key={i} className="flex items-start gap-2.5">
+                              <Icons.CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div className="pt-3 border-t border-border/60">
+                          <span className="label-eyebrow text-muted-foreground block mb-1">
+                            เหมาะสำหรับ (IDEAL FOR)
+                          </span>
+                          <p className="text-xs font-medium text-primary">
+                            {studio.idealFor}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Card Footer Buttons */}
+                      <div className="flex flex-col sm:flex-row items-center gap-2.5 p-6 pt-2">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenStudioPopup(studio);
+                          }}
+                          className="w-full sm:flex-1 h-11 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium inline-flex items-center justify-center gap-2 shadow-sm hover:opacity-95 transition-all"
+                        >
+                          <Icons.Play className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">เปิดเมนูนี้</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) =>
+                            handleOpenBrowserPopupWindow(
+                              studio.fileUrl,
+                              studio.menuTitle,
+                              e
+                            )
+                          }
+                          title={`เปิดหน้าต่างแยก (${studio.fileName})`}
+                          className="w-full sm:w-auto h-11 px-3.5 rounded-xl border border-border bg-background hover:bg-surface text-foreground text-xs font-medium inline-flex items-center justify-center gap-1.5 transition-all shrink-0"
+                        >
+                          <Icons.ExternalLink className="w-3.5 h-3.5 text-accent" />
+                          <span>หน้าต่างแยก</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </main>
+
+          {/* Footer */}
+          <footer className="bg-background border-t border-border py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2.5 shrink-0">
+                <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
+                  <Icons.Sparkles className="w-3.5 h-3.5 text-accent" />
+                </div>
+                <span className="font-serif font-semibold text-foreground text-sm">
+                  AI Prompt Generator{" "}
+                  <em className="italic font-normal text-accent">for Education</em>
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                {STUDIO_MENUS.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => handleOpenStudioPopup(s)}
+                    className="hover:text-primary underline-offset-4 hover:underline transition-colors"
+                  >
+                    {s.menuTitle}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </footer>
+
+          {/* Interactive Popup Window Modal */}
+          {selectedStudio && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 backdrop-blur-sm p-2 sm:p-4"
+              onClick={() => setSelectedStudio(null)}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="popup-window-title"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className={`animate-scale-in bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all ${
+                  isFullscreenModal
+                    ? "w-[99vw] h-[96vh]"
+                    : "w-[96vw] max-w-6xl h-[90vh]"
+                }`}
+              >
+                {/* Popup Top Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 bg-surface border-b border-border">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="label-eyebrow text-accent">
+                        MENU {selectedStudio.number} • POPUP STUDIO WINDOW
+                      </span>
+                      <span className="text-xs text-muted-foreground hidden md:inline">
+                        ({selectedStudio.fileName})
+                      </span>
+                    </div>
+                    <h2
+                      id="popup-window-title"
+                      className="font-serif text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2"
+                    >
+                      <span>{selectedStudio.menuTitle}</span>
+                      <span className="text-xs font-sans font-normal text-muted-foreground hidden sm:inline">
+                        — {selectedStudio.englishSubtitle}
+                      </span>
+                    </h2>
+                  </div>
+
+                  {/* Popup Toolbar Actions */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {activeIframeUrl !== selectedStudio.fileUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveIframeUrl(selectedStudio.fileUrl);
+                          setActiveIframeTitle(selectedStudio.menuTitle);
+                        }}
+                        className="h-9 px-3.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium inline-flex items-center gap-1.5 shadow-sm hover:opacity-95"
+                      >
+                        <Icons.Wand2 className="w-3.5 h-3.5" />
+                        <span>กลับหน้าเครื่องมือหลัก</span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenBrowserPopupWindow(
+                          activeIframeUrl,
+                          activeIframeTitle
+                        )
+                      }
+                      className="h-9 px-3.5 rounded-lg border border-border bg-background hover:bg-surface text-foreground text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
+                    >
+                      <Icons.AppWindow className="w-3.5 h-3.5 text-primary" />
+                      <span>เปิดเป็นหน้าต่างแยก (Popup)</span>
+                    </button>
+
+                    <a
+                      href={activeIframeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-9 px-3.5 rounded-lg border border-border bg-background hover:bg-surface text-foreground text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
+                    >
+                      <Icons.ExternalLink className="w-3.5 h-3.5 text-accent" />
+                      <span>เปิดในแท็บใหม่</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsFullscreenModal((prev) => !prev)}
+                      className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background hover:bg-surface text-foreground transition-colors"
+                      title={isFullscreenModal ? "ย่อขนาดหน้าต่าง" : "ขยายเต็มจอ"}
+                    >
+                      {isFullscreenModal ? (
+                        <Icons.Minimize2 className="w-4 h-4" />
+                      ) : (
+                        <Icons.Maximize2 className="w-4 h-4" />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStudio(null)}
+                      className="h-9 w-9 inline-flex items-center justify-center rounded-lg bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground transition-colors"
+                      title="ปิดหน้าต่าง (Esc)"
+                      aria-label="Close Popup Window"
+                    >
+                      <Icons.X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bonus Examples Bar (if studio has showcase examples) */}
+                {selectedStudio.examples && selectedStudio.examples.length > 0 && (
+                  <div className="px-5 py-2 bg-background border-b border-border flex items-center gap-2 overflow-x-auto text-xs">
+                    <span className="label-eyebrow text-primary shrink-0 flex items-center gap-1">
+                      <Icons.BookOpen className="w-3.5 h-3.5 text-accent" />
+                      สลับดูตัวอย่างในหมวดนี้:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveIframeUrl(selectedStudio.fileUrl);
+                        setActiveIframeTitle(selectedStudio.menuTitle);
+                      }}
+                      className={`px-2.5 py-1 rounded-lg font-medium shrink-0 transition-colors ${
+                        activeIframeUrl === selectedStudio.fileUrl
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface text-foreground hover:bg-border/60"
+                      }`}
+                    >
+                      ★ เครื่องมือสร้าง Prompt ({selectedStudio.fileName})
+                    </button>
+                    {selectedStudio.examples.map((ex, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setActiveIframeUrl(ex.url);
+                          setActiveIframeTitle(ex.title);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg font-medium shrink-0 transition-colors ${
+                          activeIframeUrl === ex.url
+                            ? "bg-accent text-white"
+                            : "bg-surface/70 text-foreground hover:bg-surface"
+                        }`}
+                      >
+                        {ex.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Embedded Interactive Iframe */}
+                <div className="flex-1 w-full bg-white relative overflow-hidden">
+                  <iframe
+                    key={activeIframeUrl}
+                    src={activeIframeUrl}
+                    title={activeIframeTitle}
+                    className="w-full h-full border-0"
+                    allow="camera; microphone; fullscreen; clipboard-read; clipboard-write"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

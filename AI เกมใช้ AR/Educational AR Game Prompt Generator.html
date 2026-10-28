@@ -1,0 +1,577 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>คลังPromptเกม AR การเรียนรู้</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: viewfinder-framed header → filterable case gallery → two-column prompt builder with sticky live preview */
+:root{
+  --bg:#f2f5f7; --surface:#ffffff; --surface-2:#e8eef1; --ink:#14232b; --muted:#56707c; --line:#cfdce2;
+  --accent:#0b7a75; --accent-ink:#ffffff; --accent-soft:#d5efed; --mark:#e3a21a; --mark-soft:#fbefd2;
+  --danger:#b4232f;
+  --f-display:"Anuphan","Sarabun",system-ui,sans-serif;
+  --f-body:"Sarabun","Anuphan",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e171c; --surface:#16232a; --surface-2:#1d2d35; --ink:#e3edf0; --muted:#94aeb8; --line:#2b3f48;
+  --accent:#3cc2ba; --accent-ink:#06211f; --accent-soft:#143a39; --mark:#f0b53a; --mark-soft:#3a2f14; --danger:#ff7b85; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e171c; --surface:#16232a; --surface-2:#1d2d35; --ink:#e3edf0; --muted:#94aeb8; --line:#2b3f48;
+  --accent:#3cc2ba; --accent-ink:#06211f; --accent-soft:#143a39; --mark:#f0b53a; --mark-soft:#3a2f14; --danger:#ff7b85; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.65}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.3;margin:0}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:16px;min-height:56px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:700;display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{flex:none}
+.topbar nav{display:flex;gap:6px}
+.topbar nav a{text-decoration:none;color:var(--ink);padding:6px 12px;border-radius:999px;font-weight:500;font-size:15px}
+.topbar nav a:hover{background:var(--surface-2)}
+
+.hero{padding-block:44px 28px}
+.vf{position:relative;padding:26px 28px;max-width:820px}
+.vf::before,.vf::after,.vf>.c1,.vf>.c2{content:"";position:absolute;width:26px;height:26px;border-color:var(--accent);border-style:solid}
+.vf::before{top:0;left:0;border-width:3px 0 0 3px}
+.vf::after{top:0;right:0;border-width:3px 3px 0 0}
+.vf>.c1{bottom:0;left:0;border-width:0 0 3px 3px}
+.vf>.c2{bottom:0;right:0;border-width:0 3px 3px 0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.hero h1{font-size:clamp(30px,5vw,48px);font-weight:700;margin-top:8px}
+.hero p{max-width:62ch;color:var(--muted);margin:12px 0 0;font-size:17px}
+.steps{display:flex;flex-wrap:wrap;gap:10px 24px;margin-top:22px;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:10px;align-items:center;font-weight:500}
+.steps li::before{content:counter(s);font-family:var(--f-mono);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);font-size:13px}
+
+section{padding-block:28px 40px}
+.sec-head{display:flex;flex-wrap:wrap;align-items:end;gap:12px 24px;margin-bottom:18px}
+.sec-head h2{font-size:28px}
+.sec-head p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:20px}
+.chip{border:1px solid var(--line);background:var(--surface);padding:6px 14px;border-radius:999px;cursor:pointer;font-size:15px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.search{flex:1 1 220px;max-width:340px;margin-left:auto;padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;transition:transform .18s, box-shadow .18s}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 24px -14px rgba(10,40,50,.45)}
+.cover{display:block;width:100%;aspect-ratio:16/9;max-width:100%;border:0;padding:0;cursor:pointer;background:var(--surface-2)}
+.cover svg{display:block;width:100%;height:100%}
+.card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:999px;align-self:flex-start}
+.tag.src{background:var(--accent-soft);color:var(--accent)}
+.tag.idea{background:var(--mark-soft);color:var(--ink)}
+.tag i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.tag.idea i{background:var(--mark)}
+.card h3{font-size:18px;font-weight:600}
+.card .orig{font-size:13px;color:var(--muted);margin-top:-4px;overflow-wrap:anywhere}
+.card p{margin:0;font-size:15px;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;font-size:13px}
+.meta span{background:var(--surface-2);padding:1px 8px;border-radius:6px}
+.card-actions{display:flex;gap:8px;margin-top:auto;padding-top:6px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:500;font-size:15px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.07)}
+.card-actions .btn{flex:1;justify-content:center}
+.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+
+/* builder */
+.builder{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:880px){.builder{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+fieldset{border:0;margin:0 0 6px;padding:0 0 18px;border-bottom:1px solid var(--line)}
+fieldset:last-of-type{border-bottom:0;padding-bottom:0}
+legend{font-family:var(--f-display);font-weight:600;font-size:17px;margin-bottom:10px;padding:0;display:flex;gap:10px;align-items:center}
+legend b{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:500}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media (max-width:520px){.row{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:500;min-width:0}
+label.f span.h{font-weight:400;color:var(--muted);font-size:13px}
+input[type=text],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:15px}
+textarea{resize:vertical;min-height:64px;line-height:1.55}
+.seg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.seg label{flex:1 1 150px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;gap:8px;align-items:flex-start;font-size:14.5px;background:var(--bg)}
+.seg label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.seg input{margin-top:5px;accent-color:var(--accent)}
+.seg small{display:block;color:var(--muted);font-size:12.5px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:12px}
+@media (max-width:520px){.checks{grid-template-columns:1fr}}
+.checks label{display:flex;gap:8px;align-items:flex-start;font-size:14.5px;cursor:pointer}
+.checks input{margin-top:6px;accent-color:var(--accent)}
+.hint{font-size:13.5px;background:var(--mark-soft);border-radius:8px;padding:8px 12px;margin:-2px 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hint button{border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer;padding:0;text-decoration:underline}
+.mechinfo{font-size:13.5px;color:var(--muted);margin:-4px 0 12px}
+
+.preview{position:sticky;top:calc(env(safe-area-inset-top,0px) + 70px);display:flex;flex-direction:column;gap:12px}
+@media (max-width:880px){.preview{position:static}}
+.preview-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.preview-head h3{font-size:18px;margin-right:auto}
+.count{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.prompt{width:100%;min-height:420px;max-height:68vh;overflow:auto;white-space:pre-wrap;font-family:var(--f-body);font-size:14.5px;line-height:1.6;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:14px;margin:0;overflow-wrap:anywhere}
+.usage{font-size:13.5px;color:var(--muted);margin:0}
+.loaded{font-size:13.5px;background:var(--accent-soft);color:var(--ink);border-radius:8px;padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.loaded button{margin-left:auto}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(6,16,20,.6);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 24px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 24px) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--surface);border-radius:12px;max-width:760px;width:100%;overflow:hidden;border:1px solid var(--line)}
+.modal .cover{cursor:default}
+.modal-body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:14px}
+.modal h2{font-size:24px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0;font-size:15px}
+.facts dt{color:var(--muted);font-weight:500}
+.facts dd{margin:0;min-width:0}
+.modal .prompt{min-height:260px;max-height:46vh}
+.modal-actions{display:flex;flex-wrap:wrap;gap:8px}
+.x{position:absolute;right:10px;top:10px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:20px;cursor:pointer}
+.modal-cover{position:relative}
+
+.note{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-block:22px 40px}
+.note p{max-width:80ch;margin:0 0 8px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:500;transition:.2s;z-index:30;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><path d="M2 9V2h7M19 2h7v7M26 19v7h-7M9 26H2v-7" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="14" cy="14" r="3.5" fill="#e3a21a"/></svg>
+      คลังPromptเกม AR
+    </div>
+    <nav aria-label="เมนูหลัก"><a href="#gallery">คลังกรณีศึกษา</a><a href="#builder">สร้างPromptเอง</a></nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="vf"><span class="c1"></span><span class="c2"></span>
+      <div class="eyebrow">AR Educational Game · Prompt Generator</div>
+      <h1>Promptสำหรับออกแบบเกมการเรียนรู้ด้วยกล้องและการติดตามมือ</h1>
+      <p>เลือกกรณีศึกษาหรือแนวทางเกม แล้วคัดลอกPromptไปวางใน ChatGPT, Claude หรือ Gemini เพื่อให้ AI ช่วยสร้างโค้ดเกมต้นแบบ แผนกิจกรรม หรือชุดเนื้อหาการ์ด ปรับระดับชั้น วิชา และกลไกเกมให้ตรงกับห้องเรียนของคุณได้</p>
+      <ol class="steps"><li>เลือกกรณีที่ใกล้เคียง</li><li>ปรับแต่งให้ตรงบทเรียน</li><li>คัดลอกไปใช้กับ AI</li></ol>
+    </div>
+  </div>
+
+  <section id="gallery">
+    <div class="wrap">
+      <div class="sec-head"><div><h2>คลังกรณีศึกษาและแนวทาง</h2><p>ป้ายสีเขียวคือกรณีที่มีแหล่งเผยแพร่ ป้ายสีเหลืองคือแนวคิดที่เสนอเพื่อการออกแบบ ยังไม่ใช่ผลิตภัณฑ์หรือผลวิจัยที่ยืนยันแล้ว</p></div></div>
+      <div class="tools" role="toolbar" aria-label="กรองกรณี">
+        <button class="chip" data-f="all" aria-pressed="true">ทั้งหมด</button>
+        <button class="chip" data-f="hand" aria-pressed="false">กล้อง + ติดตามมือ</button>
+        <button class="chip" data-f="ar" aria-pressed="false">AR รูปแบบอื่น</button>
+        <button class="chip" data-f="pattern" aria-pressed="false">12 แนวทางเกม</button>
+        <button class="chip" data-f="proto" aria-pressed="false">เคสต้นแบบ</button>
+        <input id="q" class="search" type="text" placeholder="ค้นหา เช่น เศษส่วน ขยะ สมการ" aria-label="ค้นหากรณี">
+      </div>
+      <div id="grid" class="grid"></div>
+    </div>
+  </section>
+
+  <section id="builder">
+    <div class="wrap">
+      <div class="sec-head"><div><h2>สร้างPromptตามความต้องการ</h2><p>กรอกข้อมูลบทเรียน Promptด้านขวาจะปรับตามทันที เริ่มจากค่าตัวอย่างหรือกด “ปรับแต่ง” จากการ์ดใดก็ได้</p></div></div>
+      <div class="builder">
+        <form id="form" class="panel" autocomplete="off">
+          <fieldset>
+            <legend><b>01</b>ต้องการให้ AI ทำอะไร</legend>
+            <div class="seg">
+              <label><input type="radio" name="mode" value="code" id="m-code" checked><span>สร้างเกมต้นแบบ<small>ไฟล์ HTML เดียว เปิดในเบราว์เซอร์</small></span></label>
+              <label><input type="radio" name="mode" value="design" id="m-design"><span>ออกแบบเกมและแผนกิจกรรม<small>เอกสารสำหรับครูก่อนพัฒนา</small></span></label>
+              <label><input type="radio" name="mode" value="content" id="m-content"><span>สร้างชุดเนื้อหาการ์ด<small>ข้อมูล JSON ใส่ในเกมเดิม</small></span></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend><b>02</b>ผู้เรียนและบทเรียน</legend>
+            <div class="row">
+              <label class="f">ระดับชั้น<select id="level"></select></label>
+              <label class="f">กลุ่มสาระ/วิชา<select id="subject"></select></label>
+            </div>
+            <label class="f" style="margin-bottom:12px">หัวข้อบทเรียน<input type="text" id="topic"></label>
+            <label class="f" style="margin-bottom:12px">ประเภทเป้าหมายการเรียนรู้<select id="goal"></select></label>
+            <label class="f" style="margin-bottom:12px">ผลการเรียนรู้ที่คาดหวัง <span class="h">เขียนเป็น “ผู้เรียนสามารถ…”</span><textarea id="objective" rows="2"></textarea></label>
+          </fieldset>
+          <fieldset>
+            <legend><b>03</b>กลไกเกม</legend>
+            <div id="suggest" class="hint" hidden></div>
+            <div class="row">
+              <label class="f">รูปแบบเกม<select id="mech"></select></label>
+              <label class="f">ท่ามือที่ใช้<select id="gesture"></select></label>
+            </div>
+            <p id="mechinfo" class="mechinfo"></p>
+            <label class="f" style="margin-bottom:12px">ภารกิจในเกม<textarea id="task" rows="2"></textarea></label>
+            <label class="f" style="margin-bottom:12px">ด่านและความก้าวหน้า<textarea id="progress" rows="2"></textarea></label>
+          </fieldset>
+          <fieldset>
+            <legend><b>04</b>ข้อมูลป้อนกลับและการประเมิน</legend>
+            <label class="f" style="margin-bottom:12px">เมื่อผู้เรียนตอบผิด<select id="feedback">
+              <option value="explain">อธิบายเหตุผลว่าทำไมผิด แล้วให้ลองใหม่</option>
+              <option value="hint">ให้คำใบ้ทีละขั้นก่อนเฉลย</option>
+              <option value="visual">แสดงผลที่เกิดขึ้นเป็นภาพ ให้ผู้เรียนสังเกตเอง</option>
+            </select></label>
+            <div class="checks" id="assess">
+              <label><input type="checkbox" id="a1" value="a1" checked>บันทึกคำตอบผิดแยกตามประเภทความเข้าใจผิด</label>
+              <label><input type="checkbox" id="a2" value="a2" checked>มีโจทย์ใหม่ท้ายเกมที่ไม่ปรากฏระหว่างเล่น</label>
+              <label><input type="checkbox" id="a3" value="a3" checked>ให้ผู้เรียนเลือกหรือพิมพ์เหตุผลประกอบคำตอบ</label>
+              <label><input type="checkbox" id="a4" value="a4">หน้าสรุปผลสำหรับครู</label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend><b>05</b>บริบทห้องเรียน</legend>
+            <div class="row">
+              <label class="f">อุปกรณ์<select id="device">
+                <option>โน้ตบุ๊กที่มีเว็บแคม</option><option>จอทีวีหรือโปรเจกเตอร์หน้าห้อง + เว็บแคม</option><option>แท็บเล็ตหรือโทรศัพท์ (กล้องหน้า)</option>
+              </select></label>
+              <label class="f">ผู้เล่น<select id="players">
+                <option>เล่นคนเดียว</option><option>เล่นเป็นคู่ ผลัดกันใช้มือ</option><option>กลุ่ม 3–5 คน หน้าจอเดียว</option>
+              </select></label>
+            </div>
+            <div class="row">
+              <label class="f">เวลาเล่นต่อรอบ<select id="time"><option>5 นาที</option><option selected>10 นาที</option><option>15 นาที</option><option>20 นาที</option></select></label>
+              <label class="f">ภาษาในเกม<select id="lang"><option>ภาษาไทย</option><option>ไทยและอังกฤษ</option><option>ภาษาอังกฤษ</option></select></label>
+            </div>
+            <div class="checks">
+              <label><input type="checkbox" id="c1" checked>ประมวลผลภาพบนเครื่อง ไม่บันทึกหรือส่งภาพผู้เรียน</label>
+              <label><input type="checkbox" id="c2" checked>มีโหมดสำรองใช้เมาส์หรือแตะจอ</label>
+              <label><input type="checkbox" id="c3" checked>ตัวอักษรและเป้าหมายขนาดใหญ่ อ่านได้จากระยะไกล</label>
+              <label><input type="checkbox" id="c4" checked>ทนต่อแสงห้องเรียนทั่วไปและฉากหลังรก</label>
+              <label><input type="checkbox" id="c5">ปิดเสียงประกอบได้</label>
+              <label><input type="checkbox" id="c6">รองรับผู้เรียนที่ถนัดซ้ายหรือใช้มือได้ข้างเดียว</label>
+              <label><input type="checkbox" id="sk" checked>แสดงจุดและเส้นโครงมือบนภาพกล้องแบบเรียลไทม์ (Hand Skeleton Overlay)</label>
+            </div>
+            <label class="f">ข้อกำหนดเพิ่มเติม <span class="h">ไม่บังคับ</span><textarea id="extra" rows="2" placeholder="เช่น ใช้ตัวละครช้างน้อยเป็นผู้ช่วย ใช้สีโทนโรงเรียน"></textarea></label>
+          </fieldset>
+        </form>
+
+        <aside class="preview" aria-live="polite">
+          <div id="loaded" class="loaded" hidden></div>
+          <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+            <div class="preview-head"><h3>Promptที่ได้</h3><span id="count" class="count"></span>
+              <button type="button" class="btn primary" id="copyMain">คัดลอกPrompt</button></div>
+            <pre id="out" class="prompt" tabindex="0"></pre>
+            <p class="usage">วางPromptในแชต AI ที่ใช้ หากเลือกสร้างเกมต้นแบบ ให้บันทึกโค้ดเป็นไฟล์ .html แล้วเปิดด้วย Chrome และอนุญาตให้ใช้กล้อง ควรทดลองเล่นและตรวจเนื้อหาก่อนใช้กับผู้เรียนทุกครั้ง</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="overlay" class="overlay" hidden></div>
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+const LEVELS=['ปฐมวัย','ป.1–3','ป.4–6','ม.1–3','ม.4–6'];
+const SUBJECTS=['คณิตศาสตร์','วิทยาศาสตร์และเทคโนโลยี','ภาษาไทย','ภาษาอังกฤษ','สังคมศึกษา ศาสนาและวัฒนธรรม','สุขศึกษาและพลศึกษา','ศิลปะ','การงานอาชีพ','วิทยาการคำนวณ / รู้เท่าทันสื่อ','บูรณาการหลายวิชา'];
+const GOALS={
+  classify:{label:'จำแนกตามเกณฑ์',mech:'sort',ex:'ขยะ ชนิดคำ ประเภทสาร'},
+  relate:{label:'เข้าใจความสัมพันธ์',mech:'match',ex:'เศษส่วนกับภาพ ห่วงโซ่อาหาร'},
+  process:{label:'เข้าใจกระบวนการ',mech:'seq',ex:'ขั้นตอนทดลอง วัฏจักรน้ำ'},
+  cause:{label:'อธิบายเหตุและผล',mech:'sim',ex:'แรงและการเคลื่อนที่'},
+  evaluate:{label:'ประเมินข้อมูลและหลักฐาน',mech:'evidence',ex:'ข่าวปลอม คำตอบจาก AI'},
+  recall:{label:'จดจำและระบุแนวคิดพื้นฐาน',mech:'tap',ex:'ตัวเลข คำศัพท์ จำนวนเฉพาะ'}
+};
+const MECH={
+  tap:{name:'Tap & Select · ชี้แตะเลือก',g:'point',ex:'แตะจำนวนเฉพาะ หรือเลือกคำวิเศษณ์',ev:'จำแนกแนวคิดและเก็บประเภทความเข้าใจผิด'},
+  sort:{name:'Grab & Sort · คีบลากคัดแยก',g:'pinch',ex:'แยกขยะ หรือแยกข้อเท็จจริง–ความคิดเห็น',ev:'จัดประเภทตามเกณฑ์และอธิบายข้อกำกวม'},
+  match:{name:'Match & Connect · จับคู่เชื่อมโยง',g:'pinch',ex:'จับคู่เศษส่วนกับภาพ หรือคำศัพท์กับความหมาย',ev:'เข้าใจความสัมพันธ์และตรวจคู่ที่สับสน'},
+  seq:{name:'Sequence · เรียงลำดับ',g:'pinch',ex:'เรียงวัฏจักรน้ำหรือขั้นตอนการทดลอง',ev:'เข้าใจกระบวนการและอธิบายลำดับ'},
+  build:{name:'Build a System · ประกอบระบบ',g:'pinch',ex:'ประกอบห่วงโซ่อาหารหรือวงจรไฟฟ้า',ev:'เข้าใจองค์ประกอบและความสัมพันธ์'},
+  sim:{name:'Gesture Simulation · ปรับตัวแปรจำลอง',g:'pinch',ex:'ปรับแรงเสียดทานแล้วทำนายผล',ev:'ตั้งสมมติฐานและเทียบกับผลจำลอง'},
+  evidence:{name:'Evidence Detective · นักสืบหลักฐาน',g:'pinch',ex:'สืบหาสาเหตุปลาตาย หรือตรวจข่าว',ev:'ประเมินหลักฐาน ไม่ให้คะแนนแค่เก็บครบ'},
+  draw:{name:'Trace & Draw · ลากเส้นวาดรูป',g:'draw',ex:'ลากเส้นสมมาตรหรือสร้างรูป',ev:'แสดงความเข้าใจรูปร่าง แยกจากความคลาดเคลื่อนของระบบ'},
+  balance:{name:'Balance Challenge · รักษาสมดุล',g:'pinch',ex:'เติมค่าให้สมการสองข้างเท่ากัน',ev:'เข้าใจความเท่ากันและการรักษาสมดุล'},
+  role:{name:'Role-play Decision · สวมบทบาทตัดสินใจ',g:'pinch',ex:'เลือกนโยบายจัดการสิ่งแวดล้อมเมือง',ev:'ประเมินผลกระทบและข้อแลกเปลี่ยน'},
+  coop:{name:'Cooperative Puzzle · ปริศนาร่วมมือ',g:'pinch',ex:'คนหนึ่งถือข้อมูล อีกคนจัดระบบ',ev:'สื่อสารและแก้ปัญหาร่วมกัน'},
+  escape:{name:'Learning Escape Room · ห้องปริศนาการเรียนรู้',g:'mixed',ex:'ผ่านด่านเรียงขั้นตอน จับคู่อุปกรณ์ และสรุปหลักฐาน',ev:'บูรณาการความรู้ โดยแต่ละด่านตรวจทักษะต่างกัน'},
+  control:{name:'Continuous Control · เคลื่อนมือควบคุม',g:'move',ex:'บังคับตัวละครให้เก็บคำตอบที่ถูก',ev:'ต้องผูกการเคลื่อนที่กับการตัดสินใจทางเนื้อหา ไม่ใช่วัดแค่ความคล่อง'}
+};
+const GESTURE={
+  point:'ชี้แตะเลือก: ใช้ปลายนิ้วชี้ (landmark 8) เป็นเคอร์เซอร์ เลือกเมื่อชี้ค้างบนเป้าหมายราว 0.8 วินาที พร้อมวงแหวนนับเวลา',
+  pinch:'คีบนิ้วแล้วลาก: คีบนิ้วโป้ง (landmark 4) กับนิ้วชี้ (landmark 8) เพื่อหยิบ ลากไป แล้วคลายนิ้วเพื่อปล่อย',
+  move:'เคลื่อนมือควบคุมต่อเนื่อง: ใช้ตำแหน่งกึ่งกลางฝ่ามือบังคับตัวละครหรือวัตถุ พร้อมทำให้การเคลื่อนไหวนุ่มนวล (smoothing)',
+  draw:'ใช้นิ้วชี้วาด: วาดเมื่อชูนิ้วชี้นิ้วเดียว หยุดวาดเมื่อกำมือหรือกางมือ',
+  mixed:'ผสมหลายท่าตามด่าน: ชี้แตะเลือก คีบลาก และลากเชื่อม โดยแสดงคำแนะนำท่ามือก่อนเริ่มแต่ละด่าน'
+};
+const GLABEL={point:'ชี้แตะเลือก',pinch:'คีบนิ้วแล้วลาก',move:'เคลื่อนมือควบคุมต่อเนื่อง',draw:'ใช้นิ้วชี้วาด',mixed:'ผสมหลายท่า'};
+
+const SRC='src', IDEA='idea';
+const CASES=[
+ {id:'shapes',group:'hand',kind:SRC,title:'เกมเรียนรู้รูปทรง',orig:'Implementasi Komputer Vision pada Game Edukasi Bangun Ruang',motif:'shapes',hue:176,
+  play:'ใช้การเคลื่อนไหวมือโต้ตอบกับเกมเรียนรู้รูปทรง',lesson:'ศึกษากลไกหยิบ–ลาก–ปล่อยและการจับคู่ โดยไม่สรุปว่าผู้เรียนจัดการวัตถุสามมิติจริงทุกกรณี',
+  src:[['บทความ','https://ojs-teknik.usni.ac.id/index.php/jsk/article/download/748/549']],
+  p:{level:'ป.4–6',subject:'คณิตศาสตร์',topic:'รูปเรขาคณิตสามมิติ (ลูกบาศก์ ทรงกระบอก กรวย พีระมิด)',goal:'relate',objective:'ผู้เรียนสามารถจับคู่รูปเรขาคณิตสามมิติกับรูปคลี่และสมบัติ (จำนวนหน้า ขอบ จุดยอด) ได้ถูกต้อง',mech:'match',gesture:'pinch',
+   task:'คีบภาพรูปทรงสามมิติไปวางคู่กับรูปคลี่หรือการ์ดสมบัติที่ถูกต้อง',progress:'ด่าน 1 จับคู่ชื่อกับรูป ด่าน 2 จับคู่รูปคลี่ ด่าน 3 จับคู่สมบัติที่คล้ายกันมาก เช่น พีระมิดฐานสี่เหลี่ยมกับปริซึม',
+   caution:'รูปทรงในเกมเป็นภาพสองมิติบนจอ ควรมีมุมมองหมุนดูได้ และไม่อ้างว่าผู้เรียนได้จับต้องวัตถุสามมิติจริง'}},
+ {id:'numberpedia',group:'hand',kind:SRC,title:'NumberPedia เกมรู้จักตัวเลข',orig:'NumberPedia — Design Numbers-Recognizing Game with Interactive Projection',motif:'numbers',hue:190,
+  play:'ใช้ตำแหน่งมือเลือกตัวเลข เรียนรู้จำนวน สำหรับเด็กเล็ก',lesson:'ศึกษาการแยกโหมดเรียนรู้กับโหมดเล่น เป็นระบบฉายภาพเชิงโต้ตอบ ไม่ใช่ภาพกล้องเป็นฉากหลังโดยตรง',
+  src:[['บทความ','https://ejournal.upi.edu/index.php/Edsence/article/download/65987/pdf']],
+  p:{level:'ปฐมวัย',subject:'คณิตศาสตร์',topic:'การรู้จักตัวเลขและจำนวน 1–10',goal:'recall',objective:'ผู้เรียนสามารถบอกตัวเลขที่ตรงกับจำนวนสิ่งของ 1–10 ได้',mech:'tap',gesture:'point',
+   task:'มีโหมดเรียนรู้ที่ชี้ตัวเลขแล้วได้ยินเสียงอ่านและเห็นจำนวนสิ่งของ และโหมดเล่นที่ต้องชี้ตัวเลขให้ตรงกับจำนวนผลไม้บนจอ',progress:'เริ่มที่ 1–5 แล้วขยายเป็น 1–10 จากนั้นเปลี่ยนการจัดวางสิ่งของให้นับยากขึ้น',
+   caution:'เด็กเล็กควบคุมมือได้ไม่แม่น ต้องมีเป้าหมายใหญ่ เวลาเลือกนานพอ และแยกโหมดเรียนรู้กับโหมดเล่นให้ชัด'}},
+ {id:'quiz',group:'hand',kind:SRC,title:'Virtual Quiz เกมคำถามวิทยาศาสตร์',orig:'Development of Computer Vision-Based Sciences Educational Games',motif:'quiz',hue:205,
+  play:'ใช้มือโต้ตอบกับเกมคำถามระดับประถม',lesson:'ออกแบบให้คำตอบสะท้อนความเข้าใจ ไม่ใช่เพียงความคล่องในการควบคุม',
+  src:[['บทความ','https://journal.ittelkom-pwt.ac.id/index.php/inista/article/download/1325/387/']],
+  p:{level:'ป.4–6',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'สถานะของสสาร',goal:'recall',objective:'ผู้เรียนสามารถระบุสถานะของสสารและการเปลี่ยนสถานะจากสถานการณ์ในชีวิตประจำวันได้',mech:'tap',gesture:'point',
+   task:'ชี้เลือกคำตอบ ก ข ค จากสถานการณ์ เช่น น้ำแข็งละลายในแก้ว โดยตัวลวงสร้างจากความเข้าใจผิดที่พบบ่อย',progress:'เริ่มจากระบุสถานะ แล้วเพิ่มคำถามเรื่องการเปลี่ยนสถานะและเหตุผล',
+   caution:'ไม่ใช้เวลาจับเป็นตัวตัดสินหลัก เพราะจะวัดความคล่องของมือมากกว่าความเข้าใจ'}},
+ {id:'snake',group:'hand',kind:SRC,title:'เกมงูควบคุมด้วยมือ',orig:'Snake Game ในงานวิจัยเดียวกับ Virtual Quiz',motif:'snake',hue:220,
+  play:'ใช้ตำแหน่งมือควบคุมเกมงู',lesson:'ใช้พิจารณาความต่างระหว่างเกมที่ควบคุมด้วยมือกับเกมที่มีเป้าหมายการเรียนรู้ชัดเจน',
+  src:[['บทความ','https://journal.ittelkom-pwt.ac.id/index.php/inista/article/download/1325/387/']],
+  p:{level:'ป.1–3',subject:'ภาษาอังกฤษ',topic:'คำศัพท์หมวดสัตว์',goal:'classify',objective:'ผู้เรียนสามารถแยกคำศัพท์หมวดสัตว์ออกจากคำศัพท์หมวดอื่นได้',mech:'control',gesture:'move',
+   task:'บังคับงูให้กินเฉพาะคำศัพท์ที่อยู่ในหมวดที่โจทย์กำหนด ถ้ากินคำผิดหมวด งูหยุดและแสดงเหตุผล',progress:'เปลี่ยนหมวดทุกด่าน และเพิ่มคำที่หน้าตาคล้ายกัน',
+   caution:'ถ้าตัดเนื้อหาออกแล้วเกมยังเล่นได้เหมือนเดิม แปลว่าเป้าหมายการเรียนรู้ยังไม่ผูกกับกลไก ต้องออกแบบให้การเลือกทิศทางคือการตัดสินใจทางเนื้อหา'}},
+ {id:'calc',group:'hand',kind:SRC,title:'เกมฝึกคำนวณด้วย Hand Tracking',orig:'โครงงาน Universitas Amikom Yogyakarta',motif:'calc',hue:160,
+  play:'ฝึกคำนวณระดับประถมผ่านปฏิสัมพันธ์ด้วยมือ',lesson:'เป็นตัวอย่างโจทย์พัฒนา แต่ไม่ควรสรุปขนาดผลต่อผลสัมฤทธิ์จากบทคัดย่อเพียงอย่างเดียว',
+  src:[['คลังผลงาน','https://eprints.amikom.ac.id/id/eprint/29248/']],
+  p:{level:'ป.1–3',subject:'คณิตศาสตร์',topic:'การบวกและการลบจำนวนไม่เกิน 20',goal:'recall',objective:'ผู้เรียนสามารถหาผลบวกและผลลบของจำนวนไม่เกิน 20 และตรวจคำตอบด้วยการนับได้',mech:'tap',gesture:'point',
+   task:'ชี้เลือกคำตอบของโจทย์ หากตอบผิดให้เห็นภาพนับวัตถุเพื่อตรวจเอง',progress:'บวกไม่มีทด → ลบ → โจทย์ปัญหาสั้น',
+   caution:'บันทึกรูปแบบคำตอบผิด เช่น ตอบผลบวกแทนผลลบ เพื่อให้ครูนำไปสอนซ่อมเสริม'}},
+ {id:'balloon',group:'hand',kind:SRC,title:'เกมเจาะลูกโป่งคำวิเศษณ์',orig:'QooTuck — หน้าแนวคิดภาษาไทย',motif:'balloons',hue:145,
+  play:'ใช้นิ้วชี้เลือกหรือเจาะลูกโป่งคำวิเศษณ์ มีคะแนนและเอฟเฟกต์',lesson:'ตัวอย่างภาษาไทยของการแตะเป้าหมายตามเงื่อนไข เป็นหน้าแนวคิด ไม่ใช่หลักฐานประเมินประสิทธิผล',
+  src:[['หน้าแนวคิด','https://sites.google.com/site/qootuck/ar-nan2']],
+  p:{level:'ป.4–6',subject:'ภาษาไทย',topic:'คำวิเศษณ์',goal:'classify',objective:'ผู้เรียนสามารถจำแนกคำวิเศษณ์ออกจากคำชนิดอื่นในประโยคได้',mech:'tap',gesture:'point',
+   task:'ลูกโป่งลอยขึ้นพร้อมคำ ผู้เรียนเจาะเฉพาะลูกโป่งที่เป็นคำวิเศษณ์ในประโยคที่กำหนด',progress:'คำเดี่ยว → คำในประโยค → คำที่เป็นได้หลายชนิดตามบริบท',
+   caution:'คำบางคำเปลี่ยนชนิดตามบริบท ต้องแสดงประโยคประกอบเสมอ และให้คะแนนจากความถูกต้องมากกว่าความเร็ว'}},
+
+ {id:'envdet',group:'ar',kind:SRC,title:'Environmental Detectives',orig:'MIT',motif:'map',hue:255,
+  play:'สำรวจสถานที่ เก็บข้อมูลสิ่งแวดล้อมจำลอง และสอบสวนเพื่อหาต้นตอการปนเปื้อน',lesson:'ใช้หลักฐานหลายแหล่งและการตัดสินใจแทนคำถามแยกข้อ',
+  src:[['MIT','https://web.mit.edu/mitstep/ar/index.html'],['งานวิจัยที่เกี่ยวข้อง','https://repository.isls.org/bitstream/1/3696/1/311-315.pdf']],
+  p:{level:'ม.1–3',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'มลพิษทางน้ำในชุมชน',goal:'evaluate',objective:'ผู้เรียนสามารถใช้ข้อมูลจากหลายแหล่งเพื่อระบุสาเหตุที่น่าจะเป็นของการปนเปื้อนในแหล่งน้ำ และอธิบายเหตุผลได้',mech:'evidence',gesture:'pinch',
+   task:'เก็บการ์ดผลตรวจน้ำจากจุดต่าง ๆ บนแผนที่จำลอง แล้วเชื่อมหลักฐานกับสมมติฐานต้นตอการปนเปื้อน',progress:'เพิ่มข้อมูลที่ไม่เกี่ยวข้องและข้อมูลที่ขัดแย้งกันในด่านหลัง',
+   caution:'เกมต้นฉบับใช้การเดินสำรวจสถานที่จริง Promptนี้ดัดแปลงเป็นแผนที่บนจอ จึงควรพิจารณาเพิ่มกิจกรรมภาคสนามประกอบ'}},
+ {id:'museum',group:'ar',kind:SRC,title:'Mystery @ The Museum',orig:'MIT',motif:'museum',hue:270,
+  play:'เกมสืบสวนในพิพิธภัณฑ์ ทำงานเป็นทีมและใช้เบาะแสจากสถานที่',lesson:'ทำให้พื้นที่จริงเป็นส่วนหนึ่งของภารกิจและการอนุมาน',
+  src:[['MIT','https://web.mit.edu/mitstep/ar/index.html']],
+  p:{level:'ม.1–3',subject:'สังคมศึกษา ศาสนาและวัฒนธรรม',topic:'หลักฐานทางประวัติศาสตร์สมัยสุโขทัย',goal:'evaluate',objective:'ผู้เรียนสามารถใช้หลักฐานทางประวัติศาสตร์หลายชิ้นร่วมกันเพื่ออนุมานเหตุการณ์ และแยกหลักฐานชั้นต้นกับชั้นรองได้',mech:'coop',gesture:'pinch',
+   task:'แต่ละคนถือเบาะแสต่างกัน ต้องสื่อสารกันแล้วผลัดกันวางการ์ดหลักฐานบนกระดานสืบสวนเพื่อไขปริศนา',progress:'เพิ่มหลักฐานที่ตีความได้หลายทาง',
+   caution:'ต้นฉบับใช้พื้นที่พิพิธภัณฑ์จริง หากโรงเรียนมีห้องหรือนิทรรศการ ควรติดเบาะแสในพื้นที่จริงร่วมด้วย'}},
+ {id:'quiver',group:'ar',kind:SRC,title:'Quiver ระบายสีแล้วมีชีวิต',orig:'Quiver (แอป)',motif:'coloring',hue:300,
+  play:'ระบายสีบนกระดาษแล้วใช้แอปแสดงเนื้อหา AR',lesson:'เชื่อมผลงานทางกายภาพกับเนื้อหาดิจิทัล แต่ไม่ใช่ทุกกิจกรรมจะเป็นเกมเต็มรูปแบบ',
+  src:[['Google Play','https://play.google.com/store/apps/details?id=com.puteko.colarmix&hl=en']],
+  p:{level:'ป.1–3',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'ส่วนประกอบของพืช',goal:'relate',objective:'ผู้เรียนสามารถระบุส่วนประกอบของพืชและหน้าที่ของแต่ละส่วนได้',mech:'build',gesture:'pinch',
+   task:'ผู้เรียนระบายสีภาพพืชบนกระดานก่อน จากนั้นในเกมคีบชิ้นส่วนราก ลำต้น ใบ ดอก ไปประกอบ แล้วจับคู่กับหน้าที่',progress:'ประกอบชิ้นส่วน → จับคู่หน้าที่ → ทำนายว่าพืชเป็นอย่างไรถ้าขาดส่วนใดส่วนหนึ่ง',
+   caution:'หลีกเลี่ยงการหยุดเพียงความตื่นตาของภาพเคลื่อนไหว ต้องมีโจทย์ที่ให้ผู้เรียนตัดสินใจ'}},
+ {id:'merge',group:'ar',kind:SRC,title:'Merge Cube ลูกบาศก์สำรวจโมเดล',orig:'Merge Cube',motif:'cube',hue:235,
+  play:'ใช้ลูกบาศก์จริงแสดงและหมุนดูโมเดลดิจิทัล แอปมีทั้งแบบดูวัตถุและแบบโต้ตอบ',lesson:'เพิ่มโจทย์สำรวจอย่างมีเป้าหมาย ไม่หยุดเพียงการดูโมเดล',
+  src:[['UBC','https://scarfedigitalsandbox.teach.educ.ubc.ca/merge-cube/']],
+  p:{level:'ม.1–3',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'ระบบสุริยะ',goal:'relate',objective:'ผู้เรียนสามารถอธิบายความสัมพันธ์ระหว่างตำแหน่งดาวเคราะห์กับคาบการโคจรและอุณหภูมิได้',mech:'sim',gesture:'pinch',
+   task:'คีบเพื่อหมุนและเลื่อนดาวเคราะห์ในแบบจำลอง แล้วทำนายคาบการโคจรก่อนดูผลจำลอง',progress:'สังเกต → ทำนาย → เปรียบเทียบผลและอธิบาย',
+   caution:'กำหนดภารกิจสำรวจที่มีคำถามชัดเจนก่อนให้หมุนดูโมเดล'}},
+
+ {id:'pt-tap',group:'pattern',kind:IDEA,title:'Tap & Select',orig:'ชี้แตะเลือก',motif:'tap',hue:38,
+  play:'แตะจำนวนเฉพาะ หรือเลือกคำวิเศษณ์',lesson:'จำแนกแนวคิดและเก็บประเภทความเข้าใจผิด',
+  p:{level:'ป.4–6',subject:'คณิตศาสตร์',topic:'จำนวนเฉพาะ',goal:'recall',objective:'ผู้เรียนสามารถระบุจำนวนเฉพาะที่ไม่เกิน 50 และอธิบายเหตุผลได้',mech:'tap',gesture:'point',task:'ตัวเลขปรากฏบนจอ ผู้เรียนชี้แตะเฉพาะจำนวนเฉพาะ',progress:'1–20 → 1–50 → มีตัวลวงอย่าง 1, 9, 21, 27'}},
+ {id:'pt-sort',group:'pattern',kind:IDEA,title:'Grab & Sort',orig:'คีบลากคัดแยก',motif:'sort',hue:30,
+  play:'แยกขยะ หรือแยกข้อเท็จจริง–ความคิดเห็น',lesson:'จัดประเภทตามเกณฑ์และอธิบายข้อกำกวม',
+  p:{level:'ป.4–6',subject:'ภาษาไทย',topic:'ข้อเท็จจริงและข้อคิดเห็น',goal:'classify',objective:'ผู้เรียนสามารถจำแนกข้อความเป็นข้อเท็จจริงหรือข้อคิดเห็น และระบุคำที่บ่งชี้ได้',mech:'sort',gesture:'pinch',task:'คีบการ์ดข้อความจากโฆษณาและข่าวไปวางในกล่องข้อเท็จจริงหรือข้อคิดเห็น',progress:'ข้อความชัดเจน → ข้อความผสมทั้งสองแบบ'}},
+ {id:'pt-match',group:'pattern',kind:IDEA,title:'Match & Connect',orig:'จับคู่เชื่อมโยง',motif:'match',hue:46,
+  play:'จับคู่เศษส่วนกับภาพ หรือคำศัพท์กับความหมาย',lesson:'เข้าใจความสัมพันธ์และตรวจคู่ที่สับสน',
+  p:{level:'ป.4–6',subject:'คณิตศาสตร์',topic:'เศษส่วน',goal:'relate',objective:'ผู้เรียนสามารถจับคู่เศษส่วนกับภาพแทนเศษส่วนและเศษส่วนที่เท่ากันได้',mech:'match',gesture:'pinch',task:'คีบการ์ดเศษส่วนไปวางคู่กับภาพพิซซ่าหรือแถบเศษส่วน',progress:'เศษส่วนพื้นฐาน → เศษส่วนที่เท่ากัน → ภาพที่แบ่งไม่เท่ากันเป็นตัวลวง'}},
+ {id:'pt-seq',group:'pattern',kind:IDEA,title:'Sequence',orig:'เรียงลำดับ',motif:'cycle',hue:22,
+  play:'เรียงวัฏจักรน้ำหรือขั้นตอนการทดลอง',lesson:'เข้าใจกระบวนการและอธิบายลำดับ',
+  p:{level:'ป.4–6',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'วัฏจักรน้ำ',goal:'process',objective:'ผู้เรียนสามารถเรียงลำดับและอธิบายกระบวนการในวัฏจักรน้ำได้',mech:'seq',gesture:'pinch',task:'คีบการ์ดการระเหย การควบแน่น หยาดน้ำฟ้า การไหลกลับ ไปวางในวงจร',progress:'4 ขั้น → เพิ่มการคายน้ำของพืชและน้ำใต้ดิน'}},
+ {id:'pt-build',group:'pattern',kind:IDEA,title:'Build a System',orig:'ประกอบระบบ',motif:'system',hue:52,
+  play:'ประกอบห่วงโซ่อาหารหรือวงจรไฟฟ้า',lesson:'เข้าใจองค์ประกอบและความสัมพันธ์',
+  p:{level:'ม.1–3',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'วงจรไฟฟ้าอย่างง่าย',goal:'relate',objective:'ผู้เรียนสามารถต่อวงจรไฟฟ้าแบบอนุกรมและขนาน และอธิบายผลต่อความสว่างของหลอดไฟได้',mech:'build',gesture:'pinch',task:'คีบแบตเตอรี่ สายไฟ สวิตช์ หลอดไฟ มาวางและเชื่อมให้หลอดไฟติด',progress:'วงจรเดี่ยว → อนุกรม → ขนาน แล้วทำนายความสว่าง'}},
+ {id:'pt-sim',group:'pattern',kind:IDEA,title:'Gesture Simulation',orig:'ปรับตัวแปรจำลอง',motif:'slider',hue:15,
+  play:'ปรับแรงเสียดทานแล้วทำนายผล',lesson:'ตั้งสมมติฐานและเทียบกับผลจำลอง',
+  p:{level:'ม.1–3',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'แรงเสียดทาน',goal:'cause',objective:'ผู้เรียนสามารถทำนายและอธิบายผลของแรงเสียดทานต่อการเคลื่อนที่ของวัตถุได้',mech:'sim',gesture:'pinch',task:'เลือกพื้นผิว ทำนายว่ากล่องไถลไปไกลเท่าใด แล้วคีบลากแถบปรับแรงเพื่อทดสอบ',progress:'ตัวแปรเดียว → สองตัวแปร (พื้นผิวและมวล)'}},
+ {id:'pt-evidence',group:'pattern',kind:IDEA,title:'Evidence Detective',orig:'นักสืบหลักฐาน',motif:'detective',hue:58,
+  play:'สืบหาสาเหตุปลาตายหรือตรวจข่าว',lesson:'ประเมินหลักฐาน ไม่ให้คะแนนแค่เก็บครบ',
+  p:{level:'ม.1–3',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'ระบบนิเวศแหล่งน้ำ',goal:'evaluate',objective:'ผู้เรียนสามารถประเมินหลักฐานและสรุปสาเหตุที่น่าจะเป็นของปลาตายในบ่อได้',mech:'evidence',gesture:'pinch',task:'เก็บการ์ดหลักฐาน เช่น ค่าออกซิเจน อุณหภูมิ ภาพสาหร่าย แล้วเชื่อมกับข้อสรุป',progress:'หลักฐานตรงไปตรงมา → มีหลักฐานลวงและหลักฐานไม่พอ'}},
+ {id:'pt-draw',group:'pattern',kind:IDEA,title:'Trace & Draw',orig:'ลากเส้นวาดรูป',motif:'draw',hue:8,
+  play:'ลากเส้นสมมาตรหรือสร้างรูป',lesson:'แสดงความเข้าใจรูปร่าง แยกจากความคลาดเคลื่อนของระบบ',
+  p:{level:'ป.4–6',subject:'คณิตศาสตร์',topic:'รูปสมมาตร',goal:'relate',objective:'ผู้เรียนสามารถหาแกนสมมาตรและวาดรูปอีกครึ่งให้สมมาตรได้',mech:'draw',gesture:'draw',task:'ใช้นิ้วชี้ลากแกนสมมาตรบนรูป หรือวาดอีกครึ่งของรูปให้สมมาตร',progress:'รูปมีแกนเดียว → หลายแกน → รูปที่ไม่มีแกนสมมาตร',caution:'ให้ระบบปรับเส้นให้ตรง (snap) และตรวจด้วยเกณฑ์ที่ยืดหยุ่น เพื่อไม่ลงโทษความคลาดเคลื่อนของการตรวจจับมือ'}},
+ {id:'pt-balance',group:'pattern',kind:IDEA,title:'Balance Challenge',orig:'รักษาสมดุล',motif:'balance',hue:42,
+  play:'เติมค่าให้สมการสองข้างเท่ากัน',lesson:'เข้าใจความเท่ากันและการรักษาสมดุล',
+  p:{level:'ม.1–3',subject:'คณิตศาสตร์',topic:'สมการเชิงเส้นตัวแปรเดียว',goal:'process',objective:'ผู้เรียนสามารถใช้สมบัติการเท่ากันแก้สมการเชิงเส้นตัวแปรเดียวได้',mech:'balance',gesture:'pinch',task:'คีบตุ้มน้ำหนักจำนวนหรือพจน์ไปวางบนตาชั่งให้สมดุล',progress:'จำนวนอย่างเดียว → มีตัวแปร x → สองขั้นตอน'}},
+ {id:'pt-role',group:'pattern',kind:IDEA,title:'Role-play Decision',orig:'สวมบทบาทตัดสินใจ',motif:'decision',hue:28,
+  play:'เลือกนโยบายจัดการสิ่งแวดล้อมเมือง',lesson:'ประเมินผลกระทบและข้อแลกเปลี่ยน',
+  p:{level:'ม.4–6',subject:'สังคมศึกษา ศาสนาและวัฒนธรรม',topic:'การจัดการปัญหาฝุ่น PM2.5 ในเมือง',goal:'evaluate',objective:'ผู้เรียนสามารถวิเคราะห์ผลกระทบและข้อแลกเปลี่ยนของนโยบายต่อกลุ่มคนต่าง ๆ ได้',mech:'role',gesture:'pinch',task:'สวมบทบาทผู้ว่าเมือง คีบการ์ดนโยบายไปวางบนแผนที่เมืองภายใต้งบจำกัด แล้วดูผลต่ออากาศ เศรษฐกิจ และประชาชน',progress:'เพิ่มเหตุการณ์ไม่คาดคิดและเสียงสะท้อนจากประชาชนแต่ละกลุ่ม',caution:'ไม่มีคำตอบเดียวที่ถูก ให้ประเมินจากเหตุผลและการพิจารณาข้อแลกเปลี่ยน'}},
+ {id:'pt-coop',group:'pattern',kind:IDEA,title:'Cooperative Puzzle',orig:'ปริศนาร่วมมือ',motif:'coop',hue:48,
+  play:'คนหนึ่งถือข้อมูล อีกคนจัดระบบ',lesson:'สื่อสารและแก้ปัญหาร่วมกัน',
+  p:{level:'ป.4–6',subject:'ภาษาอังกฤษ',topic:'การบอกทิศทางและตำแหน่ง',goal:'process',objective:'ผู้เรียนสามารถใช้ภาษาอังกฤษบอกทิศทางและตำแหน่งเพื่อให้เพื่อนจัดวางวัตถุได้ถูกต้อง',mech:'coop',gesture:'pinch',task:'ผู้เล่น A เห็นแผนผังห้อง ผู้เล่น B ใช้มือจัดวางเฟอร์นิเจอร์ตามคำบอกของ A',progress:'คำบุพบทพื้นฐาน → ตำแหน่งสัมพันธ์หลายชั้น',players:'เล่นเป็นคู่ ผลัดกันใช้มือ',lang:'ไทยและอังกฤษ'}},
+ {id:'pt-escape',group:'pattern',kind:IDEA,title:'Learning Escape Room',orig:'ห้องปริศนาการเรียนรู้',motif:'escape',hue:35,
+  play:'ผ่านด่านเรียงขั้นตอน จับคู่อุปกรณ์ และสรุปหลักฐาน',lesson:'บูรณาการความรู้ โดยแต่ละด่านตรวจทักษะต่างกัน',
+  p:{level:'ม.1–3',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'ความปลอดภัยในห้องปฏิบัติการ',goal:'process',objective:'ผู้เรียนสามารถเลือกอุปกรณ์ เรียงขั้นตอน และตัดสินใจอย่างปลอดภัยในห้องปฏิบัติการได้',mech:'escape',gesture:'mixed',task:'ด่าน 1 จับคู่อุปกรณ์กับการใช้งาน ด่าน 2 เรียงขั้นตอนการทดลอง ด่าน 3 สรุปสาเหตุอุบัติเหตุจากหลักฐาน แต่ละด่านให้รหัสปลดล็อก',progress:'3 ด่าน ยากขึ้นตามลำดับ',time:'15 นาที'}},
+
+ {id:'caseA',group:'proto',kind:IDEA,title:'นักคัดแยกขยะตัวน้อย',orig:'Case A',motif:'trash',hue:110,
+  play:'คีบนิ้วหยิบการ์ดขยะ ลากไปหมวดหมู่ แล้วปล่อย',lesson:'ข้อมูลป้อนกลับอธิบายเหตุผล แทนการแจ้งเพียงถูก–ผิด',
+  p:{level:'ป.1–3',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'การคัดแยกขยะ',goal:'classify',objective:'ผู้เรียนสามารถเลือกวิธีจัดการขยะตามเกณฑ์ที่ระบุในบทเรียน และอธิบายเหตุผลได้',mech:'sort',gesture:'pinch',
+   task:'หน้าจอแสดงภาพกล้องพร้อมการ์ดขยะและถังรับ 4 ประเภท คีบการ์ดลากไปถังที่ถูกต้อง',progress:'เริ่มจากตัวอย่างชัดเจน ก่อนเพิ่มสิ่งของที่ต้องพิจารณาสภาพ เช่น ภาชนะที่มีเศษอาหาร',
+   caution:'ระบุระบบคัดแยกที่เกมใช้ให้ชัด (เช่น ถัง 4 สีตามเทศบาล) ไม่ให้ผู้เรียนเดาเกณฑ์'}},
+ {id:'caseB',group:'proto',kind:IDEA,title:'ภารกิจกู้สมดุลสมการ',orig:'Case B',motif:'balance',hue:95,
+  play:'หยิบการ์ดการดำเนินการ เช่น ลบ 3 ไปใช้ทั้งสองข้าง',lesson:'แสดงความไม่เท่ากันเมื่อดำเนินการเพียงฝั่งเดียว และให้แก้ไข',
+  p:{level:'ม.1–3',subject:'คณิตศาสตร์',topic:'การแก้สมการเชิงเส้นตัวแปรเดียว',goal:'process',objective:'ผู้เรียนสามารถอธิบายและใช้หลักการรักษาความเท่ากันในการแก้สมการได้',mech:'balance',gesture:'pinch',
+   task:'หน้าจอมีพื้นที่สมการซ้าย–ขวา ผู้เรียนคีบการ์ดการดำเนินการ (+, −, ×, ÷ ตัวเลข) ไปใช้กับสมการ',progress:'เริ่มจาก x + 3 = 8 ก่อนเพิ่มสมการหลายขั้นตอน เช่น 2x + 5 = 17',
+   caution:'อย่าให้ผ่านได้ด้วยการลากคำตอบสุดท้ายถูกเพียงอย่างเดียว ต้องบันทึกลำดับวิธีทำและเหตุผลที่ต้องดำเนินการทั้งสองข้าง'}},
+ {id:'caseC',group:'proto',kind:IDEA,title:'AI Detective',orig:'Case C',motif:'ai',hue:125,
+  play:'จับคู่หลักฐานกับข้ออ้าง แล้วเลือก รองรับ / ขัดแย้ง / ยังสรุปไม่ได้',lesson:'ประเมินความสอดคล้องระหว่างหลักฐาน เหตุผล และข้อสรุป ไม่ใช่ความเร็ว',
+  p:{level:'ม.4–6',subject:'วิทยาการคำนวณ / รู้เท่าทันสื่อ',topic:'การตรวจสอบคำตอบจาก AI',goal:'evaluate',objective:'ผู้เรียนสามารถประเมินว่าข้อความจาก AI มีหลักฐานรองรับเพียงพอหรือไม่ และให้เหตุผลได้',mech:'evidence',gesture:'pinch',
+   task:'หน้าจอมีคำตอบจาก AI การ์ดแหล่งข้อมูล และกระดานข้อสรุป คีบการ์ดหลักฐานไปจับคู่กับข้ออ้าง แล้วเลือก รองรับ / ขัดแย้ง / ยังสรุปไม่ได้',progress:'เพิ่มแหล่งข้อมูลไม่ตรงประเด็น และข้อความที่มีทั้งส่วนถูกและผิด',
+   caution:'ยอมรับคำตอบว่าข้อมูลยังไม่พอ ไม่บังคับทุกข้อเป็นจริงหรือเท็จ'}}
+];
+const GROUPLABEL={hand:'กรณีศึกษา · กล้อง + มือ',ar:'กรณีศึกษา · AR รูปแบบอื่น',pattern:'แนวทางออกแบบ (ข้อเสนอ)',proto:'เคสต้นแบบ (ข้อเสนอ)'};
+
+/* ---------- covers ---------- */
+const HAND={open:[[0,0],[-12,-8],[-22,-18],[-28,-28],[-32,-37],[-10,-35],[-12,-50],[-13,-60],[-14,-69],[0,-37],[0,-54],[0,-65],[0,-75],[9,-34],[11,-49],[12,-59],[13,-67],[17,-28],[21,-40],[23,-48],[25,-55]]};
+HAND.pinch=HAND.open.map(p=>p.slice());Object.assign(HAND.pinch,{6:[-16,-48],7:[-22,-46],8:[-28,-41],4:[-30,-39],3:[-26,-30]});
+HAND.point=HAND.open.map(p=>p.slice());Object.assign(HAND.point,{10:[2,-46],11:[-2,-40],12:[-3,-36],14:[10,-42],15:[7,-37],16:[5,-34],18:[19,-36],19:[15,-32],20:[13,-29],3:[-20,-24],4:[-14,-30]});
+const CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+function hand(x,y,s,pose){const P=HAND[pose].map(([a,b])=>[x+a*s,y+b*s]);
+ let o=CONN.map(([a,b])=>`<line x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}"/>`).join('');
+ return `<g stroke="#fff" stroke-width="${1.8*s}" stroke-linecap="round" opacity=".92">${o}</g><g fill="#ffd166">${P.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="${2.3*s}"/>`).join('')}</g>`;}
+const W='#ffffff',Y='#ffd166';
+const M={
+ shapes:()=>`<g fill="none" stroke="${W}" stroke-width="3"><path d="M70 110l30-15 30 15v38l-30 15-30-15z M70 110l30 15 30-15 M100 125v38"/><path d="M160 150l26-62 26 62z M186 88l-10 62"/><ellipse cx="250" cy="100" rx="22" ry="8"/><path d="M228 100v48a22 8 0 0 0 44 0v-48"/></g>`+hand(205,96,.9,'pinch'),
+ numbers:()=>[1,2,3,4,5].map((n,i)=>`<circle cx="${50+i*55}" cy="${80+(i%2)*30}" r="22" fill="${i==2?Y:'rgba(255,255,255,.15)'}" stroke="${W}" stroke-width="2"/><text x="${50+i*55}" y="${88+(i%2)*30}" text-anchor="middle" font-size="22" font-weight="700" fill="${i==2?'#333':W}" font-family="Anuphan,sans-serif">${n}</text>`).join('')+hand(160,175,.85,'point'),
+ quiz:()=>`<rect x="40" y="30" width="240" height="44" rx="8" fill="rgba(255,255,255,.18)" stroke="${W}"/><rect x="58" y="46" width="150" height="6" rx="3" fill="${W}"/><rect x="58" y="57" width="100" height="6" rx="3" fill="${W}" opacity=".6"/>`+['ก','ข','ค'].map((t,i)=>`<circle cx="${80+i*80}" cy="120" r="24" fill="${i==1?Y:'rgba(255,255,255,.15)'}" stroke="${W}" stroke-width="2"/><text x="${80+i*80}" y="128" text-anchor="middle" font-size="22" font-weight="700" fill="${i==1?'#333':W}" font-family="Anuphan,sans-serif">${t}</text>`).join('')+hand(178,178,.7,'point'),
+ snake:()=>{let s='';for(let i=0;i<12;i++){const x=40+i*16,y=110+Math.sin(i/1.6)*22;s+=`<circle cx="${x}" cy="${y}" r="${i==11?10:8}" fill="${i==11?Y:W}" opacity="${.4+i*.05}"/>`}return s+`<rect x="245" y="70" width="44" height="26" rx="6" fill="rgba(255,255,255,.2)" stroke="${W}"/><text x="267" y="88" font-size="12" text-anchor="middle" fill="${W}" font-family="IBM Plex Mono">cat</text>`+hand(265,175,.7,'open')},
+ calc:()=>`<text x="160" y="92" text-anchor="middle" font-size="40" font-weight="700" fill="${W}" font-family="Anuphan,sans-serif">7 + 5 = ?</text>`+[11,12,13].map((n,i)=>`<rect x="${70+i*65}" y="112" width="52" height="40" rx="8" fill="${i==1?Y:'rgba(255,255,255,.15)'}" stroke="${W}"/><text x="${96+i*65}" y="139" text-anchor="middle" font-size="20" font-weight="700" fill="${i==1?'#333':W}" font-family="Anuphan,sans-serif">${n}</text>`).join(''),
+ balloons:()=>[[70,80,0],[130,60,1],[195,90,0],[255,65,0]].map(([x,y,h])=>`<path d="M${x} ${y+30} q-4 20 4 40" stroke="${W}" fill="none" opacity=".7"/><ellipse cx="${x}" cy="${y}" rx="22" ry="28" fill="${h?Y:'rgba(255,255,255,.25)'}" stroke="${W}" stroke-width="2"/>`).join('')+`<g stroke="${Y}" stroke-width="3"><path d="M130 22v-10M155 34l8-7M105 34l-8-7"/></g>`+hand(140,178,.8,'point'),
+ map:()=>`<path d="M30 60l70-22 70 22 70-22 50 16v110l-50-16-70 22-70-22-70 22z" fill="rgba(255,255,255,.12)" stroke="${W}" stroke-width="2"/><path d="M40 120c50-30 90 20 140-10s70-20 110 0" stroke="#8ecae6" stroke-width="6" fill="none"/>`+[[90,95],[180,80],[240,115]].map(([x,y],i)=>`<path d="M${x} ${y}c-10-14-10-26 0-26s10 12 0 26z" fill="${i==1?Y:W}"/>`).join('')+`<circle cx="235" cy="60" r="18" fill="none" stroke="${Y}" stroke-width="4"/><path d="M248 73l16 16" stroke="${Y}" stroke-width="5" stroke-linecap="round"/>`,
+ museum:()=>`<path d="M60 70l100-38 100 38z" fill="rgba(255,255,255,.2)" stroke="${W}" stroke-width="2"/>`+[0,1,2,3,4].map(i=>`<rect x="${78+i*38}" y="78" width="14" height="66" fill="${W}" opacity=".85"/>`).join('')+`<rect x="56" y="146" width="208" height="10" fill="${W}"/><circle cx="160" cy="54" r="7" fill="${Y}"/><text x="160" y="58" text-anchor="middle" font-size="10" font-weight="700" fill="#333">?</text>`,
+ coloring:()=>`<rect x="40" y="42" width="120" height="110" rx="4" fill="${W}" transform="rotate(-6 100 97)"/><path d="M70 120c10-40 50-40 60 0" fill="none" stroke="#333" stroke-width="3" transform="rotate(-6 100 97)"/><path d="M78 118c10-28 40-28 46 0z" fill="${Y}" opacity=".8" transform="rotate(-6 100 97)"/><path d="M175 120c20-60 90-60 100 0" fill="none" stroke="${Y}" stroke-width="4" stroke-dasharray="6 6"/><circle cx="225" cy="80" r="26" fill="${Y}"/><circle cx="216" cy="76" r="4" fill="#333"/><circle cx="234" cy="76" r="4" fill="#333"/><path d="M216 88q9 7 18 0" stroke="#333" stroke-width="3" fill="none"/>`,
+ cube:()=>`<g stroke="${W}" stroke-width="3" fill="rgba(255,255,255,.12)"><path d="M160 60l50 25-50 25-50-25z"/><path d="M110 85v55l50 25v-55z" fill="rgba(255,255,255,.22)"/><path d="M210 85v55l-50 25v-55z"/></g><circle cx="160" cy="40" r="16" fill="${Y}"/><ellipse cx="160" cy="40" rx="30" ry="7" fill="none" stroke="${Y}" stroke-width="2"/>`+hand(260,160,.75,'pinch'),
+ tap:()=>[2,4,7,9,11,15].map((n,i)=>{const x=55+(i%3)*90,y=55+Math.floor(i/3)*60,h=[2,7,11].includes(n);return `<rect x="${x-28}" y="${y-22}" width="56" height="44" rx="10" fill="${h?Y:'rgba(255,255,255,.15)'}" stroke="${W}" stroke-width="2"/><text x="${x}" y="${y+8}" text-anchor="middle" font-size="22" font-weight="700" fill="${h?'#333':W}" font-family="Anuphan,sans-serif">${n}</text>`}).join('')+hand(160,176,.6,'point'),
+ sort:()=>bins(['#8ecae6',Y,'#90be6d'])+`<rect x="138" y="30" width="44" height="34" rx="6" fill="${W}" transform="rotate(-8 160 47)"/>`+hand(195,92,.8,'pinch'),
+ trash:()=>bins(['#4f8fd6',Y,'#3fa34d','#e05a47'])+`<rect x="138" y="28" width="44" height="34" rx="6" fill="${W}" transform="rotate(8 160 45)"/>`+hand(196,90,.8,'pinch'),
+ match:()=>[0,1,2].map(i=>`<rect x="40" y="${36+i*42}" width="70" height="30" rx="6" fill="rgba(255,255,255,.18)" stroke="${W}"/><rect x="210" y="${36+i*42}" width="70" height="30" rx="6" fill="rgba(255,255,255,.18)" stroke="${W}"/>`).join('')+`<text x="75" y="57" text-anchor="middle" fill="${W}" font-size="16" font-weight="700">1/2</text><text x="75" y="99" text-anchor="middle" fill="${W}" font-size="16" font-weight="700">1/4</text><text x="75" y="141" text-anchor="middle" fill="${W}" font-size="16" font-weight="700">3/4</text><circle cx="245" cy="93" r="10" fill="none" stroke="${W}" stroke-width="2"/><path d="M245 93V83A10 10 0 0 1 255 93z" fill="${Y}"/><path d="M110 51C160 51 160 93 210 93" stroke="${Y}" stroke-width="3" fill="none"/><path d="M110 93C160 93 160 135 210 135" stroke="${W}" stroke-width="2" stroke-dasharray="5 5" fill="none"/>`,
+ cycle:()=>`<g fill="none" stroke="${W}" stroke-width="3"><path d="M110 80a60 45 0 0 1 100 0" marker-end="url(#ah)"/><path d="M220 105a60 45 0 0 1-60 50" /><path d="M140 155a60 45 0 0 1-40-50"/></g><path d="M200 54c10 0 30 6 26 20 12 2 12 18 0 20h-60c-14 0-14-20 0-20 0-14 20-20 34-20z" fill="${W}"/><path d="M190 108l-4 12M205 108l-4 12" stroke="#8ecae6" stroke-width="3"/><path d="M60 150q40-14 80 0t80 0" stroke="#8ecae6" stroke-width="5" fill="none"/><circle cx="70" cy="58" r="16" fill="${Y}"/>`,
+ system:()=>{const n=[[60,120],[120,60],[190,110],[260,60]];return n.slice(1).map((p,i)=>`<path d="M${n[i][0]} ${n[i][1]}L${p[0]} ${p[1]}" stroke="${W}" stroke-width="3"/>`).join('')+n.map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="20" fill="${i==2?Y:'rgba(255,255,255,.2)'}" stroke="${W}" stroke-width="2"/>`).join('')+`<path d="M52 128q8-14 16 0M60 128v-14" stroke="${W}" stroke-width="2" fill="none"/>`+hand(190,180,.7,'pinch')},
+ slider:()=>`<path d="M30 140L230 60" stroke="${W}" stroke-width="4"/><rect x="120" y="76" width="34" height="26" fill="${Y}" transform="rotate(-21.8 137 89)"/><path d="M30 140h260" stroke="${W}" stroke-width="2" opacity=".6"/><rect x="60" y="156" width="200" height="6" rx="3" fill="rgba(255,255,255,.3)"/><rect x="60" y="156" width="120" height="6" rx="3" fill="${Y}"/><circle cx="180" cy="159" r="9" fill="${W}"/>`+hand(270,112,.65,'pinch'),
+ detective:()=>[0,1,2].map(i=>`<rect x="${40+i*58}" y="${50+(i%2)*20}" width="48" height="62" rx="5" fill="rgba(255,255,255,.2)" stroke="${W}" transform="rotate(${(i-1)*8} ${64+i*58} 81)"/>`).join('')+`<circle cx="230" cy="80" r="34" fill="rgba(255,255,255,.12)" stroke="${Y}" stroke-width="6"/><path d="M254 104l26 26" stroke="${Y}" stroke-width="9" stroke-linecap="round"/><path d="M60 145h80" stroke="${Y}" stroke-width="3" stroke-dasharray="4 4"/>`,
+ draw:()=>`<path d="M160 22v140" stroke="${W}" stroke-width="2" stroke-dasharray="6 6"/><path d="M160 150C120 120 90 95 95 70s40-30 65-5" fill="none" stroke="${W}" stroke-width="4"/><path d="M160 150C200 120 230 95 225 70s-40-30-65-5" fill="none" stroke="${Y}" stroke-width="4" stroke-dasharray="200" stroke-dashoffset="70"/>`+hand(222,140,.8,'point'),
+ balance:()=>`<path d="M160 40v100M110 160h100" stroke="${W}" stroke-width="4"/><path d="M70 64h180" stroke="${W}" stroke-width="4" transform="rotate(-4 160 64)"/><path d="M70 62l-22 42h44zM250 66l-22 42h44z" fill="none" stroke="${W}" stroke-width="2"/><rect x="56" y="104" width="30" height="20" rx="4" fill="${Y}"/><text x="71" y="119" text-anchor="middle" font-size="13" font-weight="700" fill="#333">x+3</text><rect x="234" y="108" width="30" height="20" rx="4" fill="${W}"/><text x="249" y="123" text-anchor="middle" font-size="13" font-weight="700" fill="#333">8</text><circle cx="160" cy="40" r="6" fill="${Y}"/>`,
+ decision:()=>[[50,90,50,60],[110,70,40,80],[160,100,44,50],[214,60,56,90]].map(([x,y,w,h],i)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="rgba(255,255,255,${.15+i*.06})" stroke="${W}"/>`).join('')+`<path d="M30 150h260" stroke="${W}" stroke-width="2"/><rect x="120" y="22" width="40" height="30" rx="5" fill="${Y}" transform="rotate(-10 140 37)"/><rect x="170" y="20" width="40" height="30" rx="5" fill="${W}" transform="rotate(8 190 35)"/>`,
+ coop:()=>hand(110,150,.95,'pinch')+hand(220,150,.95,'open')+`<path d="M135 55q30-24 60 0" stroke="${Y}" stroke-width="3" fill="none" stroke-dasharray="5 5"/><rect x="140" y="98" width="40" height="30" rx="5" fill="${Y}"/>`,
+ escape:()=>`<rect x="110" y="30" width="100" height="134" rx="4" fill="rgba(255,255,255,.18)" stroke="${W}" stroke-width="3"/><rect x="130" y="70" width="60" height="44" rx="6" fill="${Y}"/><path d="M146 70v-12a14 14 0 0 1 28 0v12" stroke="${Y}" stroke-width="5" fill="none"/><text x="160" y="99" text-anchor="middle" font-family="IBM Plex Mono" font-size="14" font-weight="700" fill="#333">3·7·1</text>`+[0,1,2].map(i=>`<circle cx="${50+i*0}" cy="${60+i*36}" r="10" fill="${i<2?Y:'none'}" stroke="${W}" stroke-width="2"/>`).join(''),
+ ai:()=>`<rect x="34" y="34" width="150" height="62" rx="12" fill="rgba(255,255,255,.2)" stroke="${W}"/><path d="M60 96l-6 16 20-16" fill="rgba(255,255,255,.2)" stroke="${W}"/><text x="56" y="60" fill="${W}" font-size="13" font-weight="700" font-family="IBM Plex Mono">AI:</text><rect x="86" y="52" width="80" height="6" rx="3" fill="${W}"/><rect x="56" y="72" width="110" height="6" rx="3" fill="${W}" opacity=".6"/>`+['✓','✗','?'].map((t,i)=>`<rect x="${206}" y="${30+i*42}" width="80" height="32" rx="6" fill="${i==2?Y:'rgba(255,255,255,.15)'}" stroke="${W}"/><text x="246" y="${52+i*42}" text-anchor="middle" font-size="18" font-weight="700" fill="${i==2?'#333':W}">${t}</text>`).join('')+hand(130,178,.65,'pinch')
+};
+function bins(cols){const n=cols.length,w=Math.min(60,240/n-10);return cols.map((c,i)=>{const x=160-(n*(w+12))/2+i*(w+12)+6;return `<path d="M${x} 110h${w}l-5 50h-${w-10}z" fill="${c}" stroke="${W}" stroke-width="2"/><rect x="${x-3}" y="102" width="${w+6}" height="8" rx="2" fill="${W}"/>`}).join('')}
+function cover(c){const h=c.hue;const bg1=`hsl(${h} 55% 30%)`,bg2=`hsl(${(h+25)%360} 50% 20%)`;
+ return `<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ภาพประกอบ ${c.title}"><defs><linearGradient id="g${c.id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${bg1}"/><stop offset="1" stop-color="${bg2}"/></linearGradient><pattern id="d${c.id}" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="rgba(255,255,255,.12)"/></pattern></defs><rect width="320" height="180" fill="url(#g${c.id})"/><rect width="320" height="180" fill="url(#d${c.id})"/><path d="M12 32V12h20M288 12h20v20M308 148v20h-20M32 168H12v-20" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2.5"/><g font-family="Sarabun,sans-serif">${M[c.motif]()}</g><circle cx="296" cy="22" r="4" fill="#ff5d5d"/><text x="288" y="26" text-anchor="end" font-size="10" fill="rgba(255,255,255,.75)" font-family="IBM Plex Mono">REC</text></svg>`}
+
+/* ---------- prompt ---------- */
+const ASSESS={a1:'บันทึกคำตอบผิดแยกตามประเภทความเข้าใจผิด',a2:'มีโจทย์ใหม่ท้ายเกมที่ไม่ปรากฏระหว่างเล่น เพื่อตรวจการถ่ายโอนความรู้',a3:'ให้ผู้เรียนเลือกหรือพิมพ์เหตุผลประกอบคำตอบในจุดสำคัญ',a4:'มีหน้าสรุปผลสำหรับครู แสดงคะแนน เวลา และประเภทความผิดพลาดที่พบบ่อย'};
+const FEED={explain:'เมื่อตอบผิด ให้อธิบายเหตุผลสั้น ๆ ว่าทำไมไม่ถูก โยงกับเกณฑ์ของบทเรียน แล้วให้ลองใหม่ (ไม่แจ้งเพียงถูก–ผิด)',hint:'เมื่อตอบผิด ให้คำใบ้ทีละขั้น (อย่างน้อย 2 ระดับ) ก่อนเฉลยพร้อมเหตุผล',visual:'เมื่อตอบผิด ให้แสดงผลที่เกิดขึ้นเป็นภาพหรือแบบจำลอง ให้ผู้เรียนสังเกตเองว่าผิดตรงไหน แล้วแก้ไข'};
+const CONS={c1:'ประมวลผลภาพจากกล้องบนเครื่องเท่านั้น ไม่บันทึก ไม่อัปโหลด และไม่ส่งภาพผู้เรียนออกไปที่ใด',c2:'มีโหมดสำรองที่ใช้เมาส์หรือแตะจอได้เมื่อไม่มีกล้องหรือผู้เรียนไม่ต้องการเปิดกล้อง',c3:'ตัวอักษรและเป้าหมายขนาดใหญ่ อ่านได้จากระยะ 2–3 เมตร สีตัดกันชัดเจน',c4:'ทำงานได้ในแสงห้องเรียนทั่วไปและฉากหลังที่มีคนเดินผ่าน แสดงคำแนะนำเมื่อตรวจไม่พบมือ',c5:'มีปุ่มเปิด–ปิดเสียงประกอบ',c6:'เลือกได้ว่าจะใช้มือซ้ายหรือขวา และเล่นจบได้ด้วยมือข้างเดียว'};
+const MODE={
+ code:'สร้างเกมการเรียนรู้ต้นแบบที่เล่นได้จริง โดยใช้ภาพจากกล้องเป็นฉากหลังและควบคุมด้วยการติดตามมือ (Hand Tracking)',
+ design:'ออกแบบเกมการเรียนรู้ที่ใช้ภาพจากกล้องและการติดตามมือ เป็นเอกสารออกแบบเกมและแผนการใช้ในชั้นเรียนสำหรับครู (ยังไม่ต้องเขียนโค้ด)',
+ content:'สร้างชุดเนื้อหาสำหรับเกมการเรียนรู้แบบติดตามมือที่มีอยู่แล้ว ในรูปแบบข้อมูล JSON ที่ครูนำไปแทนเนื้อหาเดิมได้'
+};
+const $=id=>document.getElementById(id);
+let current=null;
+
+function readForm(){const f={};['level','subject','topic','goal','objective','mech','gesture','task','progress','feedback','device','players','time','lang','extra'].forEach(k=>f[k]=$(k).value.trim());
+ f.mode=document.querySelector('input[name=mode]:checked').value;
+ f.assess=['a1','a2','a3','a4'].filter(k=>$(k).checked);f.cons=['c1','c2','c3','c4','c5','c6'].filter(k=>$(k).checked);f.skeleton=$('sk').checked;return f}
+
+function build(f,c){
+ const m=MECH[f.mech]||MECH.sort, g=f.gesture;
+ const L=[];
+ L.push('# บทบาท');
+ L.push('คุณคือนักออกแบบเกมการศึกษาและนักพัฒนาเว็บ ที่เข้าใจการเรียนการสอนในโรงเรียนไทยและหลักสูตรแกนกลางการศึกษาขั้นพื้นฐาน');
+ L.push('','# งาน',MODE[f.mode]);
+ if(c){L.push('','# แรงบันดาลใจ',`อ้างอิงแนวคิดจาก “${c.title}”${c.orig?` (${c.orig})`:''}: ${c.play}`,`ประเด็นออกแบบที่ต้องรักษาไว้: ${c.lesson}`);
+  if(c.kind==='idea')L.push('หมายเหตุ: เป็นแนวคิดที่เสนอเพื่อการออกแบบ ยังไม่ใช่ผลิตภัณฑ์หรือผลวิจัยที่ยืนยันประสิทธิผลแล้ว');
+  else L.push('หมายเหตุ: เป็นกรณีที่มีแหล่งเผยแพร่ แต่ไม่ควรถือว่าพิสูจน์ประสิทธิผลต่อการเรียนรู้แล้ว ให้นำเฉพาะแนวคิดการออกแบบมาใช้');}
+ L.push('','# ผู้เรียนและบทเรียน',`- ระดับชั้น: ${f.level}`,`- กลุ่มสาระ/วิชา: ${f.subject}`,`- หัวข้อ: ${f.topic||'(ระบุหัวข้อ)'}`,`- ประเภทเป้าหมาย: ${GOALS[f.goal].label}`,`- ผลการเรียนรู้ที่คาดหวัง: ${f.objective||'(ระบุ)'}`,`- เวลาเล่นต่อรอบ: ${f.time}`,`- ผู้เล่น: ${f.players}`,`- อุปกรณ์: ${f.device}`,`- ภาษาในเกม: ${f.lang}`);
+ L.push('','# กลไกเกม',`- รูปแบบ: ${m.name}`,`- ท่ามือ: ${GESTURE[g]}`,`- ภารกิจ: ${f.task||m.ex}`,`- ด่านและความก้าวหน้า: ${f.progress||'เริ่มจากตัวอย่างชัดเจน แล้วเพิ่มกรณีกำกวมหรือตัวลวงที่สะท้อนความเข้าใจผิดที่พบบ่อย'}`,`- หลักฐานการเรียนรู้ที่เกมต้องเก็บ: ${m.ev}`,'- กลไกต้องผูกกับการตัดสินใจทางเนื้อหา ถ้าตัดเนื้อหาออกแล้วเกมยังเล่นได้เหมือนเดิม แปลว่าออกแบบไม่ถูก');
+ L.push('','# ข้อมูลป้อนกลับและการประเมิน','- '+FEED[f.feedback]);f.assess.forEach(a=>L.push('- '+ASSESS[a]));L.push('- ให้คะแนนจากความถูกต้องและเหตุผล ไม่ใช่ความเร็วหรือความคล่องในการควบคุมมือ');
+ L.push('','# ข้อควรระวัง','- การตรวจจับมือเป็นเพียงช่องทางปฏิสัมพันธ์ คุณภาพการเรียนรู้ขึ้นอยู่กับโจทย์ กติกา และข้อมูลป้อนกลับ');
+ if(c&&c.p.caution)L.push('- '+c.p.caution);
+ f.cons.forEach(k=>L.push('- '+CONS[k]));
+ if(f.extra)L.push('- '+f.extra);
+ if(f.mode==='code'){L.push('','# ข้อกำหนดทางเทคนิค','- ส่งเป็นไฟล์ HTML ไฟล์เดียว (รวม CSS และ JavaScript) เปิดด้วย Chrome ได้ทันทีโดยไม่ต้องติดตั้ง','- ใช้ MediaPipe Hand Landmarker (@mediapipe/tasks-vision) โหลดผ่าน CDN แสดงภาพกล้องแบบกลับด้านเหมือนกระจกเป็นฉากหลัง และวาดเคอร์เซอร์ที่ปลายนิ้วที่ใช้ควบคุม','- '+({pinch:'ตรวจการคีบจากระยะระหว่าง landmark 4 กับ 8 เทียบกับขนาดมือ ใช้ค่าเริ่มและค่าปล่อยต่างกัน (hysteresis) ป้องกันการหลุดมือ',point:'ใช้ปลายนิ้วชี้ landmark 8 เป็นเคอร์เซอร์ และใช้การชี้ค้าง (dwell) พร้อมวงแหวนนับเวลา ป้องกันการเลือกโดยไม่ตั้งใจ',move:'ใช้ค่าเฉลี่ยตำแหน่งฝ่ามือและทำให้นุ่มนวลด้วย smoothing เพื่อลดการสั่น',draw:'วาดเฉพาะเมื่อชูนิ้วชี้นิ้วเดียว และปรับเส้นให้เรียบก่อนตรวจคำตอบ',mixed:'รองรับทั้งการชี้ค้าง (landmark 8) และการคีบ (landmark 4 กับ 8) โดยแสดงท่าที่ใช้ในแต่ละด่าน'})[g],'- แยกเนื้อหาเกมทั้งหมด (โจทย์ หมวดหมู่ คำตอบ เหตุผล ข้อมูลป้อนกลับ) ไว้ในอาร์เรย์ JSON ด้านบนของสคริปต์ พร้อมคอมเมนต์ภาษาไทย เพื่อให้ครูเปลี่ยนชุดเนื้อหาได้เอง','- มีหน้าจอเริ่ม หน้าสอนท่ามือ 1 หน้า ตัวเกม และหน้าสรุปผล','- จัดการกรณีผู้ใช้ไม่อนุญาตกล้อง โดยแสดงข้อความภาษาไทยและเปลี่ยนเป็นโหมดเมาส์');
+  if(f.skeleton)L.push(...SKELETON);
+  L.push('','# รูปแบบผลลัพธ์','1. สรุปการออกแบบสั้น ๆ: เป้าหมาย กติกา และหลักฐานการเรียนรู้','2. โค้ด HTML ฉบับสมบูรณ์ในบล็อกเดียว','3. วิธีเปิดใช้และวิธีแก้ชุดเนื้อหาสำหรับครู','4. รายการตรวจสอบก่อนใช้กับผู้เรียนจริง');}
+ else if(f.mode==='design'){L.push('','# รูปแบบผลลัพธ์','1. ชื่อเกมและแนวคิดหลักใน 2–3 บรรทัด','2. ผลการเรียนรู้ และหลักฐานที่ใช้ยืนยันการเรียนรู้','3. กติกาและลำดับการเล่น พร้อมภาพร่างหน้าจอแต่ละหน้าเป็นข้อความ'+(f.skeleton?' โดยระบุตำแหน่งปุ่มเปิด–ปิด “แสดงโครงมือ” ที่แสดงจุด 21 จุดและเส้นโครงมือบนภาพกล้อง':''),'4. ตารางด่าน: เนื้อหา ความยาก ตัวลวง และข้อมูลป้อนกลับ','5. แผนการใช้ในชั้นเรียน: นำเข้าสู่บทเรียน การเล่น การอภิปรายหลังเล่น และการประเมิน','6. ความเสี่ยงที่ผู้เรียนจะผ่านเกมได้โดยไม่เข้าใจ และวิธีป้องกัน','7. สิ่งที่ครูต้องเตรียม (อุปกรณ์ พื้นที่ แสง)');}
+ else {L.push('','# รูปแบบผลลัพธ์','- ส่ง JSON อาร์เรย์ อย่างน้อย 15 รายการ แต่ละรายการมีฟิลด์: id, item (สิ่งที่ผู้เรียนเห็น), category หรือ answer, level (1–3), reason (เหตุผลที่ถูก), feedback_wrong (ข้อความเมื่อเลือกผิด), misconception (ประเภทความเข้าใจผิดที่ตัวลวงนี้ตรวจ)','- ระดับ 1 ชัดเจน ระดับ 2 ต้องพิจารณาเงื่อนไข ระดับ 3 กำกวมหรือเป็นตัวลวงที่พบบ่อย','- เพิ่มชุดโจทย์ท้ายเกมอีก 5 ข้อที่ไม่ซ้ำกับระหว่างเล่น','- ตรวจความถูกต้องทางวิชาการ ระบุเกณฑ์ที่ใช้ตัดสินให้ชัด และใช้ภาษาที่เหมาะกับระดับชั้น');}
+ L.push('','ก่อนตอบ หากข้อมูลใดไม่พอให้ระบุสมมติฐานที่ใช้ไว้ตอนต้นคำตอบ');
+ return L.join('\n');}
+
+const SKELETON=['','# ระบบแสดงจุดและเส้นโครงมือบนภาพกล้องแบบเรียลไทม์ (Hand Landmark / Hand Skeleton Overlay)',
+'1. ใช้ MediaPipe Tasks Vision: Hand Landmarker สำหรับเว็บ',
+'2. ตรวจจับตำแหน่งมือจากกล้องในโหมด VIDEO (runningMode: "VIDEO" และเรียก detectForVideo ด้วย timestamp ของเฟรม)',
+'3. แสดงจุดทั้ง 21 จุดของมือที่ตรวจพบ (ทุกมือที่ตรวจพบตาม numHands ที่ตั้งไว้)',
+'4. วาดเส้นเชื่อมตาม HandLandmarker.HAND_CONNECTIONS',
+'5. ใช้จุดสีเหลืองทอง (เช่น #FFC107) และเส้นเชื่อมสีเหลืองอ่อน (เช่น #FFF59D)',
+'6. จุดมีรัศมีประมาณ 4 พิกเซล และเส้นหนาประมาณ 2 พิกเซล',
+'7. วาดบน Canvas โปร่งใสที่ซ้อนอยู่เหนือภาพกล้อง (position: absolute, pointer-events: none)',
+'8. ให้ตำแหน่งจุดตรงกับมือจริง รวมถึงเมื่อแสดงภาพแบบกระจก (กลับแกน x ของ Canvas ให้สอดคล้องกับวิดีโอ)',
+'9. ให้ขนาดและอัตราส่วนของ Canvas ตรงกับภาพกล้อง หากใช้ object-fit: cover ให้คำนวณสเกลและระยะเลื่อนชดเชยพื้นที่ภาพที่ถูกครอป และปรับใหม่เมื่อหน้าจอเปลี่ยนขนาด',
+'10. อัปเดตจุดตามเฟรมวิดีโอ (requestAnimationFrame และประมวลผลเฉพาะเมื่อ video.currentTime เปลี่ยน) และล้าง Canvas ก่อนวาดเฟรมใหม่',
+'11. เมื่อไม่พบมือ ให้ล้างจุดและเส้นทันที ไม่ค้างตำแหน่งเก่า',
+'12. เพิ่มปุ่มเปิด–ปิด “แสดงโครงมือ” บนหน้าจอเกม',
+'13. แยกการแสดงโครงมือออกจากตรรกะควบคุมเกม เช่น ฟังก์ชัน drawHandSkeleton() แยกจากฟังก์ชันที่แปลงตำแหน่งนิ้วเป็นการควบคุม เมื่อปิดโครงมือแล้วต้องยังควบคุมเกมได้ตามปกติ',
+'14. ระบบนี้ต้องไม่เปลี่ยนระบบเกม เนื้อหา คะแนน และหน้าจออื่นที่ออกแบบไว้',
+'15. ส่งโค้ดที่ใช้งานได้จริง พร้อมการโหลดโมเดล (hand_landmarker.task และไฟล์ WASM จาก CDN) การขอสิทธิ์กล้อง และการจัดการข้อผิดพลาด เช่น โหลดโมเดลไม่สำเร็จ ไม่ได้รับสิทธิ์กล้อง หรือไม่พบกล้อง โดยแสดงข้อความภาษาไทย'];
+function casePrompt(c){const f=Object.assign(defaults(),c.p);return build(f,c)}
+function defaults(){return{mode:'code',level:'ป.4–6',subject:'วิทยาศาสตร์และเทคโนโลยี',topic:'',goal:'classify',objective:'',mech:'sort',gesture:'pinch',task:'',progress:'',feedback:'explain',device:'โน้ตบุ๊กที่มีเว็บแคม',players:'เล่นคนเดียว',time:'10 นาที',lang:'ภาษาไทย',extra:'',assess:['a1','a2','a3'],cons:['c1','c2','c3','c4'],skeleton:true}}
+
+/* ---------- UI ---------- */
+function fill(sel,opts){sel.innerHTML=opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}
+fill($('level'),LEVELS.map(x=>[x,x]));fill($('subject'),SUBJECTS.map(x=>[x,x]));
+fill($('goal'),Object.entries(GOALS).map(([k,v])=>[k,`${v.label} — เช่น ${v.ex}`]));
+fill($('mech'),Object.entries(MECH).map(([k,v])=>[k,v.name]));fill($('gesture'),Object.entries(GLABEL));
+
+function card(c){const a=document.createElement('article');a.className='card';a.dataset.g=c.group;
+ a.dataset.s=(c.title+c.orig+c.play+c.lesson+c.p.topic+c.p.subject+c.p.level).toLowerCase();
+ a.innerHTML=`<button class="cover" aria-label="ดูรายละเอียด ${c.title}">${cover(c)}</button><div class="card-body"><span class="tag ${c.kind}"><i></i>${GROUPLABEL[c.group]}</span><h3>${c.title}</h3><p>${c.play}</p><div class="meta"><span>${c.p.level}</span><span>${c.p.subject}</span><span>${GLABEL[c.p.gesture]}</span></div><div class="card-actions"><button class="btn" data-a="view">ดูPrompt</button><button class="btn primary" data-a="copy">คัดลอก</button></div></div>`;
+ a.querySelector('.cover').onclick=()=>openModal(c);a.querySelector('[data-a=view]').onclick=()=>openModal(c);
+ a.querySelector('[data-a=copy]').onclick=e=>copy(casePrompt(c),e.currentTarget);return a}
+const grid=$('grid');CASES.forEach(c=>grid.appendChild(card(c)));
+const emp=document.createElement('div');emp.className='empty';emp.textContent='ไม่พบกรณีที่ตรงกับคำค้น ลองคำอื่น หรือสร้างPromptเองในส่วนด้านล่าง';emp.hidden=true;grid.after(emp);
+let filt='all';
+function applyFilter(){const q=$('q').value.trim().toLowerCase();let n=0;grid.querySelectorAll('.card').forEach(el=>{const ok=(filt==='all'||el.dataset.g===filt)&&(!q||el.dataset.s.includes(q));el.hidden=!ok;if(ok)n++});emp.hidden=n>0}
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filt=b.dataset.f;document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b));applyFilter()});
+$('q').oninput=applyFilter;
+
+function esc(s){return s.replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
+const ov=$('overlay');
+function openModal(c){const pr=casePrompt(c);
+ ov.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="modal-cover"><div class="cover">${cover(c)}</div><button class="x" aria-label="ปิด">×</button></div><div class="modal-body"><span class="tag ${c.kind}"><i></i>${GROUPLABEL[c.group]}</span><h2 id="mt">${c.title}</h2><dl class="facts"><dt>ชื่อ/ที่มา</dt><dd>${c.orig}</dd><dt>การเล่น</dt><dd>${c.play}</dd><dt>ประเด็นออกแบบ</dt><dd>${c.lesson}</dd><dt>ตัวอย่างบทเรียน</dt><dd>${c.p.level} · ${c.p.subject} · ${c.p.topic}</dd>${c.src?`<dt>แหล่งข้อมูล</dt><dd>${c.src.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t} ↗</a>`).join(' · ')}</dd>`:''}</dl><pre class="prompt" tabindex="0">${esc(pr)}</pre><div class="modal-actions"><button class="btn primary" data-a="copy">คัดลอกPrompt</button><button class="btn" data-a="edit">ปรับแต่งPromptนี้</button></div></div></div>`;
+ ov.hidden=false;document.body.style.overflow='hidden';
+ ov.querySelector('.x').onclick=closeModal;ov.querySelector('[data-a=copy]').onclick=e=>copy(pr,e.currentTarget);
+ ov.querySelector('[data-a=edit]').onclick=()=>{closeModal();loadPreset(c);$('builder').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};
+ ov.querySelector('.x').focus()}
+function closeModal(){ov.hidden=true;ov.innerHTML='';document.body.style.overflow=''}
+ov.onclick=e=>{if(e.target===ov)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!ov.hidden)closeModal()});
+
+function setForm(f){['level','subject','topic','goal','objective','mech','gesture','task','progress','feedback','device','players','time','lang','extra'].forEach(k=>{if(f[k]!==undefined)$(k).value=f[k]});
+ document.querySelector(`input[name=mode][value=${f.mode}]`).checked=true;
+ ['a1','a2','a3','a4'].forEach(k=>$(k).checked=f.assess.includes(k));['c1','c2','c3','c4','c5','c6'].forEach(k=>$(k).checked=f.cons.includes(k));$('sk').checked=f.skeleton!==false}
+function loadPreset(c){const keepMode=document.querySelector('input[name=mode]:checked').value;const f=Object.assign(defaults(),c.p);f.mode=keepMode;setForm(f);current=c;
+ $('loaded').hidden=false;$('loaded').innerHTML=`<span>เริ่มจาก <strong>${c.title}</strong></span><button type="button" class="btn" id="unlink">ไม่อ้างอิงกรณีนี้</button>`;
+ $('unlink').onclick=()=>{current=null;$('loaded').hidden=true;update()};update()}
+
+function update(){const f=readForm();const sug=GOALS[f.goal].mech;const s=$('suggest');
+ if(sug!==f.mech){s.hidden=false;s.innerHTML=`เป้าหมาย “${GOALS[f.goal].label}” เหมาะกับ <strong>${MECH[sug].name}</strong> <button type="button" id="useSug">ใช้กลไกนี้</button>`;$('useSug').onclick=()=>{$('mech').value=sug;$('gesture').value=MECH[sug].g;update()}}else s.hidden=true;
+ const m=MECH[f.mech];$('mechinfo').textContent=`ตัวอย่าง: ${m.ex} · หลักฐานการเรียนรู้: ${m.ev}`;
+ const t=build(f,current);$('out').textContent=t;$('count').textContent=t.length.toLocaleString('th-TH')+' ตัวอักษร'}
+$('form').addEventListener('input',update);$('form').addEventListener('change',e=>{if(e.target.id==='mech')$('gesture').value=MECH[e.target.value].g;update()});
+$('form').addEventListener('submit',e=>e.preventDefault());
+$('copyMain').onclick=e=>copy($('out').textContent,e.currentTarget);
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1800)}
+function copy(text,btn){const ok=()=>{toast('คัดลอกPromptแล้ว');if(btn){const o=btn.textContent;btn.textContent='คัดลอกแล้ว ✓';setTimeout(()=>btn.textContent=o,1500)}};
+ const fb=()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let r=false;try{r=document.execCommand('copy')}catch(e){}ta.remove();r?ok():toast('คัดลอกไม่ได้ กรุณาเลือกข้อความแล้วกด Ctrl+C')};
+ try{navigator.clipboard.writeText(text).then(ok,fb)}catch(e){fb()}}
+
+/* initial state: Case A loaded as an example */
+loadPreset(CASES.find(c=>c.id==='caseA'));
+</script>
+
+</body></html>

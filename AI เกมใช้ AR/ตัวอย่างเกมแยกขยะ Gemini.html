@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grab & Sort: ฮีโร่แยกขยะพิทักษ์โลก</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; margin: 0; overflow: hidden; background-color: #0f172a; user-select: none; }
+        h1, h2, h3, .font-mali { font-family: 'Mali', cursive; }
+        
+        #game-container { position: relative; width: 100vw; height: 100vh; }
+        #video-element { display: none; } /* ซ่อน video จริง ใช้ canvas วาดทับ */
+        
+        #game-canvas { display: block; width: 100%; height: 100%; }
+
+        .overlay-screen {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
+            z-index: 50; backdrop-filter: blur(5px);
+        }
+
+        .hidden { display: none !important; }
+        
+        .btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white; padding: 16px 32px; border-radius: 9999px;
+            font-size: 1.5rem; font-weight: bold; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: 2px solid white;
+            font-family: 'Mali', cursive;
+        }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.7); }
+        
+        .choice-card {
+            background: white; color: #1e293b; border: 3px solid #cbd5e1;
+            border-radius: 12px; padding: 16px; margin: 8px 0; cursor: pointer;
+            transition: all 0.2s; font-size: 1.25rem;
+        }
+        .choice-card:hover { border-color: #10b981; background: #ecfdf5; }
+        
+        #hud { z-index: 10; pointer-events: none; }
+        #controls { z-index: 10; pointer-events: auto; }
+        
+        @keyframes pinch {
+            0% { transform: scale(1); } 50% { transform: scale(0.8); } 100% { transform: scale(1); }
+        }
+        .pinch-anim { animation: pinch 1.5s infinite ease-in-out; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <video id="video-element" autoplay playsinline></video>
+        <canvas id="game-canvas"></canvas>
+
+        <div id="hud" class="absolute top-0 left-0 w-full p-6 flex justify-between items-start">
+            <div class="bg-white/90 text-slate-800 px-6 py-3 rounded-2xl shadow-lg border-4 border-emerald-400">
+                <h2 id="hud-level" class="text-2xl font-bold font-mali text-emerald-700">ด่านที่ 1</h2>
+                <p id="hud-instruction" class="text-lg font-bold">คีบขยะไปทิ้งให้ถูกถัง</p>
+            </div>
+            <div class="flex gap-4">
+                <div id="controls" class="bg-slate-800/80 p-2 rounded-xl border border-slate-600 flex items-center">
+                    <label class="flex items-center cursor-pointer text-white font-mali">
+                        <div class="relative">
+                            <input type="checkbox" id="toggle-skeleton" class="sr-only" checked>
+                            <div class="block bg-slate-600 w-14 h-8 rounded-full"></div>
+                            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform translate-x-6 bg-yellow-400"></div>
+                        </div>
+                        <span class="ml-3">แสดงโครงมือ</span>
+                    </label>
+                </div>
+                <div class="bg-indigo-500 text-white px-6 py-3 rounded-2xl shadow-lg border-4 border-white font-mali text-2xl font-bold">
+                    คะแนน: <span id="hud-score">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="camera-warning" class="absolute bottom-4 left-0 w-full text-center text-yellow-300 font-bold z-10 hidden pointer-events-none drop-shadow-md text-xl bg-black/50 py-2">
+            ⚠️ ไม่พบมือในกล้อง โปรดชูมือให้เห็นชัดเจน หรือคลิกเมาส์เพื่อเล่น
+        </div>
+    </div>
+
+    <div id="start-screen" class="overlay-screen">
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 drop-shadow-lg text-center font-mali">
+            Grab & Sort<br>
+            <span class="text-4xl text-white">ฮีโร่แยกขยะพิทักษ์โลก ♻️</span>
+        </h1>
+        <div class="text-xl mb-8 max-w-2xl text-center leading-relaxed bg-black/50 p-6 rounded-2xl border border-emerald-500/30">
+            ภารกิจ: ใช้มือ <span class="text-yellow-400 font-bold">"คีบและลาก"</span> ขยะไปทิ้งให้ถูกถัง<br>
+            <div class="grid grid-cols-2 gap-4 mt-4 text-left text-lg">
+                <div>🟢 <b>ขยะอินทรีย์:</b> ย่อยสลายได้ เช่น เศษอาหาร</div>
+                <div>🟡 <b>ขยะรีไซเคิล:</b> นำไปแปรรูปใช้ใหม่ได้</div>
+                <div>🔵 <b>ขยะทั่วไป:</b> ย่อยสลายยาก รีไซเคิลไม่ได้</div>
+                <div>🔴 <b>ขยะอันตราย:</b> มีสารเคมี ติดไฟ เป็นพิษ</div>
+            </div>
+        </div>
+        <div class="flex gap-6 mb-6">
+            <button id="btn-start-camera" class="btn">📷 เริ่มเล่น (เปิดกล้อง)</button>
+            <button id="btn-start-mouse" class="btn !bg-slate-600 border-slate-400 text-xl !shadow-none">🖱️ เล่นด้วยเมาส์</button>
+        </div>
+    </div>
+
+    <div id="loading-screen" class="overlay-screen hidden">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-8 border-b-8 border-emerald-500 mb-6"></div>
+        <h2 class="text-4xl font-mali font-bold">กำลังโหลดระบบ AI...</h2>
+        <p class="text-xl mt-2 text-slate-300">กรุณารอสักครู่...</p>
+    </div>
+
+    <div id="tutorial-screen" class="overlay-screen hidden">
+        <h2 class="text-5xl font-mali font-bold text-yellow-300 mb-8">วิธีบังคับเกม</h2>
+        <div class="flex gap-12 text-center mb-10">
+            <div class="bg-white/10 p-6 rounded-2xl border border-white/20">
+                <div class="text-7xl mb-4">🖐️</div>
+                <h3 class="text-2xl font-bold font-mali">กางมือ = ปล่อย/เลื่อน</h3>
+            </div>
+            <div class="text-6xl self-center font-bold text-emerald-400">➔</div>
+            <div class="bg-white/10 p-6 rounded-2xl border border-emerald-400 pinch-anim">
+                <div class="text-7xl mb-4">🤏</div>
+                <h3 class="text-2xl font-bold font-mali text-yellow-300">จีบนิ้ว = คีบจับ</h3>
+                <p class="mt-2">(ใช้นิ้วโป้งและนิ้วชี้)</p>
+            </div>
+        </div>
+        <button id="btn-understood" class="btn px-10 py-4 text-2xl">เข้าใจแล้ว เริ่มเลย!</button>
+    </div>
+
+    <div id="feedback-screen" class="overlay-screen hidden !bg-slate-900/95">
+        <div class="bg-white text-slate-800 rounded-3xl p-8 max-w-2xl w-11/12 text-center shadow-2xl border-8 border-red-500">
+            <div class="text-6xl mb-4">🛑</div>
+            <h2 class="text-4xl font-bold font-mali text-red-600 mb-2">เดี๋ยวก่อน! ผิดถังแล้ว</h2>
+            <div class="bg-slate-100 rounded-xl p-6 my-6 text-3xl font-bold text-slate-700 shadow-inner">
+                <span id="fb-icon" class="mr-2"></span><span id="fb-text">TEXT</span>
+            </div>
+            <div class="text-xl text-left bg-red-50 p-6 rounded-xl mb-6 border-l-4 border-red-500">
+                <p class="font-bold text-red-700 mb-2 text-2xl">💡 คำชี้แนะ:</p>
+                <p id="fb-reason" class="text-slate-800">REASON</p>
+            </div>
+            <button id="btn-resume-game" class="btn !bg-indigo-600 hover:!bg-indigo-700 w-full text-2xl">
+                เข้าใจแล้ว นำกลับไปวางใหม่
+            </button>
+        </div>
+    </div>
+
+    <div id="transfer-screen" class="overlay-screen hidden !bg-cyan-900/95">
+        <div class="bg-white text-slate-800 rounded-3xl p-8 max-w-3xl w-11/12 shadow-2xl">
+            <div class="text-center mb-6">
+                <span class="bg-cyan-100 text-cyan-800 px-4 py-1 rounded-full font-bold text-sm tracking-wide">ด่านทดสอบความเข้าใจ (Transfer Task)</span>
+                <div class="bg-slate-100 p-6 rounded-xl mt-6 mb-4 text-2xl font-bold text-center border-2 border-slate-300">
+                    "<span id="tf-scenario" class="text-indigo-700">SCENARIO</span>"
+                </div>
+                <h2 id="tf-question" class="text-2xl font-bold font-mali">คำถาม?</h2>
+            </div>
+            <div id="tf-options" class="flex flex-col gap-3"></div>
+            <div id="tf-feedback" class="mt-6 p-4 rounded-lg hidden font-bold text-center text-xl"></div>
+            <button id="btn-finish" class="btn w-full mt-6 hidden !bg-emerald-600">ดูสรุปผลการเรียนรู้</button>
+        </div>
+    </div>
+
+    <div id="summary-screen" class="overlay-screen hidden">
+        <div class="bg-white text-slate-900 rounded-3xl p-8 max-w-3xl w-11/12 text-center shadow-2xl border-t-8 border-emerald-500">
+            <h2 class="text-5xl font-bold font-mali text-emerald-600 mb-4">🌍 ยอดเยี่ยมมาก ฮีโร่!</h2>
+            <p class="text-xl mb-6">คุณเข้าใจหลักการแยกขยะที่ถูกต้องแล้ว</p>
+            
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-200">
+                    <p class="text-slate-500 font-bold mb-2">คัดแยกถูกต้อง</p>
+                    <p class="text-5xl font-bold text-emerald-600" id="sum-score">0</p>
+                </div>
+                <div class="bg-rose-50 p-6 rounded-2xl border border-rose-200">
+                    <p class="text-slate-500 font-bold mb-2">เรียนรู้จากข้อผิดพลาด</p>
+                    <p class="text-5xl font-bold text-rose-600" id="sum-errors">0</p>
+                </div>
+            </div>
+
+            <div class="text-left bg-slate-50 p-6 rounded-xl mb-8 max-h-60 overflow-y-auto border border-slate-200">
+                <h3 class="font-bold text-xl mb-3 text-slate-700 flex items-center"><span class="text-2xl mr-2">📝</span> สรุปจุดที่ควรระวังในการแยกขยะ:</h3>
+                <ul id="sum-error-list" class="list-disc pl-6 text-slate-600 text-lg space-y-3 font-mali"></ul>
+            </div>
+
+            <button onclick="location.reload()" class="btn w-full text-2xl !bg-slate-800">เล่นใหม่อีกครั้ง</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+
+        // =====================================================================
+        // ข้อมูลเกมสำหรับคุณครู (สามารถแก้ไขเนื้อหาได้ที่นี่)
+        // =====================================================================
+        const GAME_CONTENT = {
+            levels: [
+                {
+                    level: 1,
+                    instruction: "ระดับพื้นฐาน: สังเกตลักษณะเด่นของขยะ",
+                    cards: [
+                        { text: "เศษผักและผลไม้", icon: "🥬", type: "compostable", reason: "เป็นสารอินทรีย์ตามธรรมชาติ สามารถย่อยสลายได้เร็วและนำไปทำปุ๋ยหมักได้ (ถังสีเขียว)" },
+                        { text: "ขวดน้ำพลาสติก", icon: "🥤", type: "recycle", reason: "เป็นพลาสติกประเภท PET ที่สามารถนำเข้าโรงงานไปหลอมเพื่อผลิตใหม่ได้ (ถังสีเหลือง)" },
+                        { text: "ถุงพลาสติกเปื้อนแกง", icon: "🛍️", type: "general", reason: "แม้เป็นพลาสติก แต่เปื้อนเศษอาหารจนทำความสะอาดยาก ไม่คุ้มค่าการรีไซเคิล จึงเป็นขยะทั่วไป (ถังสีน้ำเงิน)" },
+                        { text: "ถ่านไฟฉายเก่า", icon: "🔋", type: "hazardous", reason: "ภายในมีสารเคมีโลหะหนักที่อันตรายต่อดินและน้ำ ต้องแยกทิ้งเพื่อนำไปกำจัดอย่างถูกวิธี (ถังสีแดง)" }
+                    ]
+                },
+                {
+                    level: 2,
+                    instruction: "ระดับท้าทาย: ระวังขยะหลอกตา!",
+                    cards: [
+                        { text: "กล่องโฟมใส่อาหาร", icon: "🥡", type: "general", reason: "โฟมใช้เวลาย่อยสลายนานมาก และกระบวนการรีไซเคิลทำได้ยากและไม่คุ้มค่า จึงจัดเป็นขยะทั่วไป (ถังสีน้ำเงิน)" },
+                        { text: "กระป๋องสเปรย์ฆ่าแมลง", icon: "🛢️", type: "hazardous", reason: "เป็นกระป๋องที่มีแรงดันและมีสารเคมีพิษตกค้าง ห้ามทิ้งรวมกับขยะอื่นเพราะอาจระเบิดหรือปนเปื้อนได้ (ถังสีแดง)" },
+                        { text: "กระดาษชำระใช้แล้ว", icon: "🧻", type: "general", reason: "กระดาษชำระมีเส้นใยที่สั้นเกินกว่าจะนำไปรีไซเคิล และอาจปนเปื้อนเชื้อโรค จึงต้องทิ้งเป็นขยะทั่วไป (ถังสีน้ำเงิน)" },
+                        { text: "กล่องกระดาษลูกฟูก", icon: "📦", type: "recycle", reason: "เป็นกระดาษเนื้อหนาที่แห้งและสะอาด สามารถนำไปต้มยุ่ยเพื่อรีไซเคิลเป็นกระดาษใหม่ได้ง่าย (ถังสีเหลือง)" }
+                    ]
+                }
+            ],
+            transferTask: {
+                scenario: "นักเรียนสั่งพิซซ่ามากินที่บ้าน ถาดพิซซ่ากระดาษมีคราบน้ำมันและเศษอาหารติดอยู่เต็มไปหมด",
+                question: "กล่องพิซซ่าใบนี้ ควรนำไปทิ้งในถังขยะประเภทใด เพราะเหตุใด?",
+                options: [
+                    { text: "ถังสีเหลือง (รีไซเคิล) เพราะทำมาจากกระดาษ", isCorrect: false, reason: "ไม่ใช่นะครับ กระดาษที่เปื้อนคราบน้ำมันฝังลึกจะไม่สามารถนำเข้าเครื่องรีไซเคิลได้ เพราะน้ำมันจะทำลายคุณภาพกระดาษใหม่" },
+                    { text: "ถังสีน้ำเงิน (ทั่วไป) เพราะเปื้อนคราบอาหารและรีไซเคิลไม่ได้", isCorrect: true, reason: "" },
+                    { text: "ถังสีเขียว (อินทรีย์) เพราะกระดาษทำมาจากต้นไม้ตามธรรมชาติ", isCorrect: false, reason: "ไม่ใช่นะครับ แม้มาจากต้นไม้แต่กล่องพิซซ่ามีความหนา ย่อยสลายยาก และมักมีสารเคลือบ ไม่เหมาะกับการทำปุ๋ย" }
+                ],
+                correctFeedback: "ถูกต้อง! ขยะที่สามารถรีไซเคิลได้ต้องอยู่ในสภาพที่สะอาด หากเปื้อนคราบอาหารจนล้างไม่ออก ต้องทิ้งเป็นขยะทั่วไปครับ"
+            }
+        };
+
+        const state = {
+            mode: 'camera',
+            screen: 'start',
+            levelIdx: 0,
+            score: 0,
+            errorLogs: [],
+            
+            isHandVisible: false,
+            cursorX: 0, cursorY: 0,
+            isGrabbing: false,
+            showSkeleton: true,
+            handLandmarks: null,
+            
+            cardsQueue: [],
+            activeCard: null,
+            dropZones: []
+        };
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const video = document.getElementById('video-element');
+        let handLandmarker = null;
+        let animationFrameId = null;
+
+        document.getElementById('toggle-skeleton').addEventListener('change', (e) => {
+            state.showSkeleton = e.target.checked;
+            const dot = e.target.nextElementSibling.nextElementSibling;
+            if(e.target.checked) {
+                dot.classList.add('translate-x-6', 'bg-yellow-400'); dot.classList.remove('bg-slate-300');
+            } else {
+                dot.classList.remove('translate-x-6', 'bg-yellow-400'); dot.classList.add('bg-slate-300');
+            }
+        });
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            setupDropZones();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        
+        function setupDropZones() {
+            // จัดวาง 4 ถังขยะ ซ้าย 2 ขวา 2
+            const marginX = 30;
+            const marginY = 120; // เผื่อ HUD ด้านบน
+            const zoneWidth = Math.min(250, canvas.width / 4);
+            const zoneHeight = (canvas.height - marginY - 60) / 2;
+            const rightEdge = canvas.width - zoneWidth - marginX;
+            
+            state.dropZones = [
+                {
+                    id: 'compostable', label: 'ขยะอินทรีย์', icon: '🟢',
+                    x: marginX, y: marginY, w: zoneWidth, h: zoneHeight,
+                    color: 'rgba(16, 185, 129, 0.25)', border: '#10b981', textColor: '#047857' // Green
+                },
+                {
+                    id: 'general', label: 'ขยะทั่วไป', icon: '🔵',
+                    x: marginX, y: marginY + zoneHeight + 20, w: zoneWidth, h: zoneHeight,
+                    color: 'rgba(59, 130, 246, 0.25)', border: '#3b82f6', textColor: '#1d4ed8' // Blue
+                },
+                {
+                    id: 'recycle', label: 'ขยะรีไซเคิล', icon: '🟡',
+                    x: rightEdge, y: marginY, w: zoneWidth, h: zoneHeight,
+                    color: 'rgba(234, 179, 8, 0.25)', border: '#eab308', textColor: '#a16207' // Yellow
+                },
+                {
+                    id: 'hazardous', label: 'ขยะอันตราย', icon: '🔴',
+                    x: rightEdge, y: marginY + zoneHeight + 20, w: zoneWidth, h: zoneHeight,
+                    color: 'rgba(239, 68, 68, 0.25)', border: '#ef4444', textColor: '#b91c1c' // Red
+                }
+            ];
+        }
+
+        async function initializeMediaPipe() {
+            try {
+                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm");
+                handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO", numHands: 1
+                });
+                return true;
+            } catch (error) { console.error("AI Init Error:", error); return false; }
+        }
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                video.srcObject = stream;
+                return new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); resolve(true); }; });
+            } catch (error) { console.error("Camera Error:", error); return false; }
+        }
+
+        function detectPinch(landmarks) {
+            const p1 = landmarks[4]; const p2 = landmarks[8];
+            const wrist = landmarks[0]; const midBase = landmarks[9];
+
+            const pinchDist = Math.hypot((p1.x - p2.x)*canvas.width, (p1.y - p2.y)*canvas.height);
+            const handSize = Math.hypot((wrist.x - midBase.x)*canvas.width, (wrist.y - midBase.y)*canvas.height);
+            const ratio = pinchDist / handSize;
+
+            const GRAB_THRESHOLD = 0.35; // Hysteresis start
+            const RELEASE_THRESHOLD = 0.55; // Hysteresis end
+
+            if (!state.isGrabbing && ratio < GRAB_THRESHOLD) { state.isGrabbing = true; } 
+            else if (state.isGrabbing && ratio > RELEASE_THRESHOLD) { state.isGrabbing = false; }
+
+            const rawCx = (p1.x + p2.x) / 2; const rawCy = (p1.y + p2.y) / 2;
+            const targetX = (1 - rawCx) * canvas.width; // Flip X for mirror
+            const targetY = rawCy * canvas.height;
+            
+            // Smoothing
+            state.cursorX += (targetX - state.cursorX) * 0.4;
+            state.cursorY += (targetY - state.cursorY) * 0.4;
+        }
+
+        function loadLevel() {
+            if (state.levelIdx >= GAME_CONTENT.levels.length) {
+                startTransferTask(); return;
+            }
+            const levelData = GAME_CONTENT.levels[state.levelIdx];
+            document.getElementById('hud-level').innerText = `ด่านที่ ${levelData.level}`;
+            document.getElementById('hud-instruction').innerText = levelData.instruction;
+            
+            state.cardsQueue = [...levelData.cards].sort(() => 0.5 - Math.random());
+            spawnNextCard();
+        }
+
+        function spawnNextCard() {
+            if (state.cardsQueue.length === 0) {
+                state.levelIdx++; loadLevel(); return;
+            }
+            const cardData = state.cardsQueue.pop();
+            // ปรับขนาดการ์ดให้กว้างขึ้นและมีขนาดขั้นต่ำ เพื่อไม่ให้แคบเกินไปในจอมือถือ
+            state.activeCard = {
+                ...cardData,
+                x: canvas.width / 2, y: canvas.height / 2,
+                w: Math.max(280, Math.min(380, canvas.width * 0.5)), h: 170,
+                isDragged: false
+            };
+        }
+
+        function updateGame() {
+            if (state.screen !== 'game' || !state.activeCard) return;
+            const card = state.activeCard;
+            
+            const isHovering = state.cursorX > card.x - card.w/2 && state.cursorX < card.x + card.w/2 && 
+                               state.cursorY > card.y - card.h/2 && state.cursorY < card.y + card.h/2;
+
+            if (state.isGrabbing && isHovering && !card.isDragged) { card.isDragged = true; }
+
+            if (card.isDragged) {
+                card.x = state.cursorX; card.y = state.cursorY;
+                if (!state.isGrabbing) {
+                    card.isDragged = false; checkDrop(card);
+                }
+            }
+        }
+
+        function checkDrop(card) {
+            let droppedInZone = null;
+            for (const zone of state.dropZones) {
+                if (card.x > zone.x && card.x < zone.x + zone.w &&
+                    card.y > zone.y && card.y < zone.y + zone.h) {
+                    droppedInZone = zone; break;
+                }
+            }
+
+            if (droppedInZone) {
+                if (droppedInZone.id === card.type) {
+                    state.score += 10;
+                    document.getElementById('hud-score').innerText = state.score;
+                    spawnNextCard();
+                } else {
+                    state.errorLogs.push({ text: card.text, reason: card.reason, wrongType: droppedInZone.label });
+                    showFeedback(card);
+                }
+            } else {
+                // เด้งกลับที่เดิม
+                card.x = canvas.width / 2; card.y = canvas.height / 2;
+            }
+        }
+
+        function showFeedback(card) {
+            state.screen = 'feedback';
+            document.getElementById('feedback-screen').classList.remove('hidden');
+            document.getElementById('fb-icon').innerText = card.icon;
+            document.getElementById('fb-text').innerText = card.text;
+            document.getElementById('fb-reason').innerText = card.reason;
+            
+            card.x = canvas.width / 2; card.y = canvas.height / 2;
+            state.isGrabbing = false;
+        }
+
+        document.getElementById('btn-resume-game').addEventListener('click', () => {
+            document.getElementById('feedback-screen').classList.add('hidden');
+            state.screen = 'game';
+        });
+
+        const HAND_CONNECTIONS = [ [0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20] ];
+
+        function drawHandSkeleton(landmarks) {
+            ctx.save();
+            ctx.strokeStyle = '#FFF59D'; ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (const [start, end] of HAND_CONNECTIONS) {
+                const p1 = landmarks[start]; const p2 = landmarks[end];
+                ctx.moveTo((1 - p1.x) * canvas.width, p1.y * canvas.height);
+                ctx.lineTo((1 - p2.x) * canvas.width, p2.y * canvas.height);
+            }
+            ctx.stroke();
+            ctx.fillStyle = '#FFC107';
+            for (let i = 0; i < landmarks.length; i++) {
+                const p = landmarks[i];
+                ctx.beginPath(); ctx.arc((1 - p.x) * canvas.width, p.y * canvas.height, 5, 0, Math.PI * 2); ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (state.mode === 'camera' && video.readyState >= 2) {
+                ctx.save();
+                ctx.scale(-1, 1);
+                const vRatio = video.videoWidth / video.videoHeight; const cRatio = canvas.width / canvas.height;
+                let drawW, drawH, drawX, drawY;
+                if (vRatio > cRatio) {
+                    drawH = canvas.height; drawW = canvas.height * vRatio; drawX = (canvas.width - drawW) / 2; drawY = 0;
+                } else {
+                    drawW = canvas.width; drawH = canvas.width / vRatio; drawX = 0; drawY = (canvas.height - drawH) / 2;
+                }
+                ctx.drawImage(video, -drawX - drawW, drawY, drawW, drawH);
+                ctx.restore();
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.5)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            if (state.screen !== 'game') return;
+
+            // วาดถังขยะ
+            state.dropZones.forEach(zone => {
+                let isHighlight = false;
+                if (state.activeCard && state.activeCard.isDragged) {
+                    const c = state.activeCard;
+                    if (c.x > zone.x && c.x < zone.x + zone.w && c.y > zone.y && c.y < zone.y + zone.h) { isHighlight = true; }
+                }
+                
+                ctx.fillStyle = isHighlight ? zone.color.replace('0.25', '0.6') : zone.color;
+                ctx.strokeStyle = zone.border;
+                ctx.lineWidth = isHighlight ? 6 : 4;
+                if(!isHighlight) ctx.setLineDash([15, 10]); else ctx.setLineDash([]);
+                
+                ctx.beginPath(); ctx.roundRect(zone.x, zone.y, zone.w, zone.h, 20);
+                ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+
+                // ถังขยะ icon และ label
+                ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.font = '55px sans-serif';
+                ctx.fillText(zone.icon, zone.x + zone.w/2, zone.y + zone.h/2 - 25); 
+                
+                // ปรับขนาดฟอนต์อัตโนมัติไม่ให้ข้อความซ้อน/ล้นถังขยะ
+                let labelSize = 28;
+                ctx.font = `bold ${labelSize}px "Mali"`;
+                while(ctx.measureText(zone.label).width > zone.w - 20 && labelSize > 14) {
+                    labelSize--;
+                    ctx.font = `bold ${labelSize}px "Mali"`;
+                }
+                
+                // วาดกรอบสีดำให้ตัวหนังสืออ่านง่าย
+                ctx.strokeStyle = 'black'; ctx.lineWidth = 4;
+                ctx.strokeText(zone.label, zone.x + zone.w/2, zone.y + zone.h/2 + 35); 
+                ctx.fillStyle = zone.border;
+                ctx.fillText(zone.label, zone.x + zone.w/2, zone.y + zone.h/2 + 35);
+            });
+
+            // วาดการ์ด
+            if (state.activeCard) {
+                const c = state.activeCard;
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = c.isDragged ? 25 : 10; ctx.shadowOffsetY = c.isDragged ? 15 : 5;
+                ctx.fillStyle = c.isDragged ? '#f8fafc' : '#ffffff';
+                ctx.beginPath(); ctx.roundRect(c.x - c.w/2, c.y - c.h/2, c.w, c.h, 16); ctx.fill();
+                ctx.strokeStyle = c.isDragged ? '#10b981' : '#94a3b8'; ctx.lineWidth = 4; ctx.stroke();
+
+                ctx.font = '55px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(c.icon, c.x, c.y - 25); 
+                
+                ctx.fillStyle = '#0f172a'; 
+                ctx.shadowColor = 'transparent'; // ปิดเงาให้สนิท ป้องกันอาการข้อความซ้อนกัน (Ghosting)
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+                
+                // คำนวณลดขนาดฟอนต์แทนการใช้ MaxWidth ป้องกันสระ/พยัญชนะบีบอัดจนซ้อนกัน
+                let fontSize = 26;
+                ctx.font = `bold ${fontSize}px "Sarabun"`;
+                while (ctx.measureText(c.text).width > c.w - 40 && fontSize > 14) {
+                    fontSize--;
+                    ctx.font = `bold ${fontSize}px "Sarabun"`;
+                }
+                
+                // วาดข้อความตามขนาดฟอนต์ที่คำนวณได้ (เอาพารามิเตอร์จำกัดความกว้างออก)
+                ctx.fillText(c.text, c.x, c.y + 35); 
+                ctx.restore();
+            }
+
+            // วาดจุดคีบและโครงมือ
+            if (state.mode === 'camera' && state.isHandVisible && state.showSkeleton && state.handLandmarks) {
+                drawHandSkeleton(state.handLandmarks);
+            }
+
+            ctx.beginPath(); ctx.arc(state.cursorX, state.cursorY, state.isGrabbing ? 15 : 10, 0, 2 * Math.PI);
+            ctx.fillStyle = state.isGrabbing ? '#10b981' : '#ffffff'; ctx.fill();
+            ctx.strokeStyle = '#000000'; ctx.lineWidth = 2; ctx.stroke();
+            
+            const warningEl = document.getElementById('camera-warning');
+            if (state.mode === 'camera' && !state.isHandVisible && state.screen === 'game') {
+                warningEl.classList.remove('hidden');
+            } else { warningEl.classList.add('hidden'); }
+        }
+
+        let lastVideoTime = -1;
+        async function gameLoop() {
+            if (state.mode === 'camera' && video.readyState >= 2 && handLandmarker) {
+                let startTimeMs = performance.now();
+                if (video.currentTime !== lastVideoTime) {
+                    lastVideoTime = video.currentTime;
+                    const results = handLandmarker.detectForVideo(video, startTimeMs);
+                    if (results.landmarks && results.landmarks.length > 0) {
+                        state.isHandVisible = true; state.handLandmarks = results.landmarks[0];
+                        detectPinch(state.handLandmarks);
+                    } else {
+                        state.isHandVisible = false; state.handLandmarks = null; state.isGrabbing = false;
+                    }
+                }
+            }
+            updateGame(); drawGame();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function startTransferTask() {
+            state.screen = 'transfer';
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('transfer-screen').classList.remove('hidden');
+            
+            const tfData = GAME_CONTENT.transferTask;
+            document.getElementById('tf-scenario').innerText = tfData.scenario;
+            document.getElementById('tf-question').innerText = tfData.question;
+            
+            const optionsContainer = document.getElementById('tf-options');
+            optionsContainer.innerHTML = '';
+            
+            const shuffledOptions = [...tfData.options].sort(() => 0.5 - Math.random());
+            shuffledOptions.forEach(opt => {
+                const div = document.createElement('div');
+                div.className = 'choice-card font-mali font-bold text-left';
+                div.innerText = opt.text;
+                div.onclick = () => handleTransferAnswer(opt, div);
+                optionsContainer.appendChild(div);
+            });
+        }
+
+        function handleTransferAnswer(selectedOption, element) {
+            const feedbackEl = document.getElementById('tf-feedback');
+            const btnFinish = document.getElementById('btn-finish');
+            
+            document.querySelectorAll('.choice-card').forEach(el => el.style.pointerEvents = 'none');
+            feedbackEl.classList.remove('hidden');
+            
+            if (selectedOption.isCorrect) {
+                element.classList.add('!bg-green-100', '!border-green-500');
+                feedbackEl.className = 'mt-6 p-4 rounded-lg font-bold text-center text-xl bg-green-100 text-green-800 border-2 border-green-400';
+                feedbackEl.innerHTML = `✅ ${GAME_CONTENT.transferTask.correctFeedback}`;
+                state.score += 20;
+            } else {
+                element.classList.add('!bg-red-100', '!border-red-500');
+                feedbackEl.className = 'mt-6 p-4 rounded-lg font-bold text-center text-xl bg-red-100 text-red-800 border-2 border-red-400';
+                feedbackEl.innerHTML = `❌ ${selectedOption.reason}`;
+                state.errorLogs.push({ text: "Transfer Task: กล่องพิซซ่า", reason: selectedOption.reason, wrongType: "Concept" });
+            }
+            btnFinish.classList.remove('hidden');
+        }
+
+        document.getElementById('btn-finish').addEventListener('click', () => {
+            document.getElementById('transfer-screen').classList.add('hidden');
+            document.getElementById('summary-screen').classList.remove('hidden');
+            state.screen = 'summary';
+            
+            document.getElementById('sum-score').innerText = state.score;
+            document.getElementById('sum-errors').innerText = state.errorLogs.length;
+            
+            const errorList = document.getElementById('sum-error-list');
+            errorList.innerHTML = '';
+            if (state.errorLogs.length === 0) {
+                errorList.innerHTML = '<li class="text-emerald-600 font-bold">ไม่มีข้อผิดพลาดเลย แยกขยะได้แม่นยำมาก!</li>';
+            } else {
+                state.errorLogs.forEach(err => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="font-bold text-rose-600">สับสนเรื่อง "${err.text}"</span> <br> <span class="text-sm text-slate-500">→ จำไว้ว่า: ${err.reason}</span>`;
+                    errorList.appendChild(li);
+                });
+            }
+        });
+
+        async function startGame(useCamera) {
+            document.getElementById('start-screen').classList.add('hidden');
+            
+            if (useCamera) {
+                document.getElementById('loading-screen').classList.remove('hidden');
+                state.mode = 'camera';
+                const cameraReady = await startCamera();
+                const aiReady = await initializeMediaPipe();
+                document.getElementById('loading-screen').classList.add('hidden');
+                
+                if (!cameraReady || !aiReady) {
+                    alert("เกิดข้อผิดพลาดกับกล้องหรือ AI จะสลับไปใช้โหมดเมาส์แทนนะครับ");
+                    state.mode = 'mouse';
+                } else {
+                    document.getElementById('tutorial-screen').classList.remove('hidden'); return;
+                }
+            } else {
+                state.mode = 'mouse';
+                document.getElementById('controls').classList.add('hidden');
+            }
+            initGameEnv();
+        }
+
+        document.getElementById('btn-understood').addEventListener('click', () => {
+            document.getElementById('tutorial-screen').classList.add('hidden'); initGameEnv();
+        });
+
+        function initGameEnv() {
+            state.screen = 'game'; resizeCanvas(); loadLevel(); gameLoop();
+        }
+
+        document.getElementById('btn-start-camera').addEventListener('click', () => startGame(true));
+        document.getElementById('btn-start-mouse').addEventListener('click', () => startGame(false));
+
+        // เมาส์และการทัช (Fallback)
+        canvas.addEventListener('mousemove', (e) => {
+            if (state.mode === 'mouse') {
+                const rect = canvas.getBoundingClientRect();
+                state.cursorX = e.clientX - rect.left; state.cursorY = e.clientY - rect.top;
+            }
+        });
+        canvas.addEventListener('mousedown', () => { if (state.mode === 'mouse') state.isGrabbing = true; });
+        canvas.addEventListener('mouseup', () => { if (state.mode === 'mouse') state.isGrabbing = false; });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            if (state.mode === 'mouse' && e.touches.length > 0) {
+                const rect = canvas.getBoundingClientRect();
+                state.cursorX = e.touches[0].clientX - rect.left; state.cursorY = e.touches[0].clientY - rect.top;
+            }
+        }, {passive: true});
+        canvas.addEventListener('touchstart', () => { if (state.mode === 'mouse') state.isGrabbing = true; });
+        canvas.addEventListener('touchend', () => { if (state.mode === 'mouse') state.isGrabbing = false; });
+
+        resizeCanvas();
+    </script>
+</body>
+</html>

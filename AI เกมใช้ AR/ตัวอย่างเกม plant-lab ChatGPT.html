@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; connect-src https://cdn.jsdelivr.net https://storage.googleapis.com; style-src 'unsafe-inline'; img-src data: blob:; media-src blob: mediastream:; worker-src blob:; base-uri 'none'; form-action 'none'">
+<title>สวนของฉัน · ประกอบชีวิตพืช</title>
+<style>
+:root{color-scheme:dark;--ink:#f8faf3;--muted:#c8d9d2;--mint:#93f3bb;--gold:#ffd479;--panel:#102b26ed;--line:#60857a;--bad:#ffd3ae}
+*{box-sizing:border-box}body{margin:0;background:#09221d;color:var(--ink);font:24px/1.5 Tahoma,"Noto Sans Thai",sans-serif}button,input,textarea{font:inherit}button{min-height:56px;border:2px solid var(--line);border-radius:16px;background:#173e34;color:var(--ink);padding:10px 18px;cursor:pointer;line-height:1.4;touch-action:manipulation}button:hover,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}button:disabled{opacity:.45;cursor:default}button.primary{background:var(--mint);color:#09251b;border-color:var(--mint);font-weight:bold}button.active,[aria-pressed="true"]{border-color:var(--gold);background:#4a4327}button.small{min-height:48px;font-size:18px;padding:7px 12px}h1,h2,h3,p{margin:0 0 14px}h1{font-size:clamp(42px,5.2vw,76px);line-height:1.25}h2{font-size:clamp(30px,3vw,42px);line-height:1.4}h3{font-size:26px}small,.smalltext{font-size:18px;color:var(--muted)}.eyebrow{color:var(--mint);font-size:19px;letter-spacing:1px}.muted{color:var(--muted)}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.stack{display:grid;gap:12px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 20px 60px #0003}.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}.hero{grid-template-columns:1.2fr .8fr;align-items:center}.spaced{margin-top:18px}.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:4px 13px;font-size:18px}.notice{color:var(--gold);font-size:19px}.ok{color:var(--mint)}
+#cameraLayer{position:fixed;inset:0;z-index:0;overflow:hidden;background:radial-gradient(ellipse at 75% 25%,#24634c 0,#0b3029 45%,#081a17 100%)}#camera{width:100%;height:100%;object-fit:cover;object-position:center;transform:scaleX(-1)}#shade{position:absolute;inset:0;background:#04191277;pointer-events:none}#handLayer{position:fixed;inset:0;z-index:10;pointer-events:none}#skeleton{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}header{position:relative;z-index:3;display:flex;gap:12px;justify-content:space-between;align-items:center;padding:14px 3vw;background:#09221ded;border-bottom:1px solid #ffffff28}header strong{font-size:23px}#tools{display:flex;gap:8px;flex-wrap:wrap}#status{position:sticky;top:0;z-index:25;min-height:34px;padding:3px 3vw;color:var(--gold);font-size:18px;background:#09221df5}main{position:relative;z-index:3;width:min(1500px,94%);margin:16px auto 30px;padding-bottom:120px}.progress{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}.progress span{padding:6px 15px;border-radius:50px;background:#102b26ed;border:1px solid var(--line);font-size:19px}.progress .current{background:var(--mint);color:#08241a;font-weight:bold}.work{grid-template-columns:minmax(270px,.9fr) minmax(360px,1.1fr)}.cards{display:grid;gap:12px}.chip{display:flex;gap:14px;align-items:center;text-align:left;min-height:76px;width:100%;touch-action:none}.chip svg{width:58px;height:58px;flex:none}.chip.selected{outline:4px solid var(--gold)}.held{opacity:.35}.board{position:relative;height:440px;max-width:610px;width:100%;margin:auto;border-radius:22px;background:#ecf6e7;color:#142e23;overflow:hidden;border:3px solid #b3dbc3}.plant{width:100%;height:100%;display:block}.zone{position:absolute;padding:4px 7px;border:2px dashed #346553;background:#fcfff4e8;color:#143b2b;font-size:20px;min-height:60px;border-radius:16px}.zone.pending{background:#ffe098;border-style:solid;outline:4px solid #805b11}.zone.done{background:#b6edcd38;border-style:solid;align-content:start;text-shadow:0 0 4px white}.zone.hover{outline:5px solid #d79512}.feedback{margin-top:16px;padding:16px 20px;border-radius:18px;background:#163d32;border:2px solid var(--line);min-height:80px}.feedback.warn{border-color:var(--gold);color:var(--bad)}.feedback.good{border-color:var(--mint)}.choices{display:grid;gap:12px}.choice{text-align:left;min-height:78px;font-size:25px}.question{max-width:1100px;margin:auto}.question .grid{grid-template-columns:1fr 1.2fr}.quiz-top{display:flex;gap:18px;align-items:center}.quiz-top svg{width:100px;height:115px;flex:none}textarea{width:100%;min-height:80px;background:#0c251f;color:white;border:2px solid var(--line);border-radius:12px;padding:10px;resize:vertical;font-size:22px}.sample{height:100px;width:100px;border:4px solid white;border-radius:50%;box-shadow:0 0 0 5px #0008;margin:14px auto;background:transparent;pointer-events:none}.sampler{background:#102b2660}.swatch{width:58px;min-height:54px;border-color:white}.practice{display:flex;gap:20px;align-items:center;margin:18px 0}.practice>*{flex:1}.target{border:3px dashed var(--gold);padding:20px;text-align:center;border-radius:16px;min-height:110px;display:grid;place-items:center}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0}.metric{padding:18px;background:#194435;border-radius:18px}.metric b{display:block;font-size:40px;color:var(--mint)}table{border-collapse:collapse;width:100%;font-size:18px}td,th{border-bottom:1px solid var(--line);padding:12px;text-align:left;vertical-align:top}.scroll{overflow:auto}details{margin-top:16px}summary{cursor:pointer;color:var(--gold)}#cursor{position:fixed;z-index:60;width:28px;height:28px;border:4px solid white;border-radius:50%;background:#8effb888;box-shadow:0 0 0 4px #06422d;pointer-events:none;display:none;transform:translate(-50%,-50%)}#cursor.pinch{background:var(--gold);border-color:#193c2a;box-shadow:0 0 0 5px #ffd47988}.ghost{position:fixed!important;z-index:55;pointer-events:none;width:230px!important;max-height:125px;overflow:hidden;opacity:.95;transform:translate(-50%,-50%);box-shadow:0 15px 40px #0008;background:#335e41;border:3px solid var(--gold)}#modal{position:fixed;inset:0;background:#001c16e8;z-index:45;display:grid;place-items:center;padding:24px}#modal[hidden]{display:none}#modal .panel{max-width:740px}#worksheet{display:none}#live{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}.actionbar{position:fixed;bottom:10px;left:3%;right:115px;z-index:30;padding:12px;background:#0b2c23f5;border:1px solid var(--line);border-radius:18px;margin:0}.actionbar:empty{display:none}#scrollButtons{position:fixed;right:10px;bottom:12px;z-index:40;display:grid;gap:10px}#scrollButtons button{width:92px;min-height:68px;font-size:18px;background:#214839}
+@media(min-width:1700px){body{font-size:28px}.choice{font-size:29px}.board{height:540px}.chip{min-height:95px}.zone{font-size:25px}.smalltext,small{font-size:21px}}
+@media(max-width:800px){body{font-size:22px}.grid,.hero,.work,.question .grid{grid-template-columns:1fr}header{align-items:start;flex-direction:column}.board{height:410px}.panel{padding:18px}.metrics{grid-template-columns:1fr}.choice{font-size:23px}main{width:94%}.quiz-top svg{width:70px}.progress span{font-size:16px}}
+@media print{body{background:white!important;color:black;font:20px Tahoma,sans-serif}body>*{display:none!important}#worksheet{display:block!important}#worksheet svg{height:210mm;width:170mm}#worksheet h1{font-size:30px}.printline{margin:16px} @page{size:A4;margin:15mm}}
+</style>
+</head>
+<body>
+<div id="cameraLayer"><video id="camera" autoplay muted playsinline></video><div id="shade"></div></div><div id="handLayer"><canvas id="skeleton" aria-hidden="true"></canvas></div>
+<header><strong>สวนของฉัน <span class="smalltext">· ประกอบชีวิตพืช</span></strong><div id="tools"></div></header>
+<div id="status" role="status">พร้อมเล่นด้วยเมาส์หรือแตะจอ</div>
+<main id="app"></main><div id="scrollButtons"><button data-action="scroll-up" aria-label="เลื่อนขึ้น">↑<br>เลื่อนขึ้น</button><button data-action="scroll-down" aria-label="เลื่อนลง">↓<br>เลื่อนลง</button></div><div id="cursor" aria-hidden="true"></div><div id="modal" hidden></div><div id="live" aria-live="polite"></div><section id="worksheet"></section>
+<script>
+"use strict";
+/* ===== ชุดเนื้อหาที่ครูแก้ได้: ใช้ข้อมูลแบบ JSON ไม่ใส่โค้ดในข้อความ =====
+   คง id เดิมหากแก้เพียงถ้อยคำ; slot คือคำตอบตำแหน่ง; box เป็นร้อยละ x,y,w,h
+   สีใช้เชื่อมงานระบายสีเท่านั้น ไม่ใช้ตัดสินคำตอบ
+   เหตุผลมี score 2=เชื่อมเหตุผลครบ, 1=เกี่ยวข้องแต่ยังไม่ครบ, 0=ไม่ถูกหลัก
+   แบบจำลองนี้เป็นพืชดอกทั่วไป ไม่ครอบคลุมพืชทุกชนิดหรือทุกระยะชีวิต */
+const LESSON={"title":"สวนของฉัน","seconds":600,"version":"1.0","intro":"ระบายสีพืชบนกระดาษหรือกระดานก่อน แล้วนำสีของผลงานมาใช้กับพืชในเกม","goal":"รู้จักราก ลำต้น ใบ ดอก และอธิบายว่าแต่ละส่วนช่วยพืชอย่างไร"};
+const STAGES=[
+ {"id":"build","name":"ประกอบพืช","instruction":"ลากชิ้นส่วนลงตำแหน่งในแบบจำลอง แล้วกดยืนยัน","complete":"ประกอบครบแล้ว! แต่ละส่วนอยู่ในตำแหน่งที่ช่วยให้ทำหน้าที่ได้"},
+ {"id":"match","name":"จับคู่หน้าที่","instruction":"ลากบัตรหน้าที่ไปหาส่วนของพืช แล้วกดยืนยัน","complete":"รากรับน้ำ → ลำต้นลำเลียง → ใบใช้น้ำและแสงสร้างอาหาร ส่วนดอกช่วยสืบพันธุ์"},
+ {"id":"predict","name":"ถ้าขาดส่วนนี้","instruction":"เลือกคำตอบและเหตุผล ก่อนกดยืนยัน","complete":"ลองใช้สิ่งที่รู้กับสถานการณ์ใหม่กัน"},
+ {"id":"transfer","name":"ภารกิจใหม่","instruction":"โจทย์ใหม่: เลือกคำตอบและเหตุผลด้วยตนเอง","complete":"จบภารกิจแล้ว! มาดูสิ่งที่เรียนรู้กัน"}
+];
+const PARTS=[
+ {"id":"root","name":"ราก","slot":"root","color":"#ba825b","box":[20,79,60,19],"position":"ก · ใต้ดิน","function":"ดูดน้ำและธาตุอาหาร ช่วยยึดต้น","positionFeedback":"รากของพืชในแบบจำลองนี้อยู่ใต้ดิน เพื่อรับน้ำและธาตุอาหาร และช่วยยึดต้น","functionFeedback":"รากดูดน้ำและธาตุอาหาร ส่วนใบเป็นส่วนหลักที่สร้างอาหาร","category":"root_role"},
+ {"id":"stem","name":"ลำต้น","slot":"stem","color":"#529b61","box":[35,36,29,40],"position":"ข · แกนกลาง","function":"ชูส่วนต่าง ๆ และลำเลียงน้ำ","positionFeedback":"ลำต้นเป็นแกนเชื่อมรากกับใบและดอก ช่วยชูส่วนต่าง ๆ และลำเลียงน้ำ","functionFeedback":"ลำต้นช่วยชูส่วนต่าง ๆ และลำเลียงน้ำจากรากไปยังใบและส่วนอื่น","category":"stem_role"},
+ {"id":"leaf","name":"ใบ","slot":"leaf","color":"#75c977","box":[66,39,32,29],"position":"ค · ข้างลำต้น","function":"ใช้แสงช่วยสร้างอาหาร","positionFeedback":"ใบติดกับลำต้นหรือกิ่งเหนือดิน แผ่ออกรับแสงเพื่อช่วยสร้างอาหาร","functionFeedback":"ใบเป็นส่วนหลักที่ใช้แสงช่วยสร้างอาหาร พืชไม่ได้กินดินเป็นอาหารสำเร็จรูป","category":"leaf_role"},
+ {"id":"flower","name":"ดอก","slot":"flower","color":"#f6b4ca","box":[32,3,40,29],"position":"ง · ปลายยอด","function":"ช่วยสืบพันธุ์ เกี่ยวข้องกับผลและเมล็ด","positionFeedback":"ในภาพนี้ดอกอยู่ปลายยอดเหนือดิน พืชจริงอาจมีดอกตามกิ่งหรือตำแหน่งอื่นได้","functionFeedback":"ดอกเกี่ยวข้องกับการสืบพันธุ์และการเกิดผลกับเมล็ด ไม่ใช่ส่วนหลักที่รับน้ำจากดิน","category":"flower_role"}
+];
+const QUESTIONS=[
+ {"id":"p-root","stage":"predict","missing":"root","prompt":"รากเสียหายมาก แม้ดินยังชื้น อะไรอาจเกิดขึ้น?","answer":"lesswater",
+  "answers":[{"id":"lesswater","text":"น้ำเข้าสู่ต้นได้น้อยลง"},{"id":"replace","text":"ใบรับน้ำจากดินแทนรากได้ทันที","category":"instant_replace","feedback":"ใบไม่ได้รับน้ำจากดินแทนรากได้ทันที รากเสียหายจึงกระทบการรับน้ำ"}],
+  "reasons":[{"id":"position","text":"เพราะรากอยู่ในดิน","score":1,"category":"partial_reason","feedback":"บอกตำแหน่งได้แล้ว แต่ยังต้องเชื่อมว่ารากทำหน้าที่อะไร"},{"id":"flow","text":"รากรับน้ำ แล้วลำต้นพาน้ำไปส่วนต่าง ๆ","score":2},{"id":"food","text":"รากเป็นส่วนหลักที่สร้างอาหาร","score":0,"category":"root_food","feedback":"รากรับน้ำและธาตุอาหาร ใบเป็นส่วนหลักที่สร้างอาหาร"}],
+  "feedback":"เมื่อรากเสียหาย น้ำเข้าสู่ต้นได้น้อยลง ลำต้นจึงพาน้ำไปยังใบได้น้อยลง และใบอาจเหี่ยว"},
+ {"id":"p-leaf","stage":"predict","missing":"leaf","prompt":"ถ้าใบถูกแมลงกินเกือบหมด สิ่งใดน่าจะลดลง?","answer":"food",
+  "answers":[{"id":"stop","text":"รากหยุดรับน้ำทั้งหมดทันที","category":"instant_replace","feedback":"ใบเสียหายไม่ได้แปลว่ารากหยุดทำงานทั้งหมดทันที ลองคิดถึงหน้าที่หลักของใบ"},{"id":"food","text":"การสร้างอาหารของพืช"}],
+  "reasons":[{"id":"light","text":"ใบเป็นส่วนหลักที่ใช้แสงสร้างอาหาร","score":2},{"id":"green","text":"ใบมักมีสีเขียว","score":1,"category":"partial_reason","feedback":"สีเป็นลักษณะของใบ แต่ยังไม่ได้อธิบายหน้าที่ที่ลดลง"},{"id":"soil","text":"พืชกินดินแทนใบได้","score":0,"category":"soil_food","feedback":"ดินไม่ใช่อาหารสำเร็จรูปของพืช ใบใช้แสงช่วยสร้างอาหาร"}],
+  "feedback":"ใบเหลือน้อย การสร้างอาหารอาจลดลง แต่เราไม่สรุปว่าต้นต้องตายทันที เพราะยังอาจฟื้นตัวได้"},
+ {"id":"p-flower","stage":"predict","missing":"flower","prompt":"ดอกถูกเด็ดหมด แต่ราก ลำต้น และใบยังดี ข้อใดเป็นไปได้?","answer":"alive",
+  "answers":[{"id":"alive","text":"ต้นยังอยู่ได้ แต่ดอกที่เด็ดจะไม่เป็นผลบนต้น"},{"id":"die","text":"ต้นตายทันทีเพราะไม่มีดอก","category":"flower_survival","feedback":"ดอกเกี่ยวข้องกับการสืบพันธุ์ ส่วนรากและใบที่ยังดีอาจทำงานต่อได้"}],
+  "reasons":[{"id":"water","text":"ดอกเป็นส่วนหลักที่ดูดน้ำจากดิน","score":0,"category":"flower_role","feedback":"ส่วนหลักที่ดูดน้ำจากดินคือราก ดอกช่วยสืบพันธุ์"},{"id":"leaf","text":"ต้นยังมีใบสร้างอาหาร","score":1,"category":"partial_reason","feedback":"อธิบายการอยู่รอดได้บางส่วนแล้ว เพิ่มหน้าที่ของดอกด้วย"},{"id":"reproduce","text":"ดอกช่วยสืบพันธุ์ ส่วนรากและใบยังทำงานได้","score":2}],
+  "feedback":"ดอกที่เด็ดจะไม่พัฒนาเป็นผลบนต้น ต้นอาจยังมีชีวิตและออกดอกใหม่ได้เมื่อส่วนอื่นและสภาพแวดล้อมเหมาะสม"},
+ {"id":"t-sponge","stage":"transfer","missing":"","prompt":"ผักปลูกในฟองน้ำ ไม่มีดิน แต่ได้น้ำ ธาตุอาหาร อากาศ และแสงพอ ผักนี้เติบโตได้ไหม?","answer":"yes",
+  "answers":[{"id":"no","text":"ไม่ได้ เพราะพืชต้องกินดิน","category":"soil_food","feedback":"ดินไม่ใช่อาหารสำเร็จรูป ลองดูว่าส่วนต่าง ๆ ยังได้รับสิ่งจำเป็นและทำงานได้หรือไม่"},{"id":"yes","text":"ได้ ถ้าราก ลำต้น และใบยังทำงานตามปกติ"}],
+  "reasons":[{"id":"system","text":"รากรับน้ำและธาตุอาหาร ลำต้นลำเลียง ใบใช้แสงสร้างอาหาร","score":2},{"id":"wet","text":"เพราะรากสัมผัสน้ำ","score":1,"category":"partial_reason","feedback":"น้ำสำคัญ แต่ยังต้องอธิบายบทบาทของลำต้นและใบด้วย"},{"id":"eat","text":"พืชกินฟองน้ำแทนดิน","score":0,"category":"soil_food","feedback":"ฟองน้ำช่วยพยุงต้น ไม่ใช่อาหารสำเร็จรูปของพืช"}],
+  "feedback":"พืชเติบโตได้โดยไม่ใช้ดินเมื่อจัดสิ่งจำเป็นให้เหมาะสม รากรับน้ำและธาตุอาหาร ลำต้นลำเลียง และใบสร้างอาหาร"}
+];
+const CATEGORIES=[
+ {"id":"position","name":"ตำแหน่งส่วนของพืช","review":"ชี้ส่วนต่าง ๆ บนต้นจริง และอธิบายว่าตำแหน่งช่วยทำหน้าที่อย่างไร"},
+ {"id":"root_role","name":"หน้าที่ของราก","review":"เชื่อมรากกับการรับน้ำ ธาตุอาหาร และการยึดต้น"},
+ {"id":"stem_role","name":"หน้าที่ของลำต้น","review":"ติดตามเส้นทางน้ำจากราก ผ่านลำต้น ไปยังใบ"},
+ {"id":"leaf_role","name":"หน้าที่ของใบ","review":"เชื่อมใบ แสง และการสร้างอาหาร"},
+ {"id":"flower_role","name":"หน้าที่ของดอก","review":"สังเกตความสัมพันธ์ของดอก ผล และเมล็ด"},
+ {"id":"flower_survival","name":"ไม่มีดอกแล้วตายทันที","review":"เปรียบเทียบการอยู่รอดกับการสืบพันธุ์ของพืช"},
+ {"id":"soil_food","name":"ดินหรือวัสดุปลูกเป็นอาหาร","review":"แยกน้ำและธาตุอาหารออกจากอาหารที่ใบสร้าง"},
+ {"id":"root_food","name":"รากเป็นแหล่งสร้างอาหารหลัก","review":"ทบทวนรากรับน้ำ ส่วนใบเป็นส่วนหลักที่สร้างอาหาร"},
+ {"id":"instant_replace","name":"ส่วนอื่นแทนกันทันที / ทุกส่วนหยุดทันที","review":"ให้เชื่อมผลกระทบทีละส่วน หลีกเลี่ยงคำว่าทันทีหรือทั้งหมด"},
+ {"id":"partial_reason","name":"เหตุผลเกี่ยวข้องแต่ยังไม่ครบ","review":"ถามต่อว่า ส่วนนี้ทำหน้าที่อะไร จึงทำให้เกิดผลที่เลือก"}
+];
+/* ===== จบชุดเนื้อหา / ค่าระบบมือ: ปรับหลังทดลองกับอุปกรณ์จริง ===== */
+const TECH={version:"0.10.21",model:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",close:.30,open:.46,holdMs:70,numHands:2};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function shuffledIds(){const a=PARTS.map(p=>p.id);for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function cardOrders(){const build=shuffledIds(),match=shuffledIds();if(match.every((v,i)=>v===build[i]))match.push(match.shift());return {build,match}}
+let orders=cardOrders();
+let state={screen:"start",stage:0,qi:0,done:new Set(),log:[],first:{},answer:null,reason:null,note:"",pending:null,selected:null,feedback:"",good:false,solved:false,elapsed:0,limit:LESSON.seconds,paused:false,practice:false,colorPart:"leaf"};
+let colors=Object.fromEntries(PARTS.map(p=>[p.id,p.color])), colorSources={}, stream=null, detector=null, HandClass=null, cameraOn=false, loading=false, generation=0, lastVideoTime=-1, lastFrameAt=0, showSkeleton=true, drag=null, handButton=null, pointerId=null;
+const video=$("#camera"), canvas=$("#skeleton"), ctx=canvas.getContext("2d"), cursor=$("#cursor");
+let map={w:1,h:1,s:1,ox:0,oy:0,left:0,top:0}, hand={wrist:null,last:0,x:0,y:0,armed:false,pinch:false,closeAt:0,openAt:0,acquire:0};
+const stage=()=>STAGES[state.stage], question=()=>QUESTIONS.filter(q=>q.stage===stage().id)[state.qi], part=id=>PARTS.find(p=>p.id===id), keyFor=id=>stage().id+":"+id;
+function icon(id,outline=false){
+ const c=outline?"white":colors[id], common=`fill="${c}" stroke="#173b2b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"`;
+ const shapes={root:`<path d="M50 12V57M50 30L20 68M50 48L80 81M34 50L12 52M64 65L68 92M50 57L37 90" fill="none" stroke="${c}" stroke-width="10" stroke-linecap="round"/>`,stem:`<path d="M50 88V13M50 50L76 30M50 64L25 44" fill="none" stroke="${c}" stroke-width="13" stroke-linecap="round"/>`,leaf:`<path d="M15 81Q8 20 86 13Q95 78 15 81Z" ${common}/><path d="M15 81L71 30" stroke="#173b2b" stroke-width="4"/>`,flower:`<g ${common}><ellipse cx="50" cy="30" rx="17" ry="25"/><ellipse cx="50" cy="70" rx="17" ry="25"/><ellipse cx="29" cy="50" rx="25" ry="17"/><ellipse cx="71" cy="50" rx="25" ry="17"/><circle cx="50" cy="50" r="17" fill="${outline?"white":"#ffda79"}"/></g>`};
+ return `<svg viewBox="0 0 100 100" aria-hidden="true">${shapes[id]||shapes.leaf}</svg>`;
+}
+function plantSVG(visible=PARTS.map(p=>p.id),paper=false){
+ const has=id=>visible.includes(id), c=id=>paper?"white":colors[id];
+ return `<svg class="plant" viewBox="0 0 500 500" role="img" aria-label="แบบจำลองพืชดอก"><path d="M0 390H500V500H0Z" fill="${paper?"white":"#dec9a7"}"/><path d="M0 390H500" stroke="#776443" stroke-width="3" stroke-dasharray="8 6"/>
+ ${has("stem")?`<path d="M250 405V100M250 265L350 225" fill="none" stroke="${paper?"#172e22":c("stem")}" stroke-width="${paper?5:18}" stroke-linecap="round"/>`:""}
+ ${has("root")?`<path d="M250 400V466M250 415L185 471M250 430L321 475M213 447L173 445M289 453L300 488" fill="none" stroke="${paper?"#172e22":c("root")}" stroke-width="${paper?5:12}" stroke-linecap="round"/>`:""}
+ ${has("leaf")?`<path d="M266 266Q282 173 416 186Q416 277 266 266Z" fill="${c("leaf")}" stroke="#204e36" stroke-width="4"/><path d="M267 265L390 205" stroke="#204e36" stroke-width="4"/>`:""}
+ ${has("flower")?`<g transform="translate(195 40) scale(1.1)">${icon("flower",paper).replace(/<svg[^>]*>|<\/svg>/g,"")}</g>`:""}</svg>`;
+}
+function btn(text,action,cls="",disabled=false){return `<button class="${cls}" data-action="${action}" ${disabled?"disabled":""}>${text}</button>`}
+function toolbar(){ $("#tools").innerHTML=btn(cameraOn?"กล้องเปิด · ปิดกล้อง":"เปิดกล้อง",cameraOn?"mouse":"camera","small",loading)+btn("เมาส์ / แตะ","mouse","small")+`<button class="small" data-action="skeleton" aria-pressed="${showSkeleton}">แสดงโครงมือ ${showSkeleton?"✓":"–"}</button>`+btn("เต็มจอ","fullscreen","small")+(state.screen==="game"?btn("พัก","pause","small")+`<span class="tag" id="clock"></span>`:""); updateClock(); }
+function status(text){if($("#status").textContent!==text)$("#status").textContent=text}
+function feedback(text,good=false){state.feedback=text;state.good=good;$("#live").textContent=text}
+function render(){
+ const active=document.activeElement,focusAttr=["answer","reason","part"].find(k=>active?.dataset?.[k]),focusValue=focusAttr?active.dataset[focusAttr]:null;
+ cancelDrag(); state.selected=null; toolbar(); const app=$("#app");
+ if(state.screen==="start") app.innerHTML=`<div class="grid hero"><section class="panel"><p class="eyebrow">วิทยาศาสตร์ · ป.1–3 · คนเดียว · ประมาณ 10 นาที</p><h1>จากสีของเรา<br>สู่ชีวิตของพืช</h1><p>${esc(LESSON.goal)}</p><p class="muted">${esc(LESSON.intro)}</p><div class="row spaced">${btn("เริ่มด้วยกล้องและมือ","start-camera","primary")}${btn("เริ่มด้วยเมาส์ / แตะ","start-mouse")}</div><div class="row spaced">${btn("พิมพ์แบบระบายสี","print","small")}<small>ระบายสีและฝึกควบคุมก่อนเริ่มจับเวลา</small></div><p class="smalltext spaced">ภาพกล้องใช้บนเครื่องเท่านั้น ไม่บันทึกและไม่อัปโหลด<br>ระบบมือใช้อินเทอร์เน็ตดาวน์โหลดตัวตรวจจับ · เล่นเมาส์ได้โดยไม่โหลดระบบมือ</p></section><section class="panel"><div style="height:380px">${plantSVG()}</div><div class="row"><span class="tag">01 ประกอบ</span><span class="tag">02 จับคู่</span><span class="tag">03 ทำนาย</span></div><p class="smalltext spaced">แบบจำลองพืชดอกทั่วไป · สีไม่มีผลต่อคะแนน</p></section></div>`;
+ else if(state.screen==="tutorial") app.innerHTML=`<div class="grid"><section class="panel"><p class="eyebrow">ฝึกครั้งเดียว · ยังไม่คิดคะแนน</p><h2>คีบ → ลาก → คลาย</h2><p>ชูมือให้เห็นทั้งฝ่ามือ คีบนิ้วโป้งกับนิ้วชี้เพื่อหยิบ แล้วคลายนิ้วเหนือเป้าหมาย</p><p class="smalltext">เมาส์: กดค้างแล้วลาก · แตะ: ลากด้วยนิ้ว<br>อีกทาง: เลือกบัตร แล้วเลือกเป้าหมาย · แป้นพิมพ์: Tab และ Enter</p><div class="practice"><button class="chip" data-drag="practice">${icon("leaf")}หยิบฉัน</button><button class="target" data-drop="practice">วางที่นี่</button></div><p class="${state.practice?"ok":"notice"}">${state.practice?"ทำได้แล้ว! การฝึกนี้ไม่มีคะแนน":"ลองหยิบแล้ววาง หรือข้ามการฝึกได้"}</p><p class="smalltext">เมื่อมือหาย ชิ้นส่วนจะกลับที่เดิม คลายนิ้วแล้วลองใหม่<br>กดปุ่มด้วยมือ: ชี้ปุ่ม คีบ แล้วคลายบนปุ่มเดิม</p>${btn("เริ่มภารกิจ 10 นาที","play","primary spaced")}</section><section class="panel sampler"><h2>นำสีของผลงานมาใช้</h2><p class="smalltext">เลือกส่วน แล้วนำสีบนกระดาษมาไว้ในวงกลม หากไม่ใช้กล้อง เลือกสีให้ตรงผลงานแทน</p><div class="row">${PARTS.map(p=>`<button class="small ${p.id===state.colorPart?"active":""}" data-part="${p.id}">${p.name} <span style="color:${colors[p.id]}">●</span></button>`).join("")}</div><div id="sampleTarget" class="sample"></div><div class="row">${btn("รับสีในวงกลม","sample","",!cameraOn)}<label class="smalltext">เลือกสีเอง <input id="colorPicker" type="color" value="${colors[state.colorPart]}" aria-label="เลือกสีตามผลงาน" style="width:68px;height:52px;vertical-align:middle"></label></div><p class="smalltext spaced">${esc(part(state.colorPart).name)}: ${colorSources[state.colorPart]==="camera"?"รับสีจากผลงานแล้ว":colorSources[state.colorPart]==="manual"?"เลือกสีตามผลงานแล้ว":"ยังใช้สีตัวอย่าง"}<br>รับเฉพาะค่าสี ไม่เก็บภาพและไม่จดจำรูปวาด</p></section></div>`;
+ else if(state.screen==="game"){
+  const nav=`<div class="progress">${STAGES.map((s,i)=>`<span class="${i===state.stage?"current":""}">${i+1}. ${s.name}</span>`).join("")}</div>`;
+  if(state.stage<2){
+   const build=stage().id==="build", completed=PARTS.filter(p=>state.done.has(keyFor(p.id))).length, visible=build?PARTS.filter(p=>state.done.has("build:"+p.id)).map(p=>p.id):PARTS.map(p=>p.id);
+   const cards=orders[stage().id].map(id=>{const p=part(id);return `<button class="chip" data-drag="${p.id}" ${state.done.has(keyFor(p.id))?"disabled":""}>${build?icon(p.id):""}<span>${build?p.name:p.function}</span></button>`}).join("");
+   app.innerHTML=nav+`<div class="grid work"><section class="panel"><h2>${stage().name} <span class="tag">${completed}/${PARTS.length}</span></h2><p>${stage().instruction}</p><div class="cards">${cards}</div><p class="smalltext spaced">สีไม่ใช่คำใบ้ · วางแล้วตรวจทานก่อนยืนยัน<br>การลากพลาดหรือมือหายไม่เสียคะแนน</p></section><section class="panel"><div class="board">${plantSVG(visible)}${PARTS.map(p=>`<button class="zone ${state.pending?.target===p.id?"pending":""} ${state.done.has(keyFor(p.id))?"done":""}" data-drop="${p.id}" style="left:${p.box[0]}%;top:${p.box[1]}%;width:${p.box[2]}%;height:${p.box[3]}%">${build?p.position:p.name}</button>`).join("")}</div><p class="smalltext spaced">ตำแหน่งเป็นแบบจำลองอย่างง่าย พืชจริงอาจแตกต่างกัน</p></section></div>${feedbackHTML()}<div class="row spaced">${state.pending?btn("ยืนยันคำตอบ","confirm","primary")+btn("เปลี่ยนคำตอบ","clear"):""}${completed===PARTS.length?btn("ไปด่านต่อไป","next-stage","primary"):""}</div>`;
+  }else{
+   const q=question(), n=QUESTIONS.filter(x=>x.stage===stage().id).length;
+   app.innerHTML=nav+`<section class="panel question"><div class="quiz-top">${q.missing?icon(q.missing):""}<div><p class="eyebrow">${stage().name} · ข้อ ${state.qi+1}/${n}</p><h2>${q.prompt}</h2></div></div><div class="grid spaced"><section><h3>1. คำตอบของฉัน</h3><div class="choices">${q.answers.map(a=>`<button class="choice" data-answer="${a.id}" aria-pressed="${state.answer===a.id}" ${state.solved?"disabled":""}>${a.text}</button>`).join("")}</div></section><section><h3>2. เพราะอะไร?</h3><div class="choices">${q.reasons.map(r=>`<button class="choice" data-reason="${r.id}" aria-pressed="${state.reason===r.id}" ${state.solved?"disabled":""}>${r.text}</button>`).join("")}</div></section></div><details><summary>พิมพ์เหตุผลเพิ่มให้ครูอ่าน (ไม่บังคับ)</summary><textarea id="note" maxlength="500" placeholder="ฉันคิดว่า..." ${state.solved?"disabled":""}>${esc(state.note)}</textarea><small>ข้อความนี้ให้ครูอ่าน ไม่ใช้ตรวจคะแนนอัตโนมัติ</small></details>${feedbackHTML()}<div class="row spaced">${state.solved?btn("ไปต่อ","next-question","primary"):btn("ยืนยันคำตอบและเหตุผล","submit","primary",!state.answer||!state.reason)}</div></section>`;
+  }
+ }else renderSummary();
+ if($("#colorPicker")){ $("#colorPicker").oninput=e=>{colors[state.colorPart]=e.target.value;colorSources[state.colorPart]="manual"};$("#colorPicker").onchange=()=>render() }
+ if($("#note")) $("#note").oninput=e=>state.note=e.target.value;
+ if(state.screen==="game") $$("#app .row.spaced").at(-1)?.classList.add("actionbar");
+ if(focusAttr)document.querySelector(`[data-${focusAttr}="${focusValue}"]`)?.focus({preventScroll:true});
+}
+function feedbackHTML(){return `<div class="feedback ${state.feedback?(state.good?"good":"warn"):""}" role="status">${esc(state.feedback||"เลือกคำตอบได้ตามความคิดของเรา แล้วกดยืนยันเมื่อพร้อม")}</div>`}
+function selectSource(id){state.selected=id;$$('[data-drag]').forEach(e=>e.classList.toggle("selected",e.dataset.drag===id));status("เลือกแล้ว: เลือกตำแหน่งที่จะวาง จากนั้นกดยืนยัน")}
+function propose(id,target){
+ if(state.screen==="tutorial"&&id==="practice"&&target==="practice"){state.practice=true;render();return}
+ if(state.screen!=="game"||state.stage>1||!part(id)||!part(target)||state.done.has(keyFor(id)))return;
+ state.pending={id,target};feedback(`จะวาง “${stage().id==="build"?part(id).name:part(id).function}” ที่ “${stage().id==="build"?part(target).position:part(target).name}” ใช่ไหม?`);render();
+}
+function record(id,answer,reason,answerCorrect,reasonScore,categories,note=""){
+ const key=keyFor(id), first=!state.first[key], prompt=state.stage<2?(state.stage===0?"วาง "+part(id).name+" ในแบบจำลอง":part(id).function):question().prompt, event={key,stage:stage().id,itemId:id,prompt,answer,reason,answerCorrect,reasonScore,categories:[...new Set(categories.filter(Boolean))],note,attempt:state.log.filter(e=>e.key===key).length+1,first,elapsedSeconds:Math.round(state.elapsed)};
+ state.log.push(event);if(first)state.first[key]=event;
+}
+function confirmPlacement(){
+ const p=state.pending;if(!p)return;const source=part(p.id), correct=p.target===source.slot, build=stage().id==="build";
+ record(p.id,part(p.target).name,null,correct,null,correct?[]:[build?"position":source.category]);
+ if(correct){state.done.add(keyFor(p.id));feedback(`${source.name}: ${build?source.positionFeedback:source.functionFeedback}`,true)}else feedback(`ลองใหม่: ${build?source.positionFeedback:source.functionFeedback}`);
+ state.pending=null;if(PARTS.every(x=>state.done.has(keyFor(x.id))))feedback(stage().complete,true);render();
+}
+function submitQuestion(){
+ if(state.solved)return;const q=question(), a=q.answers.find(a=>a.id===state.answer), r=q.reasons.find(r=>r.id===state.reason);if(!a||!r)return;
+ const correct=a.id===q.answer;record(q.id,a.text,r.text,correct,r.score,[!correct?a.category:null,r.score<2?r.category:null],state.note);
+ state.solved=correct&&r.score===2;
+ if(state.solved){state.done.add(keyFor(q.id));feedback(q.feedback,true)}else feedback([!correct?a.feedback:"คำตอบถูกแล้ว",r.score<2?r.feedback:"เหตุผลเชื่อมโยงได้แล้ว","เลือกใหม่แล้วลองยืนยันอีกครั้ง"].join(" · "));
+ render();
+}
+function clearQuestion(){state.answer=null;state.reason=null;state.note="";state.feedback="";state.solved=false}
+function nextStage(){state.stage++;state.qi=0;state.pending=null;clearQuestion();render();window.scrollTo(0,0)}
+function summaryData(){const first=Object.values(state.first),answerMax=PARTS.length*2+QUESTIONS.length,reasonMax=QUESTIONS.length*2,counts={};state.log.forEach(e=>e.categories.forEach(c=>counts[c]=(counts[c]||0)+1));return {answer:first.filter(e=>e.answerCorrect).length,answerMax,reason:first.reduce((s,e)=>s+(e.reasonScore||0),0),reasonMax,submitted:first.length,mastered:state.done.size,counts}}
+function renderSummary(){
+ const s=summaryData(), corrected=Object.values(state.first).filter(e=>(!e.answerCorrect||(e.reasonScore!==null&&e.reasonScore<2))&&state.done.has(e.key)).length;
+ $("#app").innerHTML=`<section class="panel"><p class="eyebrow">บันทึกการเรียนรู้ · ${Math.round(state.elapsed/60)} นาที</p><h1>สวนของเรา เล่าอะไรได้บ้าง?</h1><p>สำเร็จหลังฝึก ${s.mastered}/${s.answerMax} ข้อ · ยังไม่ยืนยัน ${s.answerMax-s.submitted} ข้อ · แก้ได้หลังคำแนะนำ ${corrected} ข้อ</p><div class="metrics"><div class="metric"><b>${s.answer}/${s.answerMax}</b>คำตอบครั้งแรก</div><div class="metric"><b>${s.reason}/${s.reasonMax}</b>เหตุผลครั้งแรก</div><div class="metric"><b>${s.answer+s.reason}/${s.answerMax+s.reasonMax}</b>คะแนนจากคำตอบและเหตุผล</div></div><p class="smalltext">ใช้ครั้งแรกที่กดยืนยัน ไม่ใช้ความเร็วหรือทักษะมือ เหตุผลครบ 2 / เกี่ยวข้องแต่ยังไม่ครบ 1 / ผิดหลัก 0 คะแนน ข้อที่ยังไม่ทำแสดงแยกและไม่บันทึกเป็นความเข้าใจผิด</p><h3 class="spaced">ประเด็นที่ควรคุยต่อกับครู</h3>${Object.keys(s.counts).length?`<div class="scroll"><table><thead><tr><th>ประเด็นจากคำตอบ</th><th>ครั้ง</th><th>ชวนคิดต่อ</th></tr></thead><tbody>${Object.entries(s.counts).map(([id,n])=>{const c=CATEGORIES.find(c=>c.id===id);return `<tr><td>${esc(c?.name||id)}</td><td>${n}</td><td>${esc(c?.review||"")}</td></tr>`}).join("")}</tbody></table></div>`:"<p>ยังไม่พบประเด็นจากคำตอบผิดที่ยืนยัน ใช้คำอธิบายและจำนวนข้อที่ทำประกอบการพิจารณา</p>"}<p class="smalltext spaced">รายการนี้เป็นประเด็นที่พบในรอบนี้ ไม่ใช่การวินิจฉัยความเข้าใจของผู้เรียนอย่างถาวร</p><details><summary>ดูคำตอบและเหตุผลทุกครั้ง</summary><div class="scroll"><table><thead><tr><th>ข้อ / ครั้ง</th><th>คำตอบ</th><th>เหตุผล / ข้อความเพิ่ม</th><th>ผล</th></tr></thead><tbody>${state.log.map(e=>`<tr><td>${esc(e.key)} / ${e.attempt}</td><td>${esc(e.answer)}</td><td>${esc(e.reason||"–")}<br>${esc(e.note)}</td><td>${e.answerCorrect?"ถูก":"ลองใหม่"}${e.reasonScore!==null?` · เหตุผล ${e.reasonScore}/2`:""}</td></tr>`).join("")}</tbody></table></div></details><div class="row spaced">${btn("ดาวน์โหลดผล JSON","export","primary")}${btn("เริ่มรอบใหม่ · ล้างผลเดิม","restart")}</div><p class="smalltext spaced">ผลอยู่ในหน่วยความจำของหน้านี้ ดาวน์โหลดก่อนปิดหรือเริ่มรอบใหม่ ไม่มีภาพหรือพิกัดมืออยู่ในไฟล์ผล</p></section>`;
+}
+function finish(){state.screen="summary";state.paused=false;$("#modal").hidden=true;stopCamera();render()}
+function exportResults(){const payload={lesson:LESSON.title,version:LESSON.version,exportedAt:new Date().toISOString(),score:summaryData(),elapsedSeconds:Math.round(state.elapsed),palette:colors,colorSources,categoryDefinitions:CATEGORIES,completed:[...state.done],responses:state.log,scoring:"First confirmed answers; answer 0/1, reason 0/1/2; typed notes require teacher review; no speed score"}, a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}));a.download="plant-learning-results.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+function pause(time=false){state.paused=true;cancelDrag();resetHand();$("#modal").hidden=false;$("#modal").innerHTML=`<section class="panel"><h2>${time?"ครบเวลาที่กำหนดแล้ว":"พักสักครู่"}</h2><p>${time?"สรุปสิ่งที่ทำแล้ว หรือเพิ่มเวลาได้ คะแนนไม่ขึ้นกับเวลา":"เมื่อพร้อม คลายนิ้วก่อน แล้วเล่นต่อได้"}</p><div class="row">${btn(time?"เพิ่มเวลา 2 นาที":"เล่นต่อ",time?"extend":"resume","primary")}${btn("สรุปผลตอนนี้","finish")}</div></section>`}
+function updateClock(){const e=$("#clock"),n=Math.max(0,Math.ceil(state.limit-state.elapsed));if(e)e.textContent=`${Math.floor(n/60)}:${String(n%60).padStart(2,"0")}`}
+function printSheet(){ $("#worksheet").innerHTML=`<h1>พืชของฉัน · ระบายสีก่อนเล่น</h1><p>ระบายสีราก ลำต้น ใบ และดอก แล้วชี้บอกชื่อแต่ละส่วน</p>${plantSVG(PARTS.map(p=>p.id),true)}<p class="printline">ชื่อเล่น ____________  สิ่งที่อยากรู้เกี่ยวกับพืช ____________________</p>`;window.print() }
+document.addEventListener("click",e=>{
+ const b=e.target.closest("button");if(!b||b.disabled)return;
+ if(b.dataset.drag&&e.detail===0){selectSource(b.dataset.drag);return}
+ if(b.dataset.drop&&state.selected){propose(state.selected,b.dataset.drop);return}
+ if(b.dataset.part){state.colorPart=b.dataset.part;render();return}
+ if(b.dataset.answer){state.answer=b.dataset.answer;render();return}
+ if(b.dataset.reason){state.reason=b.dataset.reason;render();return}
+ switch(b.dataset.action){
+  case "start-camera":state.screen="tutorial";render();startCamera();break;
+  case "start-mouse":state.screen="tutorial";stopCamera();render();break;
+  case "camera":startCamera();break;case "mouse":stopCamera();toolbar();status("ใช้เมาส์หรือแตะจอได้แล้ว");if(state.screen==="tutorial")render();break;
+  case "skeleton":showSkeleton=!showSkeleton;drawHandSkeleton([]);toolbar();break;
+  case "fullscreen":if(!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>status("เปิดเต็มจอไม่ได้ ใช้ปุ่ม F11 ใน Chrome ได้"));else document.exitFullscreen?.();break;
+  case "print":printSheet();break;case "sample":sampleColor();break;
+  case "scroll-up":window.scrollBy({top:-Math.max(260,innerHeight*.55),behavior:"smooth"});break;case "scroll-down":window.scrollBy({top:Math.max(260,innerHeight*.55),behavior:"smooth"});break;
+  case "play":state.screen="game";state.elapsed=0;state.limit=LESSON.seconds;clearQuestion();render();window.scrollTo(0,0);break;
+  case "confirm":confirmPlacement();break;case "clear":state.pending=null;state.feedback="";render();break;
+  case "next-stage":nextStage();break;case "submit":submitQuestion();break;
+  case "next-question":if(state.qi+1<QUESTIONS.filter(q=>q.stage===stage().id).length){state.qi++;clearQuestion();render();window.scrollTo(0,0)}else if(state.stage===STAGES.length-1)finish();else nextStage();break;
+  case "pause":pause();break;case "extend":state.limit+=120;case "resume":state.paused=false;$("#modal").hidden=true;resetHand();break;
+  case "finish":finish();break;case "export":exportResults();break;
+  case "restart":orders=cardOrders();state={...state,screen:"start",stage:0,qi:0,done:new Set(),log:[],first:{},elapsed:0,limit:LESSON.seconds,pending:null,paused:false,practice:false};clearQuestion();render();break;
+ }
+});
+/* ===== ช่องทางปฏิสัมพันธ์: เลือก/ลาก ≠ ยืนยันคำตอบ ===== */
+function beginDrag(el,x,y,input){if(el.disabled)return;cancelDrag();const ghost=el.cloneNode(true);ghost.removeAttribute("id");ghost.classList.add("ghost");ghost.disabled=false;ghost.setAttribute("aria-hidden","true");document.body.append(ghost);el.classList.add("held");drag={id:el.dataset.drag,el,ghost,input,startX:x,startY:y};moveDrag(x,y)}
+function moveDrag(x,y){if(!drag)return;drag.ghost.style.left=x+"px";drag.ghost.style.top=y+"px";$$('[data-drop]').forEach(e=>e.classList.remove("hover"));document.elementFromPoint(x,y)?.closest("[data-drop]")?.classList.add("hover")}
+function cancelDrag(){if(drag){drag.el.classList.remove("held");drag.ghost.remove();drag=null}$$('[data-drop]').forEach(e=>e.classList.remove("hover"));handButton=null;pointerId=null}
+function endDrag(x,y){if(!drag)return;const d=drag, target=document.elementFromPoint(x,y)?.closest("[data-drop]"),same=document.elementFromPoint(x,y)?.closest("[data-drag]");cancelDrag();if(target)propose(d.id,target.dataset.drop);else if(same===d.el&&Math.hypot(x-d.startX,y-d.startY)<18)selectSource(d.id);else status("ยังไม่วางลงเป้าหมาย ลองหยิบใหม่ได้ ไม่เสียคะแนน")}
+document.addEventListener("pointerdown",e=>{const el=e.target.closest("[data-drag]");if(!el||el.disabled||e.button!==0||state.paused)return;resetHand();e.preventDefault();beginDrag(el,e.clientX,e.clientY,"pointer");pointerId=e.pointerId;el.setPointerCapture?.(e.pointerId)});
+document.addEventListener("pointermove",e=>{if(drag?.input==="pointer"&&e.pointerId===pointerId)moveDrag(e.clientX,e.clientY)});
+document.addEventListener("pointerup",e=>{if(drag?.input==="pointer"&&e.pointerId===pointerId){e.preventDefault();endDrag(e.clientX,e.clientY)}});
+document.addEventListener("pointercancel",()=>{cancelDrag();resetHand()});
+function handPress(x,y){const e=document.elementFromPoint(x,y);if(e?.closest("[data-drag]")&&!state.paused)beginDrag(e.closest("[data-drag]"),x,y,"hand");else handButton=e?.closest("button")||null}
+function handRelease(x,y){if(drag?.input==="hand")endDrag(x,y);else{const b=document.elementFromPoint(x,y)?.closest("button");if(b&&b===handButton&&!b.disabled)b.click();handButton=null}}
+/* ===== ภาพกล้องและโครงมือ: ใช้การแปลง cover+mirror ร่วมกัน ===== */
+function resizeOverlay(){const r=$("#cameraLayer").getBoundingClientRect(),vw=video.videoWidth||1280,vh=video.videoHeight||720,s=Math.max(r.width/vw,r.height/vh),dpr=window.devicePixelRatio||1;map={w:r.width,h:r.height,s,ox:(r.width-vw*s)/2,oy:(r.height-vh*s)/2,left:r.left,top:r.top};canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);drawHandSkeleton([])}
+function point(p){return {x:map.w-(p.x*(video.videoWidth||1280)*map.s+map.ox),y:p.y*(video.videoHeight||720)*map.s+map.oy}}
+function drawHandSkeleton(hands){
+ ctx.clearRect(0,0,map.w,map.h);if(!showSkeleton||!HandClass)return;
+ for(const landmarks of hands){ctx.strokeStyle="#FFF59D";ctx.lineWidth=2;for(const c of HandClass.HAND_CONNECTIONS){const a=point(landmarks[c.start]),b=point(landmarks[c.end]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}ctx.fillStyle="#FFC107";for(const l of landmarks){const p=point(l);ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fill()}}
+}
+function palmSize(l){const d=(a,b)=>Math.hypot((l[a].x-l[b].x)*video.videoWidth,(l[a].y-l[b].y)*video.videoHeight);return {size:Math.max(d(0,9),d(5,17),1),pinch:d(4,8)}}
+function resetHand(){if(drag?.input==="hand")cancelDrag();handButton=null;hand={wrist:null,last:0,x:0,y:0,armed:false,pinch:false,closeAt:0,openAt:0,acquire:0};cursor.style.display="none";cursor.classList.remove("pinch")}
+function updateHandControl(hands,now){
+ if(drag?.input==="pointer")return;
+ if(!hands.length){resetHand();status("ไม่พบมือ: ชูทั้งฝ่ามือให้กล้องเห็น เพิ่มแสงด้านหน้า หรือเลือกเมาส์ / แตะ");return}
+ let candidates=hands.map(l=>({l,p:palmSize(l)})).filter(h=>h.p.size>video.videoWidth*.045), chosen;
+ if(hand.wrist){candidates.sort((a,b)=>Math.hypot(a.l[0].x-hand.wrist.x,a.l[0].y-hand.wrist.y)-Math.hypot(b.l[0].x-hand.wrist.x,b.l[0].y-hand.wrist.y));chosen=candidates[0];if(!chosen||Math.hypot(chosen.l[0].x-hand.wrist.x,chosen.l[0].y-hand.wrist.y)>.20){resetHand();status("มือที่ใช้เล่นหลุดกรอบ คลายนิ้วแล้วชูมือเดิมอีกครั้ง");return}}
+ else chosen=candidates.sort((a,b)=>b.p.size-a.p.size)[0];
+ if(!chosen){resetHand();status("ขยับมือเข้าใกล้กล้องอีกนิด ให้เห็นทั้งฝ่ามือ");return}
+ const l=chosen.l,p=point(l[8]),fresh=!hand.wrist;hand.wrist={x:l[0].x,y:l[0].y};hand.last=now;if(fresh){hand.x=p.x;hand.y=p.y;hand.acquire=now}
+ const alpha=1-Math.exp(-Math.min(100,now-(hand.moveAt||now-33))/55);hand.moveAt=now;hand.x+=(p.x-hand.x)*alpha;hand.y+=(p.y-hand.y)*alpha;
+ const x=hand.x+map.left,y=hand.y+map.top;cursor.style.display="block";cursor.style.left=x+"px";cursor.style.top=y+"px";moveDrag(x,y);
+ const ratio=chosen.p.pinch/chosen.p.size;
+ if(!hand.armed){if(ratio>TECH.open&&now-hand.acquire>200)hand.armed=true;status("คลายนิ้วโป้งกับนิ้วชี้ แล้วชี้ไปที่บัตรหรือปุ่ม");return}
+ if(!hand.pinch){if(ratio<TECH.close){if(!hand.closeAt)hand.closeAt=now;if(now-hand.closeAt>=TECH.holdMs){hand.pinch=true;hand.closeAt=0;handPress(x,y)}}else hand.closeAt=0}
+ else if(ratio>TECH.open){if(!hand.openAt)hand.openAt=now;if(now-hand.openAt>=TECH.holdMs){hand.pinch=false;hand.openAt=0;handRelease(x,y)}}else hand.openAt=0;
+ cursor.classList.toggle("pinch",hand.pinch);status(hand.pinch?"กำลังคีบ · ลากไปที่เป้าหมาย แล้วคลายนิ้ว":hands.length>1?"พบหลายมือ · ใช้มือเดิมเล่น คนอื่นเว้นระยะจากกล้อง":"พร้อม · คีบเพื่อหยิบ คลายนิ้วเพื่อปล่อย");
+}
+function stopCamera(){generation++;loading=false;cameraOn=false;stream?.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;detector?.close();detector=null;lastVideoTime=-1;drawHandSkeleton([]);cancelDrag();resetHand();status("พร้อมเล่นด้วยเมาส์หรือแตะจอ")}
+async function startCamera(){
+ if(cameraOn||loading)return;const token=++generation;loading=true;toolbar();status("กำลังขอสิทธิ์กล้องและโหลดระบบมือ… เลือกเมาส์ได้ตลอดเวลา");let localStream=null,localDetector=null;let phase="camera";
+ try{
+  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia)throw new Error("SECURE");
+  localStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30},facingMode:"user"},audio:false});
+  if(token!==generation){localStream.getTracks().forEach(t=>t.stop());return}stream=localStream;video.srcObject=stream;await video.play();resizeOverlay();phase="model";
+  const {HandLandmarker,FilesetResolver}=await import(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${TECH.version}/vision_bundle.mjs`);
+  if(token!==generation)return;HandClass=HandLandmarker;const files=await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${TECH.version}/wasm`);
+  if(token!==generation)return;
+  const options={baseOptions:{modelAssetPath:TECH.model,delegate:"GPU"},runningMode:"VIDEO",numHands:TECH.numHands,minHandDetectionConfidence:.6,minHandPresenceConfidence:.6,minTrackingConfidence:.6};
+  try{localDetector=await HandLandmarker.createFromOptions(files,options)}catch{if(token!==generation)return;options.baseOptions.delegate="CPU";localDetector=await HandLandmarker.createFromOptions(files,options)}
+  if(token!==generation){localDetector?.close();return}detector=localDetector;cameraOn=true;loading=false;lastVideoTime=-1;lastFrameAt=performance.now();resetHand();
+  stream.getVideoTracks()[0].addEventListener("ended",()=>{if(token===generation){stopCamera();toolbar();status("กล้องหยุดทำงาน เล่นต่อด้วยเมาส์หรือแตะได้")}});toolbar();if(state.screen==="tutorial")render();status("กล้องพร้อม · ชูมือและคลายนิ้วก่อนเริ่ม");
+ }catch(error){
+  if(token!==generation)return;localDetector?.close();stopCamera();toolbar();if(state.screen==="tutorial")render();
+  const messages={NotAllowedError:"ไม่ได้รับสิทธิ์กล้อง เลือกอนุญาตกล้องใน Chrome แล้วลองใหม่ได้",NotFoundError:"ไม่พบเว็บแคม ตรวจการเชื่อมต่อกล้อง",NotReadableError:"เปิดกล้องไม่ได้ กล้องอาจถูกใช้งานโดยโปรแกรมอื่น",SecurityError:"นโยบายเครื่องไม่อนุญาตให้ใช้กล้อง"};status((error.message==="SECURE"?"เปิดไฟล์ใน Chrome โดยตรง หรือผ่าน HTTPS เพื่อใช้กล้อง":phase==="model"?"โหลดระบบมือหรือโมเดลไม่สำเร็จ ตรวจอินเทอร์เน็ตและการเข้าถึง CDN":messages[error.name]||"เปิดกล้องไม่สำเร็จ ตรวจสิทธิ์และการเชื่อมต่อ")+" · เปลี่ยนเป็นเมาส์ / แตะแล้ว");
+ }finally{if(token!==generation){localStream?.getTracks().forEach(t=>t.stop())}}
+}
+function sampleColor(){
+ if(!cameraOn||video.readyState<2)return;const r=$("#sampleTarget").getBoundingClientRect(),x=r.left+r.width/2-map.left,y=r.top+r.height/2-map.top;
+ const sx=(map.w-x-map.ox)/map.s,sy=(y-map.oy)/map.s,c=document.createElement("canvas");c.width=c.height=1;
+ try{const context=c.getContext("2d",{willReadFrequently:true});context.drawImage(video,Math.max(0,Math.min(video.videoWidth-12,sx-6)),Math.max(0,Math.min(video.videoHeight-12,sy-6)),12,12,0,0,1,1);const rgb=context.getImageData(0,0,1,1).data;colors[state.colorPart]="#"+[...rgb].slice(0,3).map(n=>n.toString(16).padStart(2,"0")).join("");colorSources[state.colorPart]="camera";context.clearRect(0,0,1,1);c.width=c.height=0;render();status("รับเฉพาะค่าสีแล้ว ไม่มีการเก็บภาพ")}
+ catch{status("รับสีไม่สำเร็จ เลือกสีด้วยตนเองให้ตรงผลงานได้")}
+}
+let lastTick=performance.now();
+function frame(now){
+ const dt=Math.max(0,(now-lastTick)/1000);lastTick=now;
+ if(state.screen==="game"&&!state.paused&&!document.hidden){state.elapsed+=dt;updateClock();if(state.elapsed>=state.limit)pause(true)}
+ if(cameraOn&&detector&&!document.hidden){
+  if(video.readyState>=2&&video.currentTime!==lastVideoTime){lastVideoTime=video.currentTime;lastFrameAt=now;try{const result=detector.detectForVideo(video,now);drawHandSkeleton(result.landmarks);updateHandControl(result.landmarks,now)}catch{stopCamera();toolbar();status("ระบบตรวจมือขัดข้อง เปลี่ยนเป็นเมาส์ / แตะแล้ว ลองเปิดกล้องใหม่ได้")}}
+  else if(now-lastFrameAt>600){drawHandSkeleton([]);resetHand();status("ภาพกล้องหยุดชั่วคราว ตรวจกล้องหรือใช้เมาส์ / แตะ")}
+ }
+ requestAnimationFrame(frame);
+}
+window.addEventListener("resize",resizeOverlay);video.addEventListener("loadedmetadata",resizeOverlay);new ResizeObserver(resizeOverlay).observe($("#cameraLayer"));
+document.addEventListener("visibilitychange",()=>{cancelDrag();resetHand();drawHandSkeleton([]);lastTick=performance.now();if(document.hidden&&state.screen==="game"&&!state.paused)pause()});window.addEventListener("blur",()=>{cancelDrag();resetHand();drawHandSkeleton([])});window.addEventListener("pagehide",stopCamera);
+resizeOverlay();render();requestAnimationFrame(frame);
+</script>
+</body>
+</html>

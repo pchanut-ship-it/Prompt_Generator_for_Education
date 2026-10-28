@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เกมคัดแยกขยะ – ป.4–6 (Hand Tracking)</title>
+<style>
+:root{
+  --bg:#0f172a;--panel:#1e293b;--panel-2:#334155;--text:#f1f5f9;--muted:#94a3b8;
+  --green:#22c55e;--blue:#3b82f6;--orange:#f97316;--red:#ef4444;--yellow:#eab308;
+  --radius:18px;--shadow:0 20px 40px rgba(0,0,0,.45);font-size:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:"Sarabun","Noto Sans Thai","Segoe UI",system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden;background:#000}
+#webcam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:#000}
+#skeletonCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.ui-layer{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;pointer-events:none}
+.ui-layer>*{pointer-events:auto}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:1.2rem;
+  background:rgba(15,23,42,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);overflow-y:auto}
+.screen.active{display:flex}
+.card{background:var(--panel);border-radius:var(--radius);padding:1.5rem 1.8rem;box-shadow:var(--shadow);
+  max-width:900px;width:100%;margin:auto;border:1px solid rgba(255,255,255,.06)}
+h1,h2,h3{margin:0 0 .8rem;line-height:1.35}
+h1{font-size:2.1rem;color:#fff}h2{font-size:1.7rem;color:#e2e8f0}h3{font-size:1.3rem;color:#cbd5e1}
+p{margin:0 0 1rem;line-height:1.7;color:var(--muted)}
+.lead{font-size:1.1rem;color:#e2e8f0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem 2rem;
+  border:none;border-radius:999px;font-size:1.1rem;font-weight:700;font-family:inherit;cursor:pointer;
+  transition:transform .15s,background .2s,box-shadow .2s;background:var(--panel-2);color:var(--text);
+  box-shadow:0 4px 12px rgba(0,0,0,.3);line-height:1.2}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(0)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#2563eb}
+.btn-success{background:var(--green);color:#052e16}.btn-success:hover{background:#16a34a}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-ghost{background:transparent;border:1.5px solid rgba(255,255,255,.25);color:var(--text);box-shadow:none}
+.btn-ghost:hover{background:rgba(255,255,255,.08)}
+.btn-sm{padding:.55rem 1.2rem;font-size:.95rem}
+.btn-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.2rem}
+.mode-switch{display:flex;gap:.6rem;margin:1rem 0}
+.mode-switch button{flex:1;padding:.8rem 1rem;border-radius:12px;border:2px solid transparent;
+  background:var(--panel-2);color:var(--muted);font-family:inherit;font-size:1rem;font-weight:600;
+  cursor:pointer;transition:.2s}
+.mode-switch button.selected{border-color:var(--blue);background:rgba(59,130,246,.2);color:#fff}
+.gesture-demo{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;justify-content:center;margin:1.2rem 0}
+.gesture-svg{width:160px;height:160px;flex-shrink:0}
+.gesture-steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.9rem}
+.gesture-steps li{display:flex;align-items:flex-start;gap:.8rem;font-size:1.05rem;color:#e2e8f0}
+.step-num{flex-shrink:0;width:2rem;height:2rem;border-radius:50%;background:var(--blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem}
+#hud{position:absolute;top:0;left:0;right:0;padding:1rem 1.4rem;display:flex;align-items:center;
+  justify-content:space-between;gap:1rem;background:linear-gradient(to bottom,rgba(15,23,42,.85),transparent);
+  z-index:20;pointer-events:none;flex-wrap:wrap}
+#hud>*{pointer-events:auto}
+.hud-left{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.hud-right{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1rem;border-radius:999px;
+  background:rgba(30,41,59,.9);border:1px solid rgba(255,255,255,.12);font-size:.95rem;
+  font-weight:600;white-space:nowrap}
+.badge-score{color:var(--yellow)}.badge-progress{color:#7dd3fc}
+#gameArea{position:absolute;inset:0;z-index:15;display:none;flex-direction:column;
+  justify-content:space-between;padding:5rem 1.2rem 1.2rem;pointer-events:none}
+#gameArea.active{display:flex}
+#promptBar{align-self:center;background:rgba(30,41,59,.92);border:2px solid rgba(255,255,255,.15);
+  border-radius:999px;padding:.7rem 2rem;font-size:1.15rem;font-weight:600;color:#e2e8f0;
+  text-align:center;max-width:90%;pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#itemsArea{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:min(90vw,1100px);height:min(55vh,500px);pointer-events:none;z-index:16}
+.draggable-item{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:130px;height:130px;border-radius:24px;background:rgba(30,41,59,.92);
+  border:3px solid rgba(255,255,255,.2);box-shadow:0 12px 30px rgba(0,0,0,.4);cursor:grab;
+  transition:box-shadow .2s,transform .1s;pointer-events:auto;touch-action:none;
+  transform:translate(-50%,-50%);font-size:2.6rem;text-align:center;line-height:1.2;padding:.4rem}
+.draggable-item .item-label{font-size:.85rem;color:#e2e8f0;font-weight:600;margin-top:.2rem;line-height:1.25}
+.draggable-item.dragging{box-shadow:0 0 0 4px var(--yellow),0 16px 40px rgba(0,0,0,.5);
+  transform:translate(-50%,-50%) scale(1.08);z-index:100;cursor:grabbing}
+.draggable-item.pinch-highlight{box-shadow:0 0 0 4px var(--yellow),0 0 30px rgba(234,179,8,.6)}
+#binsArea{display:flex;justify-content:center;gap:clamp(.5rem,2vw,1.8rem);flex-wrap:wrap;
+  padding-bottom:.5rem;pointer-events:auto}
+.bin{flex:0 1 160px;min-width:120px;height:150px;border-radius:20px 20px 14px 14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding:.8rem .5rem;font-weight:700;font-size:1rem;text-align:center;color:#fff;
+  text-shadow:0 2px 4px rgba(0,0,0,.5);border:3px solid rgba(255,255,255,.2);
+  transition:transform .2s,box-shadow .2s;box-shadow:0 8px 20px rgba(0,0,0,.35);
+  position:relative;overflow:hidden;user-select:none}
+.bin .bin-icon{font-size:2.2rem;margin-bottom:.3rem}
+.bin .bin-name{font-size:.95rem;line-height:1.3}
+.bin.drag-over{transform:translateY(-8px) scale(1.05);box-shadow:0 0 0 4px var(--yellow),0 16px 36px rgba(0,0,0,.5)}
+.bin[data-category="organic"]{background:linear-gradient(160deg,#16a34a,#15803d)}
+.bin[data-category="recyclable"]{background:linear-gradient(160deg,#eab308,#ca8a04);color:#1a1a1a;text-shadow:none}
+.bin[data-category="hazardous"]{background:linear-gradient(160deg,#f97316,#ea580c)}
+.bin[data-category="general"]{background:linear-gradient(160deg,#3b82f6,#2563eb)}
+#feedbackBox{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:min(92vw,620px);background:rgba(15,23,42,.97);border:2px solid var(--yellow);
+  border-radius:var(--radius);padding:1.5rem 1.8rem;box-shadow:0 20px 60px rgba(0,0,0,.7);
+  z-index:200;display:none;pointer-events:auto;text-align:center}
+#feedbackBox.show{display:block;animation:popIn .25s ease-out}
+@keyframes popIn{from{opacity:0;transform:translate(-50%,-50%) scale(.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+#feedbackTitle{font-size:1.4rem;margin-bottom:.6rem}
+#feedbackText{font-size:1.05rem;color:#cbd5e1;margin-bottom:1rem;line-height:1.6}
+#feedbackActions{display:flex;justify-content:center;gap:.8rem;flex-wrap:wrap}
+.summary-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin:1.5rem 0}
+.stat-card{background:var(--panel-2);border-radius:16px;padding:1rem 1.2rem;text-align:center}
+.stat-card .stat-value{font-size:2rem;font-weight:800;color:var(--yellow);line-height:1.2}
+.stat-card .stat-label{font-size:.9rem;color:var(--muted);margin-top:.2rem}
+.transfer-box{background:rgba(59,130,246,.15);border:1.5px solid rgba(59,130,246,.5);
+  border-radius:16px;padding:1.2rem 1.4rem;margin:1.2rem 0}
+#cameraNotice{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);
+  background:rgba(239,68,68,.92);color:#fff;padding:.8rem 1.6rem;border-radius:999px;
+  font-weight:600;font-size:.95rem;z-index:300;display:none;max-width:90%;text-align:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);pointer-events:auto}
+#cameraNotice.show{display:block}
+.floating-controls{position:absolute;bottom:1rem;right:1rem;display:flex;flex-direction:column;
+  gap:.5rem;z-index:50}
+.floating-controls .btn{box-shadow:0 6px 18px rgba(0,0,0,.4)}
+@media (max-width:700px){
+  :root{font-size:15px}
+  .draggable-item{width:100px;height:100px;font-size:2rem}
+  .bin{height:120px;min-width:90px;flex-basis:110px}
+  .bin .bin-icon{font-size:1.7rem}
+  #promptBar{font-size:1rem;padding:.6rem 1.2rem}
+}
+.screen::-webkit-scrollbar{width:6px}
+.screen::-webkit-scrollbar-thumb{background:var(--panel-2);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="app">
+  <video id="webcam" autoplay muted playsinline></video>
+  <canvas id="skeletonCanvas"></canvas>
+
+  <div class="ui-layer">
+    <div id="screenStart" class="screen active">
+      <div class="card" style="text-align:center;">
+        <h1>🗑️ เกมคัดแยกขยะ</h1>
+        <p class="lead">ใช้มือคีบขยะ แล้วลากไปปล่อยลงถังให้ถูกประเภท</p>
+        <p>วิชา สุขศึกษาและพลศึกษา · ระดับชั้น ป.4–6<br>ใช้เวลาประมาณ 10 นาที</p>
+        <div class="mode-switch" id="modeSwitch">
+          <button class="selected" data-mode="hand">✋ ใช้มือ (Hand Tracking)</button>
+          <button data-mode="mouse">🖱️ ใช้เมาส์ / แตะจอ</button>
+        </div>
+        <div class="btn-row" style="justify-content:center;">
+          <button id="btnStart" class="btn btn-primary">เริ่มเล่น</button>
+        </div>
+        <p style="margin-top:1.2rem;font-size:.85rem;color:var(--muted);">
+          ภาพจากกล้องประมวลผลบนเครื่องนี้เท่านั้น ไม่มีการบันทึกหรืออัปโหลด
+        </p>
+      </div>
+    </div>
+
+    <div id="screenTutorial" class="screen">
+      <div class="card">
+        <h2>✋ วิธีใช้มือควบคุม</h2>
+        <div class="gesture-demo">
+          <svg class="gesture-svg" viewBox="0 0 120 120" fill="none">
+            <circle cx="42" cy="38" r="10" fill="#FFC107" opacity=".9"/>
+            <circle cx="72" cy="52" r="10" fill="#FFC107" opacity=".9"/>
+            <circle cx="38" cy="58" r="10" fill="#FFF59D" opacity=".6"/>
+            <circle cx="58" cy="76" r="10" fill="#FFF59D" opacity=".6"/>
+            <circle cx="76" cy="82" r="10" fill="#FFF59D" opacity=".6"/>
+            <line x1="42" y1="38" x2="72" y2="52" stroke="#FFF59D" stroke-width="3" stroke-dasharray="5 4"/>
+            <text x="60" y="112" text-anchor="middle" fill="#e2e8f0" font-size="11">คีบนิ้วโป้ง + นิ้วชี้</text>
+          </svg>
+          <ul class="gesture-steps">
+            <li><span class="step-num">1</span><span>ยกมือขึ้นให้กล้องเห็นชัด</span></li>
+            <li><span class="step-num">2</span><span>คีบนิ้วโป้งกับนิ้วชี้เข้าหากัน เพื่อ “หยิบ” ขยะ</span></li>
+            <li><span class="step-num">3</span><span>ลากมือไปที่ถังขยะที่ต้องการ</span></li>
+            <li><span class="step-num">4</span><span>คลายนิ้ว เพื่อ “ปล่อย” ขยะลงถัง</span></li>
+          </ul>
+        </div>
+        <p style="margin-top:.5rem;">💡 <strong>เคล็ดลับ:</strong> ถ้าตรวจไม่พบมือ ให้ยกมือให้สูงขึ้นหรือขยับเข้ามาใกล้กล้องอีกนิด</p>
+        <div class="btn-row" style="justify-content:center;">
+          <button id="btnTutorialBack" class="btn btn-ghost">ย้อนกลับ</button>
+          <button id="btnTutorialNext" class="btn btn-primary">เข้าใจแล้ว เริ่มเล่น!</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="hud" style="display:none;">
+      <div class="hud-left">
+        <span class="badge badge-score">⭐ คะแนน: <span id="scoreDisplay">0</span></span>
+        <span class="badge badge-progress">📦 <span id="progressDisplay">0 / 0</span></span>
+      </div>
+      <div class="hud-right">
+        <button id="btnToggleSkeleton" class="btn btn-sm btn-ghost" title="เปิด-ปิดโครงมือ">🖐️ โครงมือ: เปิด</button>
+        <button id="btnSwitchMouse" class="btn btn-sm btn-ghost" title="สลับเป็นเมาส์">🖱️ เมาส์</button>
+        <button id="btnQuit" class="btn btn-sm btn-ghost" title="ออกจากเกม">✖ ออก</button>
+      </div>
+    </div>
+
+    <div id="gameArea">
+      <div id="promptBar">คีบขยะแล้วลากไปลงถังให้ถูกประเภท</div>
+      <div id="itemsArea"></div>
+      <div id="binsArea"></div>
+    </div>
+
+    <div id="feedbackBox">
+      <div id="feedbackTitle"></div>
+      <div id="feedbackText"></div>
+      <div id="feedbackActions"></div>
+    </div>
+
+    <div id="screenSummary" class="screen">
+      <div class="card" style="text-align:center;">
+        <h2>🎉 สรุปผลการเล่น</h2>
+        <div class="summary-stats">
+          <div class="stat-card"><div class="stat-value" id="finalScore">0</div><div class="stat-label">คะแนนรวม</div></div>
+          <div class="stat-card"><div class="stat-value" id="finalCorrect">0</div><div class="stat-label">ตอบถูก (ครั้งแรก)</div></div>
+          <div class="stat-card"><div class="stat-value" id="finalTotal">0</div><div class="stat-label">จำนวนข้อ</div></div>
+        </div>
+        <div class="transfer-box" id="transferBox">
+          <h3 style="color:#93c5fd;">🔍 โจทย์ท้ายเกม (Transfer)</h3>
+          <p id="transferQuestion" style="color:#e2e8f0;font-size:1.1rem;"></p>
+          <div id="transferOptions" class="btn-row" style="justify-content:center;"></div>
+          <div id="transferResult" style="margin-top:.8rem;font-weight:600;"></div>
+        </div>
+        <div class="btn-row" style="justify-content:center;">
+          <button id="btnPlayAgain" class="btn btn-primary">เล่นอีกครั้ง</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="cameraNotice"></div>
+    <div class="floating-controls" id="floatingControls" style="display:none;">
+      <button id="btnFloatingSkeleton" class="btn btn-sm btn-ghost">🖐️</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* ============================================================
+   1) เนื้อหาเกม — ครูแก้ไขได้ที่นี่
+   ============================================================ */
+const GAME_CONTENT = {
+  categories: {
+    organic:    { name:"ขยะอินทรีย์",  icon:"🍃", description:"ขยะที่เน่าเสียและย่อยสลายได้เร็ว เช่น เศษอาหาร เศษผัก เปลือกผลไม้" },
+    recyclable: { name:"ขยะรีไซเคิล",  icon:"♻️", description:"วัสดุที่นำกลับมาใช้ประโยชน์ใหม่ได้ เช่น แก้ว กระดาษ พลาสติกสะอาด กระป๋อง" },
+    hazardous:  { name:"ขยะอันตราย",   icon:"⚠️", description:"ขยะที่มีสารอันตราย เช่น ถ่านไฟฉาย หลอดไฟ แบตเตอรี่ ภาชนะบรรจุสารเคมี" },
+    general:    { name:"ขยะทั่วไป",    icon:"🗑️", description:"ขยะที่ย่อยสลายยากและไม่คุ้มค่ากับการรีไซเคิล เช่น ถุงพลาสติกเปื้อนอาหาร โฟมเปื้อนอาหาร" }
+  },
+  items: [
+    { id:"apple_core",        name:"เศษผลไม้",             emoji:"🍎", category:"organic",    reason:"เศษผักและเปลือกผลไม้เป็นขยะที่เน่าเสียและย่อยสลายได้เร็ว จึงจัดเป็นขยะอินทรีย์" },
+    { id:"vegetable_leaf",    name:"เศษผัก",               emoji:"🥬", category:"organic",    reason:"เศษผักเป็นขยะอินทรีย์ เพราะย่อยสลายได้ตามธรรมชาติ และสามารถนำไปหมักปุ๋ยได้" },
+    { id:"banana_peel",       name:"เปลือกกล้วย",          emoji:"🍌", category:"organic",    reason:"เปลือกกล้วยเป็นขยะอินทรีย์ที่ย่อยสลายได้เร็วและนำไปทำปุ๋ยหมักได้" },
+    { id:"plastic_bottle",    name:"ขวดพลาสติก",          emoji:"🧴", category:"recyclable", reason:"ขวดพลาสติกที่ล้างสะอาดสามารถนำกลับไปรีไซเคิลเป็นผลิตภัณฑ์ใหม่ได้" },
+    { id:"glass_bottle",      name:"ขวดแก้ว",             emoji:"🍾", category:"recyclable", reason:"แก้วเป็นวัสดุที่สามารถหลอมและนำกลับมาใช้ใหม่ได้ จึงเป็นขยะรีไซเคิล" },
+    { id:"aluminum_can",      name:"กระป๋องอลูมิเนียม",     emoji:"🥫", category:"recyclable", reason:"อลูมิเนียมเป็นโลหะที่รีไซเคิลได้และมีมูลค่า จึงควรแยกเป็นขยะรีไซเคิล" },
+    { id:"paper",             name:"กระดาษ",               emoji:"📄", category:"recyclable", reason:"กระดาษที่แห้งและสะอาดสามารถนำไปรีไซเคิลเป็นกระดาษใหม่ได้" },
+    { id:"battery",           name:"ถ่านไฟฉาย",            emoji:"🔋", category:"hazardous",  reason:"ถ่านไฟฉายมีสารเคมีและโลหะหนักที่เป็นอันตรายต่อสิ่งแวดล้อม จึงต้องแยกเป็นขยะอันตราย" },
+    { id:"light_bulb",        name:"หลอดไฟ",               emoji:"💡", category:"hazardous",  reason:"หลอดไฟมีสารปรอทและโลหะหนัก ต้องทิ้งในจุดรับขยะอันตรายโดยเฉพาะ" },
+    { id:"spray_can",         name:"กระป๋องสเปรย์",         emoji:"🧴", category:"hazardous",  reason:"กระป๋องสเปรย์อาจมีสารไวไฟหรือสารเคมีอันตราย ควรแยกเป็นขยะอันตราย" },
+    { id:"dirty_plastic_bag", name:"ถุงพลาสติกเปื้อนอาหาร", emoji:"🛍️", category:"general",    reason:"ถุงพลาสติกที่เปื้อนอาหารไม่คุ้มค่าต่อการรีไซเคิล จึงจัดเป็นขยะทั่วไป" },
+    { id:"foam_box",          name:"โฟมเปื้อนอาหาร",       emoji:"📦", category:"general",    reason:"โฟมที่เปื้อนอาหารไม่สามารถรีไซเคิลได้ง่าย จึงเป็นขยะทั่วไป" },
+    { id:"snack_wrapper",     name:"ซองขนม",               emoji:"🍿", category:"general",    reason:"ซองขนมเป็นพลาสติกผสมที่รีไซเคิลได้ยาก จึงจัดเป็นขยะทั่วไป" }
+  ],
+  transferQuestion: {
+    question: "ถ้าพบ “กล่องโฟมที่ล้างสะอาดแล้ว” ควรทิ้งลงถังใด และเพราะอะไร?",
+    options: [
+      { text:"ขยะรีไซเคิล เพราะโฟมรีไซเคิลได้",           correct:false, feedback:"โฟมส่วนใหญ่รีไซเคิลได้ยากและไม่คุ้มค่า แม้จะล้างสะอาดแล้วก็ตาม" },
+      { text:"ขยะทั่วไป เพราะโฟมไม่คุ้มค่าต่อการรีไซเคิล", correct:true,  feedback:"ถูกต้อง! โฟมจัดเป็นขยะทั่วไป เพราะย่อยสลายยากและรีไซเคิลได้ไม่คุ้มทุน" },
+      { text:"ขยะอันตราย เพราะโฟมมีสารเคมี",             correct:false, feedback:"โฟมไม่ได้จัดเป็นขยะอันตราย เว้นแต่มีสารปนเปื้อนอันตราย" }
+    ]
+  },
+  itemsPerRound: 6
+};
+
+/* ============================================================
+   2) สถานะ
+   ============================================================ */
+const state = {
+  mode:'hand', screen:'start',
+  score:0, correctFirstTry:0, totalItems:0,
+  currentItems:[], itemIndex:0, itemResults:[],
+  isPinching:false, pinchActive:false,
+  draggingItem:null,
+  handLandmarker:null, cameraStream:null,
+  skeletonEnabled:true, animationFrameId:null,
+  mouseDragging:false, mouseDragItem:null, mouseOffsetX:0, mouseOffsetY:0,
+  cursorX:0, cursorY:0,
+  cursorScreenX:0, cursorScreenY:0,
+  handPresent:false,
+  attemptedWrong:false,
+  lastHandLandmarks:null
+};
+
+/* ============================================================
+   3) Element refs
+   ============================================================ */
+const el = {
+  video: document.getElementById('webcam'),
+  skeletonCanvas: document.getElementById('skeletonCanvas'),
+  screens: {
+    start:    document.getElementById('screenStart'),
+    tutorial: document.getElementById('screenTutorial'),
+    summary:  document.getElementById('screenSummary')
+  },
+  hud: document.getElementById('hud'),
+  gameArea: document.getElementById('gameArea'),
+  promptBar: document.getElementById('promptBar'),
+  itemsArea: document.getElementById('itemsArea'),
+  binsArea: document.getElementById('binsArea'),
+  feedbackBox: document.getElementById('feedbackBox'),
+  feedbackTitle: document.getElementById('feedbackTitle'),
+  feedbackText: document.getElementById('feedbackText'),
+  feedbackActions: document.getElementById('feedbackActions'),
+  cameraNotice: document.getElementById('cameraNotice'),
+  scoreDisplay: document.getElementById('scoreDisplay'),
+  progressDisplay: document.getElementById('progressDisplay'),
+  finalScore: document.getElementById('finalScore'),
+  finalCorrect: document.getElementById('finalCorrect'),
+  finalTotal: document.getElementById('finalTotal'),
+  transferQuestion: document.getElementById('transferQuestion'),
+  transferOptions: document.getElementById('transferOptions'),
+  transferResult: document.getElementById('transferResult'),
+  floatingControls: document.getElementById('floatingControls'),
+  btnToggleSkeleton: document.getElementById('btnToggleSkeleton'),
+  btnSwitchMouse: document.getElementById('btnSwitchMouse'),
+  btnQuit: document.getElementById('btnQuit'),
+  btnFloatingSkeleton: document.getElementById('btnFloatingSkeleton'),
+  modeSwitch: document.getElementById('modeSwitch'),
+  btnStart: document.getElementById('btnStart'),
+  btnTutorialBack: document.getElementById('btnTutorialBack'),
+  btnTutorialNext: document.getElementById('btnTutorialNext'),
+  btnPlayAgain: document.getElementById('btnPlayAgain'),
+};
+const ctx = el.skeletonCanvas.getContext('2d');
+
+/* ============================================================
+   4) Helpers
+   ============================================================ */
+function showScreen(name){
+  Object.values(el.screens).forEach(s=>s && s.classList.remove('active'));
+  if (el.screens[name]) el.screens[name].classList.add('active');
+  state.screen = name;
+  if (name === 'playing'){
+    el.hud.style.display = 'flex';
+    el.gameArea.classList.add('active');
+    el.floatingControls.style.display = state.mode === 'hand' ? 'flex' : 'none';
+  } else {
+    el.hud.style.display = 'none';
+    el.gameArea.classList.remove('active');
+    el.floatingControls.style.display = 'none';
+  }
+  hideFeedback();
+}
+function updateHUD(){
+  el.scoreDisplay.textContent = state.score;
+  el.progressDisplay.textContent = `${state.itemIndex} / ${state.totalItems}`;
+}
+function showFeedback(title, text, actions){
+  el.feedbackTitle.textContent = title;
+  el.feedbackTitle.style.color = title.includes('ถูก') ? 'var(--green)' : 'var(--yellow)';
+  el.feedbackText.textContent = text;
+  el.feedbackActions.innerHTML = '';
+  actions.forEach(a=>{
+    const b = document.createElement('button');
+    b.className = `btn ${a.primary?'btn-primary':'btn-ghost'}`;
+    b.textContent = a.label;
+    b.onclick = a.onClick;
+    el.feedbackActions.appendChild(b);
+  });
+  el.feedbackBox.classList.add('show');
+}
+function hideFeedback(){ el.feedbackBox.classList.remove('show'); }
+function showCameraNotice(msg, duration=5000){
+  el.cameraNotice.textContent = msg;
+  el.cameraNotice.classList.add('show');
+  if (duration>0) setTimeout(()=>el.cameraNotice.classList.remove('show'), duration);
+}
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ============================================================
+   5) เตรียมรอบ
+   ============================================================ */
+function prepareRound(){
+  const all = [...GAME_CONTENT.items];
+  state.currentItems = shuffle(all).slice(0, GAME_CONTENT.itemsPerRound);
+  state.totalItems = state.currentItems.length;
+  state.itemIndex = 0;
+  state.score = 0;
+  state.correctFirstTry = 0;
+  state.itemResults = [];
+  state.attemptedWrong = false;
+  updateHUD();
+}
+function renderBins(){
+  el.binsArea.innerHTML = '';
+  ['organic','recyclable','hazardous','general'].forEach(cat=>{
+    const info = GAME_CONTENT.categories[cat];
+    const bin = document.createElement('div');
+    bin.className = 'bin';
+    bin.dataset.category = cat;
+    bin.innerHTML = `<div class="bin-icon">${info.icon}</div><div class="bin-name">${info.name}</div>`;
+    el.binsArea.appendChild(bin);
+  });
+}
+function showCurrentItem(){
+  el.itemsArea.innerHTML = '';
+  if (state.itemIndex >= state.totalItems) return;
+  const item = state.currentItems[state.itemIndex];
+  const div = document.createElement('div');
+  div.className = 'draggable-item';
+  div.dataset.itemId = item.id;
+  div.innerHTML = `<div style="font-size:2.4rem;line-height:1.1">${item.emoji}</div>
+                   <div class="item-label">${item.name}</div>`;
+  div.style.left = '50%';
+  div.style.top = '50%';
+  el.itemsArea.appendChild(div);
+  attachMouseDrag(div);
+  state.draggingItem = null;
+  state.isPinching = false;
+  state.pinchActive = false;
+  state.attemptedWrong = false;
+}
+function updatePrompt(){
+  if (state.itemIndex < state.totalItems){
+    el.promptBar.textContent = `คีบ “${state.currentItems[state.itemIndex].name}” แล้วลากไปลงถังที่ถูกต้อง`;
+  }
+}
+
+/* ============================================================
+   6) Mouse mode
+   ============================================================ */
+function attachMouseDrag(itemEl){
+  itemEl.addEventListener('pointerdown', e=>{
+    if (state.mode !== 'mouse') return;
+    e.preventDefault();
+    state.mouseDragging = true;
+    state.mouseDragItem = itemEl;
+    const r = itemEl.getBoundingClientRect();
+    state.mouseOffsetX = e.clientX - (r.left + r.width/2);
+    state.mouseOffsetY = e.clientY - (r.top  + r.height/2);
+    itemEl.classList.add('dragging');
+    itemEl.setPointerCapture(e.pointerId);
+  });
+  itemEl.addEventListener('pointermove', e=>{
+    if (!state.mouseDragging || state.mouseDragItem !== itemEl) return;
+    e.preventDefault();
+    const areaRect = el.itemsArea.getBoundingClientRect();
+    let x = e.clientX - areaRect.left - state.mouseOffsetX;
+    let y = e.clientY - areaRect.top  - state.mouseOffsetY;
+    x = Math.max(0, Math.min(areaRect.width,  x));
+    y = Math.max(0, Math.min(areaRect.height, y));
+    itemEl.style.left = x + 'px';
+    itemEl.style.top  = y + 'px';
+    highlightBinUnderScreenPoint(e.clientX, e.clientY);
+  });
+  itemEl.addEventListener('pointerup', e=>{
+    if (!state.mouseDragging || state.mouseDragItem !== itemEl) return;
+    e.preventDefault();
+    state.mouseDragging = false;
+    itemEl.classList.remove('dragging');
+    clearBinHighlights();
+    const bin = getBinUnderScreenPoint(e.clientX, e.clientY);
+    if (bin) handleDrop(bin.dataset.category, itemEl);
+    else { itemEl.style.left='50%'; itemEl.style.top='50%'; }
+    state.mouseDragItem = null;
+  });
+  itemEl.addEventListener('pointercancel', ()=>{
+    state.mouseDragging = false;
+    itemEl.classList.remove('dragging');
+    clearBinHighlights();
+    state.mouseDragItem = null;
+  });
+}
+function getBinUnderScreenPoint(x, y){
+  for (const bin of el.binsArea.querySelectorAll('.bin')){
+    const r = bin.getBoundingClientRect();
+    if (x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) return bin;
+  }
+  return null;
+}
+function highlightBinUnderScreenPoint(x, y){
+  clearBinHighlights();
+  const b = getBinUnderScreenPoint(x, y);
+  if (b) b.classList.add('drag-over');
+}
+function clearBinHighlights(){
+  el.binsArea.querySelectorAll('.bin').forEach(b=>b.classList.remove('drag-over'));
+}
+
+/* ============================================================
+   7) Drop logic
+   ============================================================ */
+function handleDrop(category, itemEl){
+  if (!itemEl) return;
+  const item = GAME_CONTENT.items.find(i=>i.id === itemEl.dataset.itemId);
+  if (!item) return;
+  const isCorrect = (item.category === category);
+
+  if (isCorrect){
+    let points = 10;
+    if (!state.attemptedWrong){ points += 5; state.correctFirstTry++; }
+    state.score += points;
+    state.itemResults.push(true);
+    el.scoreDisplay.textContent = state.score;
+    showFeedback('✅ ถูกต้อง!',
+      `${item.name}: ${item.reason}`,
+      [{ label:'ไปข้อถัดไป →', primary:true, onClick: ()=>{ hideFeedback(); nextItem(); } }]
+    );
+  } else {
+    state.attemptedWrong = true;
+    state.itemResults.push(false);
+    const correct = GAME_CONTENT.categories[item.category];
+    const wrong   = GAME_CONTENT.categories[category];
+    showFeedback('❌ ยังไม่ถูก',
+      `“${item.name}” ไม่ใช่ ${wrong.name} เพราะ ${wrong.description} — ` +
+      `แต่เป็น ${correct.name} เพราะ ${item.reason}`,
+      [{ label:'ลองใหม่', primary:true, onClick: ()=>{
+        hideFeedback();
+        if (itemEl){ itemEl.style.left='50%'; itemEl.style.top='50%'; }
+      }}]
+    );
+  }
+}
+function nextItem(){
+  state.itemIndex++;
+  updateHUD();
+  if (state.itemIndex >= state.totalItems) endGame();
+  else { showCurrentItem(); updatePrompt(); }
+}
+
+/* ============================================================
+   8) Hand Landmarker
+   ============================================================ */
+const HAND_CONNECTIONS = [
+  {start:0,end:1},{start:1,end:2},{start:2,end:3},{start:3,end:4},
+  {start:0,end:5},{start:5,end:6},{start:6,end:7},{start:7,end:8},
+  {start:5,end:9},{start:9,end:10},{start:10,end:11},{start:11,end:12},
+  {start:9,end:13},{start:13,end:14},{start:14,end:15},{start:15,end:16},
+  {start:13,end:17},{start:17,end:18},{start:18,end:19},{start:19,end:20},
+  {start:0,end:17}
+];
+
+async function initHandLandmarker(){
+  try {
+    const { HandLandmarker, FilesetResolver } = await import(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0"
+    );
+    const vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+    );
+    state.handLandmarker = await HandLandmarker.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+        delegate: "GPU"
+      },
+      runningMode: "VIDEO",
+      numHands: 1,
+      minHandDetectionConfidence: 0.5,
+      minHandPresenceConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    console.log("HandLandmarker ready");
+  } catch (err) {
+    console.error("Model load error:", err);
+    showCameraNotice("⚠️ โหลดโมเดลตรวจมือไม่สำเร็จ จะสลับเป็นโหมดเมาส์", 0);
+    switchToMouseMode();
+  }
+}
+async function startCamera(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width:1280, height:720, facingMode:"user" }, audio:false
+    });
+    state.cameraStream = stream;
+    el.video.srcObject = stream;
+    await el.video.play();
+  } catch (err) {
+    console.error("Camera error:", err);
+    let msg = "⚠️ ไม่สามารถเปิดกล้องได้ ";
+    if (err.name === 'NotAllowedError')    msg += "คุณไม่ได้อนุญาตให้ใช้กล้อง จะสลับเป็นโหมดเมาส์";
+    else if (err.name === 'NotFoundError') msg += "ไม่พบกล้องบนอุปกรณ์นี้ จะสลับเป็นโหมดเมาส์";
+    else                                   msg += "จะสลับเป็นโหมดเมาส์";
+    showCameraNotice(msg, 0);
+    switchToMouseMode();
+  }
+}
+function stopCamera(){
+  if (state.cameraStream){
+    state.cameraStream.getTracks().forEach(t=>t.stop());
+    state.cameraStream = null;
+  }
+  if (state.animationFrameId){
+    cancelAnimationFrame(state.animationFrameId);
+    state.animationFrameId = null;
+  }
+}
+
+let lastVideoTime = -1;
+
+function predictWebcam(){
+  if (!state.handLandmarker || !el.video.videoWidth){
+    state.animationFrameId = requestAnimationFrame(predictWebcam);
+    return;
+  }
+  const now = performance.now();
+  if (el.video.currentTime !== lastVideoTime){
+    lastVideoTime = el.video.currentTime;
+    try {
+      const results = state.handLandmarker.detectForVideo(el.video, now);
+      processHandResults(results);
+    } catch (e) {}
+  }
+  renderOverlay();
+  state.animationFrameId = requestAnimationFrame(predictWebcam);
+}
+
+/* ============================================================
+   9) Hand → game logic
+   ============================================================ */
+function processHandResults(results){
+  if (results.landmarks && results.landmarks.length > 0){
+    const lm = results.landmarks[0];
+    state.lastHandLandmarks = lm;
+    state.handPresent = true;
+
+    const areaRect = el.itemsArea.getBoundingClientRect();
+    const nx = 1 - lm[8].x;
+    const ny = lm[8].y;
+    const screenX = nx * window.innerWidth;
+    const screenY = ny * window.innerHeight;
+    state.cursorScreenX = screenX;
+    state.cursorScreenY = screenY;
+    state.cursorX = screenX - areaRect.left;
+    state.cursorY = screenY - areaRect.top;
+
+    updatePinchState(lm);
+
+    if (state.isPinching){
+      if (!state.draggingItem){
+        const itemEl = getItemUnderPoint(state.cursorX, state.cursorY);
+        if (itemEl){
+          state.draggingItem = itemEl;
+          itemEl.classList.add('dragging', 'pinch-highlight');
+        }
+      }
+      if (state.draggingItem){
+        state.draggingItem.style.left = state.cursorX + 'px';
+        state.draggingItem.style.top  = state.cursorY + 'px';
+        highlightBinUnderScreenPoint(screenX, screenY);
+      }
+    } else {
+      if (state.draggingItem){
+        dropDraggingItem(screenX, screenY);
+      } else {
+        clearBinHighlights();
+      }
+    }
+  } else {
+    state.lastHandLandmarks = null;
+    state.handPresent = false;
+    if (state.draggingItem) finishHandDrag();
+  }
+}
+
+const PINCH_TRIGGER = 0.055;
+const PINCH_RELEASE = 0.11;
+
+function updatePinchState(lm){
+  const t = lm[4], i = lm[8];
+  const dx = t.x - i.x, dy = t.y - i.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+
+  if (!state.pinchActive){
+    if (dist < PINCH_TRIGGER){
+      state.pinchActive = true;
+      state.isPinching = true;
+    } else {
+      state.isPinching = false;
+    }
+  } else {
+    if (dist > PINCH_RELEASE){
+      state.pinchActive = false;
+      state.isPinching = false;
+    } else {
+      state.isPinching = true;
+    }
+  }
+}
+
+function dropDraggingItem(screenX, screenY){
+  const itemEl = state.draggingItem;
+  if (!itemEl) return;
+  itemEl.classList.remove('dragging', 'pinch-highlight');
+  const bin = getBinUnderScreenPoint(screenX, screenY);
+  if (bin) handleDrop(bin.dataset.category, itemEl);
+  else { itemEl.style.left='50%'; itemEl.style.top='50%'; }
+  state.draggingItem = null;
+  clearBinHighlights();
+}
+function finishHandDrag(){
+  if (state.draggingItem){
+    state.draggingItem.classList.remove('dragging','pinch-highlight');
+    state.draggingItem.style.left='50%';
+    state.draggingItem.style.top='50%';
+    state.draggingItem = null;
+  }
+  clearBinHighlights();
+}
+
+function getItemUnderPoint(x, y){
+  const PAD = 30;
+  const areaRect = el.itemsArea.getBoundingClientRect();
+  for (const item of el.itemsArea.querySelectorAll('.draggable-item')){
+    const r = item.getBoundingClientRect();
+    const il = r.left - areaRect.left - PAD;
+    const it = r.top  - areaRect.top  - PAD;
+    if (x >= il && x <= il + r.width + PAD*2 &&
+        y >= it && y <= it + r.height + PAD*2) return item;
+  }
+  return null;
+}
+
+/* ============================================================
+   10) Overlay: skeleton + cursor
+   ============================================================ */
+function renderOverlay(){
+  const cw = el.video.clientWidth, ch = el.video.clientHeight;
+  if (!cw || !ch) return;
+  if (el.skeletonCanvas.width !== cw)  el.skeletonCanvas.width  = cw;
+  if (el.skeletonCanvas.height !== ch) el.skeletonCanvas.height = ch;
+  ctx.clearRect(0, 0, cw, ch);
+
+  if (state.skeletonEnabled && state.handPresent && state.lastHandLandmarks){
+    drawHandSkeleton(state.lastHandLandmarks);
+  }
+  if (state.handPresent) drawCursor();
+}
+
+function drawHandSkeleton(landmarks){
+  const videoW = el.video.videoWidth || 1280;
+  const videoH = el.video.videoHeight || 720;
+  const cw = el.skeletonCanvas.width, ch = el.skeletonCanvas.height;
+  const scale = Math.max(cw / videoW, ch / videoH);
+  const offsetX = (videoW * scale - cw) / 2;
+  const offsetY = (videoH * scale - ch) / 2;
+  const toCanvas = (p) => {
+    const nx = 1 - p.x;
+    return { x: nx * videoW * scale - offsetX, y: p.y * videoH * scale - offsetY };
+  };
+
+  ctx.strokeStyle = "#FFF59D";
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  for (const c of HAND_CONNECTIONS){
+    const a = toCanvas(landmarks[c.start]);
+    const b = toCanvas(landmarks[c.end]);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  ctx.fillStyle = "#FFC107";
+  for (const lm of landmarks){
+    const p = toCanvas(lm);
+    ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+  }
+  const tip = toCanvas(landmarks[8]);
+  ctx.fillStyle = "#FF9800";
+  ctx.beginPath(); ctx.arc(tip.x, tip.y, 8, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+}
+
+function drawCursor(){
+  const x = state.cursorScreenX, y = state.cursorScreenY;
+  if (!x && !y) return;
+  const r = state.isPinching ? 26 : 18;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+  ctx.strokeStyle = state.isPinching ? '#FFC107' : 'rgba(255,255,255,0.85)';
+  ctx.lineWidth = state.isPinching ? 4 : 2;
+  ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, state.isPinching ? 10 : 6, 0, Math.PI*2);
+  ctx.fillStyle = state.isPinching ? '#FFC107' : 'rgba(255,255,255,0.9)';
+  ctx.fill();
+  if (state.isPinching){
+    ctx.beginPath(); ctx.arc(x, y, r + 8, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(255,193,7,0.35)';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* ============================================================
+   11) สลับโหมด
+   ============================================================ */
+function switchToMouseMode(){
+  finishHandDrag();
+  state.mode = 'mouse';
+  el.modeSwitch.querySelectorAll('button').forEach(b=>b.classList.toggle('selected', b.dataset.mode==='mouse'));
+  el.floatingControls.style.display = 'none';
+  el.btnSwitchMouse.textContent = '✋ ใช้มือ';
+  el.btnSwitchMouse.title = 'สลับเป็นโหมดมือ';
+  stopCamera();
+  state.handLandmarker = null;
+  state.lastHandLandmarks = null;
+  state.handPresent = false;
+  ctx.clearRect(0, 0, el.skeletonCanvas.width, el.skeletonCanvas.height);
+  showCameraNotice("🖱️ สลับเป็นโหมดเมาส์แล้ว", 2500);
+}
+
+async function switchToHandMode(){
+  finishHandDrag();
+  state.mode = 'hand';
+  el.modeSwitch.querySelectorAll('button').forEach(b=>b.classList.toggle('selected', b.dataset.mode==='hand'));
+  el.floatingControls.style.display = state.screen === 'playing' ? 'flex' : 'none';
+  el.btnSwitchMouse.textContent = '🖱️ เมาส์';
+  el.btnSwitchMouse.title = 'สลับเป็นเมาส์';
+
+  showCameraNotice("⏳ กำลังเปิดกล้องและโหลดโมเดล...", 0);
+  await startCamera();
+  if (!state.cameraStream) return;
+  await initHandLandmarker();
+  if (state.handLandmarker){
+    showCameraNotice("✅ พร้อมใช้งาน! คีบนิ้วโป้ง+นิ้วชี้เพื่อหยิบขยะ", 3500);
+    if (state.animationFrameId) cancelAnimationFrame(state.animationFrameId);
+    lastVideoTime = -1;
+    predictWebcam();
+  }
+}
+
+/* ============================================================
+   12) เริ่ม/จบเกม
+   ============================================================ */
+function startGame(){
+  prepareRound();
+  renderBins();
+  showCurrentItem();
+  showScreen('playing');
+  updateHUD();
+  updatePrompt();
+  if (state.mode === 'hand') switchToHandMode();
+}
+
+function endGame(){
+  stopCamera();
+  state.handLandmarker = null;
+  el.finalScore.textContent = state.score;
+  el.finalCorrect.textContent = state.correctFirstTry;
+  el.finalTotal.textContent = state.totalItems;
+  renderTransferQuestion();
+  showScreen('summary');
+}
+
+function renderTransferQuestion(){
+  const q = GAME_CONTENT.transferQuestion;
+  el.transferQuestion.textContent = q.question;
+  el.transferOptions.innerHTML = '';
+  el.transferResult.textContent = '';
+  q.options.forEach(opt=>{
+    const b = document.createElement('button');
+    b.className = 'btn btn-ghost';
+    b.textContent = opt.text;
+    b.onclick = ()=>{
+      el.transferOptions.querySelectorAll('button').forEach(x=>x.disabled = true);
+      if (opt.correct){
+        b.classList.remove('btn-ghost'); b.classList.add('btn-success');
+        el.transferResult.textContent = '✅ ' + opt.feedback;
+        el.transferResult.style.color = 'var(--green)';
+      } else {
+        b.classList.remove('btn-ghost'); b.classList.add('btn-danger');
+        el.transferResult.textContent = '❌ ' + opt.feedback;
+        el.transferResult.style.color = 'var(--red)';
+      }
+    };
+    el.transferOptions.appendChild(b);
+  });
+}
+
+/* ============================================================
+   13) Events
+   ============================================================ */
+el.modeSwitch.addEventListener('click', e=>{
+  const b = e.target.closest('button');
+  if (!b) return;
+  const mode = b.dataset.mode;
+  if (mode === state.mode) return;
+  el.modeSwitch.querySelectorAll('button').forEach(x=>x.classList.remove('selected'));
+  b.classList.add('selected');
+  state.mode = mode;
+});
+el.btnStart.addEventListener('click', ()=>{
+  if (state.mode === 'hand') showScreen('tutorial');
+  else startGame();
+});
+el.btnTutorialBack.addEventListener('click', ()=>showScreen('start'));
+el.btnTutorialNext.addEventListener('click', ()=>startGame());
+el.btnPlayAgain.addEventListener('click', ()=>{
+  stopCamera();
+  state.handLandmarker = null;
+  state.draggingItem = null;
+  state.mouseDragItem = null;
+  showScreen('start');
+});
+el.btnQuit.addEventListener('click', ()=>{
+  if (confirm('ต้องการออกจากเกมหรือไม่?')){
+    stopCamera();
+    state.handLandmarker = null;
+    showScreen('start');
+  }
+});
+el.btnSwitchMouse.addEventListener('click', ()=>{
+  if (state.mode === 'hand') switchToMouseMode();
+  else switchToHandMode();
+});
+el.btnToggleSkeleton.addEventListener('click', ()=>{
+  state.skeletonEnabled = !state.skeletonEnabled;
+  el.btnToggleSkeleton.textContent = state.skeletonEnabled ? '🖐️ โครงมือ: เปิด' : '🖐️ โครงมือ: ปิด';
+  if (!state.skeletonEnabled) ctx.clearRect(0, 0, el.skeletonCanvas.width, el.skeletonCanvas.height);
+});
+el.btnFloatingSkeleton.addEventListener('click', ()=>{
+  state.skeletonEnabled = !state.skeletonEnabled;
+  el.btnToggleSkeleton.textContent = state.skeletonEnabled ? '🖐️ โครงมือ: เปิด' : '🖐️ โครงมือ: ปิด';
+  el.btnFloatingSkeleton.textContent = state.skeletonEnabled ? '🖐️' : '🚫';
+  if (!state.skeletonEnabled) ctx.clearRect(0, 0, el.skeletonCanvas.width, el.skeletonCanvas.height);
+});
+window.addEventListener('resize', ()=>{ if (state.screen === 'playing') ctx.clearRect(0,0,el.skeletonCanvas.width, el.skeletonCanvas.height); });
+document.addEventListener('touchmove', e=>{ if (state.screen === 'playing') e.preventDefault(); }, { passive:false });
+
+/* ============================================================
+   14) Start
+   ============================================================ */
+showScreen('start');
+renderBins();
+</script>
+</body>
+</html>

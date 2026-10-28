@@ -1,0 +1,1122 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#020617;color:#e2e8f0;font-family:'Sarabun',Tahoma,sans-serif;min-height:100vh;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:8px}
+  h1{font-size:20px;color:#94a3b8;font-weight:700}
+  #wrap{width:min(100%, calc((100vh - 190px) * 16 / 9));min-width:320px}
+  canvas{width:100%;aspect-ratio:16/9;display:block;border-radius:14px;cursor:pointer;
+         box-shadow:0 20px 60px rgba(0,0,0,.6);background:#0f172a}
+  canvas:fullscreen{object-fit:contain;background:#000;border-radius:0}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+  button,select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:8px;
+         padding:8px 12px;font-family:inherit;font-size:15px;cursor:pointer}
+  button:hover,select:hover{background:#334155}
+  button.on{background:#14532d;border-color:#4ade80}
+  #rec{border-color:#f87171;color:#fca5a5}
+  #rec.on{background:#7f1d1d;color:#fff}
+  #seek{flex:1;min-width:160px;accent-color:#facc15}
+  #time{font-variant-numeric:tabular-nums;color:#94a3b8;min-width:100px;text-align:right}
+  #status{font-size:14px;color:#facc15;min-height:20px;margin-top:6px}
+  .hint{font-size:13px;color:#64748b}
+  #loading{position:fixed;inset:0;background:#020617;display:flex;align-items:center;
+           justify-content:center;font-size:24px;color:#94a3b8;z-index:10}
+
+
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>การผันวรรณยุกต์ในภาษาไทย – Motion Graphic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#020617;color:#e2e8f0;font-family:'Sarabun',Tahoma,sans-serif;min-height:100vh;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:8px}
+  h1{font-size:20px;color:#94a3b8;font-weight:700}
+  #wrap{width:min(100%, calc((100vh - 190px) * 16 / 9));min-width:320px}
+  canvas{width:100%;aspect-ratio:16/9;display:block;border-radius:14px;cursor:pointer;
+         box-shadow:0 20px 60px rgba(0,0,0,.6);background:#0f172a}
+  canvas:fullscreen{object-fit:contain;background:#000;border-radius:0}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+  button,select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:8px;
+         padding:8px 12px;font-family:inherit;font-size:15px;cursor:pointer}
+  button:hover,select:hover{background:#334155}
+  button.on{background:#14532d;border-color:#4ade80}
+  #rec{border-color:#f87171;color:#fca5a5}
+  #rec.on{background:#7f1d1d;color:#fff}
+  #seek{flex:1;min-width:160px;accent-color:#facc15}
+  #time{font-variant-numeric:tabular-nums;color:#94a3b8;min-width:100px;text-align:right}
+  #status{font-size:14px;color:#facc15;min-height:20px;margin-top:6px}
+  .hint{font-size:13px;color:#64748b}
+  #loading{position:fixed;inset:0;background:#020617;display:flex;align-items:center;
+           justify-content:center;font-size:24px;color:#94a3b8;z-index:10}
+</style>
+</head>
+<body>
+<div id="loading">กำลังโหลดฟอนต์ภาษาไทย…</div>
+<h1>🎬 การผันวรรณยุกต์ในภาษาไทย</h1>
+<div id="wrap">
+  <canvas id="stage" width="1920" height="1080"></canvas>
+  <div class="bar">
+    <button id="prev" title="ฉากก่อนหน้า (←)">⏮</button>
+    <button id="play" title="เล่น/หยุด (Space)">▶ เล่น</button>
+    <button id="next" title="ฉากถัดไป (→)">⏭</button>
+    <input id="seek" type="range" min="0" step="0.01" value="0">
+    <span id="time">0:00 / 0:00</span>
+  </div>
+  <div class="bar">
+    <select id="chap" title="เลือกบท"></select>
+    <button id="tts" title="อ่านคำบรรยายด้วยเสียงภาษาไทยของเบราว์เซอร์">🔈 เสียงบรรยาย: ปิด</button>
+    <button id="fs" title="เต็มจอ (F)">⛶ เต็มจอ</button>
+    <button id="rec">⏺ บันทึกวิดีโอ (MP4)</button>
+  </div>
+  <div id="status"></div>
+  <div class="hint">ปุ่มลัด: Space = เล่น/หยุด • ← → = เปลี่ยนฉาก • F = เต็มจอ • คลิกที่วิดีโอเพื่อเล่น/หยุด</div>
+</div>
+
+<script>
+/* ================= SETUP ================= */
+const cv = document.getElementById('stage');
+const ctx = cv.getContext('2d');
+const W = 1920, H = 1080, CX = 960;
+const FONT = '"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif';
+const COL = { mid:'#4ade80', high:'#fb923c', low:'#60a5fa', live:'#34d399', dead:'#f87171',
+              yellow:'#facc15', gray:'#94a3b8', grayA:'#cbd5e1', grayD:'#475569' };
+const TONES = ['สามัญ','เอก','โท','ตรี','จัตวา'];
+const TC = { 'สามัญ':'#e2e8f0', 'เอก':'#facc15', 'โท':'#f472b6', 'ตรี':'#a78bfa', 'จัตวา':'#2dd4bf' };
+const COLX = [360, 660, 960, 1260, 1560];
+// Pitch contour (level 1 = low … 5 = high)
+const CONTOUR = {
+  'สามัญ':[[0,3.1],[1,2.9]],
+  'เอก':[[0,2.3],[1,1.2]],
+  'โท':[[0,4],[0.35,4.6],[1,1.4]],
+  'ตรี':[[0,3.4],[0.6,3.8],[1,4.8]],
+  'จัตวา':[[0,2.4],[0.45,1.2],[1,4.5]]
+};
+
+/* ================= HELPERS ================= */
+const clamp = (x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease = x=>{ x=clamp(x); return 1-Math.pow(1-x,3); };
+const P = (t,s,d=0.6)=>ease((t-s)/d);
+
+function setFont(size,bold){ ctx.font = `${bold?700:400} ${size}px ${FONT}`; }
+function mw(s,size,bold){ setFont(size,bold); return ctx.measureText(s).width; }
+
+function txt(s,x,y,o={}){
+  const {size=40,color='#fff',bold=false,align='center',maxW=0} = o;
+  setFont(size,bold); ctx.fillStyle=color; ctx.textAlign=align; ctx.textBaseline='middle';
+  const w = ctx.measureText(s).width;
+  if(maxW && w>maxW){ ctx.save(); ctx.translate(x,y); ctx.scale(maxW/w,maxW/w); ctx.fillText(s,0,0); ctx.restore(); }
+  else ctx.fillText(s,x,y);
+}
+function writeText(p,s,x,y,o={}){ // left-to-right "write" reveal (centered text)
+  if(p<=0) return;
+  const w = Math.min(mw(s,o.size||40,o.bold), o.maxW||1e9);
+  ctx.save(); ctx.beginPath(); ctx.rect(x-w/2-30,0,(w+60)*p,H); ctx.clip();
+  txt(s,x,y,o); ctx.restore();
+}
+function rrPath(x,y,w,h,r){ // centered rounded rect
+  const l=x-w/2, t=y-h/2;
+  ctx.beginPath(); ctx.moveTo(l+r,t);
+  ctx.arcTo(l+w,t,l+w,t+h,r); ctx.arcTo(l+w,t+h,l,t+h,r);
+  ctx.arcTo(l,t+h,l,t,r); ctx.arcTo(l,t,l+w,t,r); ctx.closePath();
+}
+function box(x,y,w,h,color,{r=24,fillA=0.08,lw=4}={}){
+  rrPath(x,y,w,h,r);
+  ctx.save(); ctx.globalAlpha*=fillA; ctx.fillStyle=color; ctx.fill(); ctx.restore();
+  ctx.lineWidth=lw; ctx.strokeStyle=color; ctx.stroke();
+}
+function chip(label,x,y,w,h,color,size=36,fillA=0.18){
+  box(x,y,w,h,color,{r:18,fillA,lw:3});
+  txt(label,x,y+2,{size,color,bold:true,maxW:w-24});
+}
+function anim(p,fn,dx=0,dy=0){
+  if(p<=0) return;
+  ctx.save(); ctx.globalAlpha*=p; ctx.translate(dx*(1-p),dy*(1-p)); fn(); ctx.restore();
+}
+function head(t,s){
+  anim(P(t,0.1),()=>txt(s,CX,90,{size:58,bold:true,maxW:1760}),0,-30);
+  const p=P(t,0.4,0.8); ctx.fillStyle=COL.yellow; ctx.fillRect(CX-90*p,140,180*p,6);
+}
+
+// Catmull-Rom curve for pitch contours
+function catmull(pts,n=24){
+  const out=[];
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[Math.max(i-1,0)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(i+2,pts.length-1)];
+    for(let k=0;k<n;k++){
+      const s=k/n, s2=s*s, s3=s2*s;
+      const f=d=>0.5*(2*p1[d]+(-p0[d]+p2[d])*s+(2*p0[d]-5*p1[d]+4*p2[d]-p3[d])*s2+(-p0[d]+3*p1[d]-3*p2[d]+p3[d])*s3);
+      out.push([f(0),f(1)]);
+    }
+  }
+  out.push(pts[pts.length-1]); return out;
+}
+const CURVES = {}; for(const k in CONTOUR) CURVES[k]=catmull(CONTOUR[k]);
+
+function contour(tone,x,y,w,h,p,color,guides=true){
+  if(p<=0) return;
+  const pts=CURVES[tone];
+  const X=a=>x-w/2+a*w, Y=l=>y+h/2-(l-1)/4*h;
+  if(guides){
+    ctx.save(); ctx.globalAlpha*=0.25; ctx.strokeStyle='#64748b'; ctx.lineWidth=1;
+    for(let i=0;i<5;i++){ const yy=y+h/2-i/4*h; ctx.beginPath(); ctx.moveTo(x-w/2,yy); ctx.lineTo(x+w/2,yy); ctx.stroke(); }
+    ctx.restore();
+  }
+  const k=Math.max(2,Math.floor(pts.length*clamp(p)));
+  ctx.beginPath();
+  pts.slice(0,k).forEach(([a,l],i)=> i?ctx.lineTo(X(a),Y(l)):ctx.moveTo(X(a),Y(l)));
+  ctx.strokeStyle=color; ctx.lineWidth=6; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.stroke();
+  const [ea,el]=pts[k-1];
+  ctx.beginPath(); ctx.arc(X(ea),Y(el),8,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+}
+
+function wave(x,y,w,amp,t,color,decay){
+  ctx.beginPath();
+  for(let i=0;i<=120;i++){
+    const u=i/120, env=decay?Math.max(0,1-u*3.2):(0.85+0.15*Math.sin(u*4));
+    const xx=x-w/2+u*w, yy=y+Math.sin(u*30-t*7)*amp*env;
+    i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);
+  }
+  ctx.strokeStyle=color; ctx.lineWidth=4; ctx.lineCap='round'; ctx.stroke();
+}
+
+function bg(gt){
+  const g=ctx.createRadialGradient(CX,380,100,CX,540,1250);
+  g.addColorStop(0,'#1e293b'); g.addColorStop(1,'#0b1120');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<26;i++){
+    const sx=(i*263.7)%W, sy=(i*151.3+80)%H;
+    const x=(sx+gt*(8+(i%5)*6))%W, y=sy+Math.sin(gt*0.5+i)*20;
+    ctx.beginPath(); ctx.arc(x,y,2+(i%3),0,Math.PI*2);
+    ctx.fillStyle=`rgba(148,163,184,${0.05+(i%4)*0.03})`; ctx.fill();
+  }
+}
+
+/* ================= SCENES ================= */
+const scenes=[];
+function S(title,dur,narr,draw){ scenes.push({title,dur,narr,draw}); }
+
+// 1) Title
+S('บทนำ',9,
+ 'การผันวรรณยุกต์ในภาษาไทย คำว่า ปา ป่า ป้า ป๊า ป๋า มีห้าเสียง การผันให้ถูกต้อง ต้องรู้สามอย่าง คือ ไตรยางศ์ คำเป็นคำตาย และรูปวรรณยุกต์',
+ t=>{
+  writeText(P(t,0.2,1.4),'การผันวรรณยุกต์ในภาษาไทย',CX,200,{size:100,bold:true});
+  ['ปา','ป่า','ป้า','ป๊า','ป๋า'].forEach((w,i)=>{
+    const x=CX+(i-2)*330, tn=TONES[i], c=TC[tn];
+    anim(P(t,1.6+i*0.35),()=>txt(w,x,470,{size:150,bold:true,color:c}),0,50);
+    anim(P(t,3.4+i*0.15),()=>txt(tn,x,610,{size:42,color:c}));
+    contour(tn,x,720,200,110,P(t,3.8+i*0.2,0.9),c);
+  });
+  anim(P(t,5.5),()=>txt('ผันให้ถูก ต้องรู้ 3 อย่าง: ไตรยางศ์ • คำเป็น/คำตาย • รูปวรรณยุกต์',CX,920,{size:40,color:COL.gray,maxW:1700}),0,30);
+});
+
+// 2) Tones vs marks
+S('รูปและเสียงวรรณยุกต์',12,
+ 'ภาษาไทยมีเสียงวรรณยุกต์ห้าเสียง คือ สามัญ เอก โท ตรี จัตวา แต่มีรูปวรรณยุกต์เพียงสี่รูป คือ ไม้เอก ไม้โท ไม้ตรี และไม้จัตวา ข้อควรระวังคือ รูปกับเสียงไม่ตรงกันเสมอไป เช่น คำว่า ค่า ใช้ไม้เอก แต่ออกเสียงโท',
+ t=>{
+  head(t,'พื้นฐาน: เสียงวรรณยุกต์ กับ รูปวรรณยุกต์');
+  anim(P(t,0.8),()=>txt('เสียงวรรณยุกต์ 5 เสียง',500,230,{size:46,color:COL.yellow,bold:true}));
+  TONES.forEach((tn,i)=>anim(P(t,1.2+i*0.25),()=>{
+    chip(tn,420,330+i*100,300,80,TC[tn],38);
+    contour(tn,680,330+i*100,140,64,P(t,1.6+i*0.25,0.8),TC[tn],false);
+  },-50,0));
+  anim(P(t,3),()=>txt('รูปวรรณยุกต์ 4 รูป',1420,230,{size:46,color:COL.yellow,bold:true}));
+  [['อ่','ไม้เอก'],['อ้','ไม้โท'],['อ๊','ไม้ตรี'],['อ๋','ไม้จัตวา']].forEach(([m,n],i)=>anim(P(t,3.4+i*0.3),()=>{
+    const y=340+i*118;
+    box(1420,y,520,100,'#475569',{r:18,fillA:0.25,lw:2});
+    txt(m,1260,y+8,{size:84,bold:true});
+    txt(n,1350,y,{size:44,color:COL.grayA,align:'left'});
+  },50,0));
+  anim(P(t,6),()=>{
+    box(CX,975,1520,90,COL.dead,{r:20,fillA:0.12,lw:2});
+    txt('ข้อควรระวัง: รูป ≠ เสียง เสมอไป เช่น “ค่า” ใช้ไม้เอก แต่ออกเสียงโท',CX,977,{size:38,color:'#fca5a5',maxW:1460});
+  },0,30);
+});
+
+// 3) Consonant classes
+S('ไตรยางศ์',13,
+ 'ขั้นที่หนึ่ง ไตรยางศ์ คือการแบ่งพยัญชนะเป็นสามหมู่ อักษรกลางเก้าตัว จำว่า ไก่จิกเด็กตายบนปากโอ่ง อักษรสูงสิบเอ็ดตัว จำว่า ผีฝากถุงข้าวสารให้ฉัน และอักษรต่ำยี่สิบสี่ตัว',
+ t=>{
+  head(t,'ขั้นที่ 1: ไตรยางศ์ (อักษร 3 หมู่)');
+  const cards=[
+    {title:'อักษรกลาง',c:COL.mid,count:'9 ตัว',letters:['ก จ ด ต ฎ','ฏ บ ป อ'],mn:['ไก่ จิก เด็ก ตาย','เฎ็ก ฏาย บน ปาก โอ่ง']},
+    {title:'อักษรสูง',c:COL.high,count:'11 ตัว',letters:['ข ฃ ฉ ฐ ถ ผ','ฝ ศ ษ ส ห'],mn:['ผี ฝาก ถุง ข้าว สาร','ให้ ฉัน']},
+    {title:'อักษรต่ำ',c:COL.low,count:'24 ตัว (คู่ 14 • เดี่ยว 10)',letters:['ค ฅ ฆ ช ซ ฌ ฑ','ฒ ท ธ พ ฟ ภ ฮ','ง ญ ณ น ม ย ร ล ว ฬ'],mn:['เดี่ยว: งู ใหญ่ นอน อยู่ ณ','ริม วัด โม ฬี โลก']}
+  ];
+  cards.forEach((cd,i)=>{
+    const x=340+i*620, s=0.8+i*2.4;
+    anim(P(t,s),()=>{
+      box(x,590,590,800,cd.c);
+      txt(cd.title,x,270,{size:60,bold:true,color:cd.c});
+      txt(cd.count,x,340,{size:32,color:COL.gray,maxW:540});
+      cd.letters.forEach((l,j)=>txt(l,x,440+j*80,{size:54,maxW:540}));
+      const my=440+cd.letters.length*80+40;
+      anim(P(t,s+0.9),()=>{
+        txt('คำช่วยจำ',x,my,{size:26,color:COL.gray});
+        cd.mn.forEach((m,j)=>txt(m,x,my+55+j*52,{size:36,color:cd.c,bold:true,maxW:540}));
+      },0,20);
+    },0,50);
+  });
+});
+
+// 4) Live vs dead syllables
+S('คำเป็น คำตาย',12,
+ 'ขั้นที่สอง คำเป็น คือคำที่ใช้สระเสียงยาว หรือสะกดด้วยแม่กง กน กม เกย เกอว รวมถึงสระ อำ ใอ ไอ เอา ส่วนคำตาย คือคำที่ใช้สระเสียงสั้นไม่มีตัวสะกด หรือสะกดด้วยแม่กก กด กบ',
+ t=>{
+  head(t,'ขั้นที่ 2: คำเป็น กับ คำตาย');
+  const LD=[
+    {x:530,title:'คำเป็น',c:COL.live,decay:false,s:0.8,items:[['สระเสียงยาว ไม่มีตัวสะกด','มา   ปู   ดี'],['สะกดด้วย แม่กง กน กม เกย เกอว','กิน   ลม   สวย'],['มีสระ อำ ใอ ไอ เอา','ขำ   ใจ   ไป   เรา']]},
+    {x:1390,title:'คำตาย',c:COL.dead,decay:true,s:4.2,items:[['สระเสียงสั้น ไม่มีตัวสะกด','จะ   ติ   ดุ'],['สะกดด้วย แม่กก กด กบ','นก   มด   ตบ']]}
+  ];
+  LD.forEach(L=>anim(P(t,L.s),()=>{
+    box(L.x,570,820,740,L.c);
+    txt(L.title,L.x,265,{size:64,bold:true,color:L.c});
+    wave(L.x,345,300,22,t,L.c,L.decay);
+    L.items.forEach(([d,e],j)=>anim(P(t,L.s+0.5+j*0.6),()=>{
+      const y=440+j*160;
+      txt(d,L.x,y,{size:32,color:COL.grayA,maxW:760});
+      txt(e,L.x,y+62,{size:54,bold:true});
+    },0,20));
+  },L.x<CX?-60:60,0));
+  anim(P(t,7),()=>txt('เคล็ดลับ: ลากเสียงยาวได้ = คำเป็น  •  เสียงสั้นห้วน = คำตาย',CX,1000,{size:38,color:COL.yellow,maxW:1700}),0,30);
+});
+
+// 5) Rules intro
+S('กฎการผัน',4,'ขั้นที่สาม มาดูกฎการผันวรรณยุกต์ทั้งเจ็ดแบบกัน',t=>{
+  writeText(P(t,0.2,1.2),'ขั้นที่ 3: กฎการผันวรรณยุกต์ 7 แบบ',CX,490,{size:84,bold:true});
+  anim(P(t,1.4),()=>txt('อักษร 3 หมู่  ×  คำเป็น / คำตาย',CX,600,{size:44,color:COL.gray}),0,20);
+});
+
+// 6–12) The 7 rules
+function rule(step,cls,color,kind,entries,notes,narr){
+  const n=entries.length, tEnd=1.4+n*0.9, dur=tEnd+5.4;
+  S(`${step} ${cls} ${kind}`,dur,narr,t=>{
+    const bw=360, kw=mw(kind,52,true), tot=bw+30+kw, sx=CX-tot/2;
+    anim(P(t,0.1),()=>{
+      chip(cls,sx+bw/2,95,bw,100,color,46,0.25);
+      txt(kind,sx+bw+30,97,{size:52,bold:true,align:'left'});
+    },0,-30);
+    anim(P(t,0.3),()=>txt(step,CX,180,{size:30,color:COL.gray}));
+    TONES.forEach((tn,i)=>anim(P(t,0.5+i*0.08),()=>txt(tn,COLX[i],270,{size:44,bold:true,color:TC[tn]})));
+    const lp=P(t,0.5,0.8);
+    ctx.strokeStyle=COL.grayD; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(CX-800*lp,325); ctx.lineTo(CX+800*lp,325); ctx.stroke();
+
+    const used=new Set();
+    entries.forEach(([tn,word,label],k)=>{
+      const i=TONES.indexOf(tn); used.add(i);
+      const x=COLX[i], c=TC[tn], s=1.4+k*0.9;
+      anim(P(t,s),()=>{
+        box(x,560,270,440,c,{r:22,fillA:0.1,lw:3});
+        txt(word,x,480,{size:130,bold:true,color:c});
+      },0,-60);
+      anim(P(t,s+0.3),()=>txt(label,x,610,{size:34,color:label==='พื้นเสียง'?COL.yellow:COL.grayA,bold:label==='พื้นเสียง',maxW:250}));
+      contour(tn,x,700,170,80,P(t,s+0.4,0.8),c);
+    });
+    const dp=P(t,tEnd);
+    for(let i=0;i<5;i++) if(!used.has(i)) anim(dp,()=>{
+      ctx.setLineDash([12,10]); rrPath(COLX[i],560,270,440,22);
+      ctx.strokeStyle=COL.grayD; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+      txt('—',COLX[i],480,{size:70,color:COL.grayD});
+      txt('ผันไม่ได้',COLX[i],610,{size:28,color:COL.grayD});
+    });
+    notes.forEach((nt,j)=>anim(P(t,tEnd+0.6+j*0.4),()=>txt(nt,CX,880+j*62,{size:42,color:COL.yellow,maxW:1700}),0,30));
+  });
+}
+rule('กฎที่ 1/7','อักษรกลาง',COL.mid,'คำเป็น',
+  [['สามัญ','ปา','พื้นเสียง'],['เอก','ป่า','ไม้เอก'],['โท','ป้า','ไม้โท'],['ตรี','ป๊า','ไม้ตรี'],['จัตวา','ป๋า','ไม้จัตวา']],
+  ['ผันได้ครบ 5 เสียง • พื้นเสียงสามัญ','รูปกับเสียงตรงกันทุกตัว'],
+  'กฎที่หนึ่ง อักษรกลาง คำเป็น ผันได้ครบห้าเสียง พื้นเสียงเป็นเสียงสามัญ เช่น ปา ป่า ป้า ป๊า ป๋า รูปกับเสียงตรงกันทุกตัว');
+rule('กฎที่ 2/7','อักษรกลาง',COL.mid,'คำตาย',
+  [['เอก','จะ','พื้นเสียง'],['โท','จ้ะ','ไม้โท'],['ตรี','จ๊ะ','ไม้ตรี'],['จัตวา','จ๋ะ','ไม้จัตวา']],
+  ['ผันได้ 4 เสียง • พื้นเสียงเอก','(ไม่มีเสียงสามัญ)'],
+  'กฎที่สอง อักษรกลาง คำตาย พื้นเสียงเป็นเสียงเอก ผันได้สี่เสียง เช่น จะ จ้ะ จ๊ะ จ๋ะ');
+rule('กฎที่ 3/7','อักษรสูง',COL.high,'คำเป็น',
+  [['จัตวา','ขา','พื้นเสียง'],['เอก','ข่า','ไม้เอก'],['โท','ข้า','ไม้โท']],
+  ['ผันได้ 3 เสียง • พื้นเสียงจัตวา','ใช้ได้เฉพาะไม้เอก และไม้โท'],
+  'กฎที่สาม อักษรสูง คำเป็น พื้นเสียงเป็นเสียงจัตวา ผันได้สามเสียง เช่น ขา ข่า ข้า');
+rule('กฎที่ 4/7','อักษรสูง',COL.high,'คำตาย',
+  [['เอก','ขะ','พื้นเสียง'],['โท','ข้ะ','ไม้โท']],
+  ['ผันได้ 2 เสียง • พื้นเสียงเอก','ใช้ได้เฉพาะไม้โท'],
+  'กฎที่สี่ อักษรสูง คำตาย พื้นเสียงเป็นเสียงเอก ผันได้สองเสียง เช่น ขะ ข้ะ');
+rule('กฎที่ 5/7','อักษรต่ำ',COL.low,'คำเป็น',
+  [['สามัญ','คา','พื้นเสียง'],['โท','ค่า','ไม้เอก'],['ตรี','ค้า','ไม้โท']],
+  ['ผันได้ 3 เสียง • พื้นเสียงสามัญ','ระวัง! ไม้เอก → เสียงโท   ไม้โท → เสียงตรี'],
+  'กฎที่ห้า อักษรต่ำ คำเป็น พื้นเสียงสามัญ ใส่ไม้เอกเป็นเสียงโท ใส่ไม้โทเป็นเสียงตรี เช่น คา ค่า ค้า');
+rule('กฎที่ 6/7','อักษรต่ำ',COL.low,'คำตาย สระสั้น',
+  [['ตรี','คะ','พื้นเสียง'],['โท','ค่ะ','ไม้เอก']],
+  ['พื้นเสียงตรี • ใส่ไม้เอก → เสียงโท'],
+  'กฎที่หก อักษรต่ำ คำตาย สระเสียงสั้น พื้นเสียงตรี ใส่ไม้เอกเป็นเสียงโท เช่น คะ ค่ะ');
+rule('กฎที่ 7/7','อักษรต่ำ',COL.low,'คำตาย สระยาว',
+  [['โท','โชค','พื้นเสียง'],['ตรี','โช้ค','ไม้โท']],
+  ['พื้นเสียงโท • ใส่ไม้โท → เสียงตรี'],
+  'กฎที่เจ็ด อักษรต่ำ คำตาย สระเสียงยาว พื้นเสียงโท ใส่ไม้โทเป็นเสียงตรี เช่น โชค โช้ค');
+
+// 13) Paired consonants
+S('อักษรคู่',12,
+ 'อักษรต่ำคู่ผันได้แค่สามเสียง แต่เมื่อจับคู่กับอักษรสูงที่ออกเสียงเหมือนกัน เช่น ค กับ ข จะผันได้ครบห้าเสียง คือ คา ข่า ค่า ค้า ขา',
+ t=>{
+  head(t,'เทคนิค: อักษรคู่ ช่วยกันผันให้ครบ 5 เสียง');
+  anim(P(t,0.5),()=>txt('อักษรต่ำ (คู่) + อักษรสูง ที่ออกเสียงเหมือนกัน เช่น ค – ข',CX,190,{size:36,color:COL.gray}));
+  TONES.forEach((tn,i)=>anim(P(t,0.8+i*0.08),()=>txt(tn,COLX[i],290,{size:44,bold:true,color:TC[tn]})));
+  const data=[['คา',COL.low],['ข่า',COL.high],['ค่า',COL.low],['ค้า',COL.low],['ขา',COL.high]];
+  data.forEach(([w,c],i)=>{
+    const s=1.4+i*0.7;
+    anim(P(t,s),()=>{ box(COLX[i],520,270,300,c,{r:22,fillA:0.12,lw:3}); txt(w,COLX[i],500,{size:130,bold:true,color:c}); },0,-60);
+    contour(TONES[i],COLX[i],625,160,60,P(t,s+0.3,0.8),TC[TONES[i]],false);
+  });
+  anim(P(t,5.2),()=>txt('หรือ ข้า',COLX[2],720,{size:38,color:COL.high}));
+  anim(P(t,5.8),()=>{ chip('อักษรต่ำ',CX-180,850,300,80,COL.low,34); chip('อักษรสูง',CX+180,850,300,80,COL.high,34); });
+  anim(P(t,6.6),()=>txt('ผลลัพธ์: ได้ครบ สามัญ – เอก – โท – ตรี – จัตวา',CX,990,{size:40,color:COL.yellow}),0,30);
+});
+
+// 14) Leading consonants
+S('อักษรนำ',12,
+ 'กรณีพิเศษ อักษรนำ ห นำอักษรต่ำเดี่ยว ให้ผันตามอักษรสูง เช่น หมา หน่อย หน้า ส่วน อ นำ ย มีสี่คำ ให้ผันตามอักษรกลาง คือ อย่า อยู่ อย่าง อยาก',
+ t=>{
+  head(t,'กรณีพิเศษ: อักษรนำ');
+  const panels=[
+    {x:530,s:0.8,title:'ห นำ อักษรต่ำเดี่ยว',rule:'→ ผันตามอักษรสูง',c:COL.high,gap:240,
+     items:[['หมา','จัตวา'],['หน่อย','เอก'],['หน้า','โท']],foot:'ห ไม่ออกเสียง แต่เปลี่ยนเสียงวรรณยุกต์'},
+    {x:1390,s:4.2,title:'อ นำ ย (มีแค่ 4 คำ)',rule:'→ ผันตามอักษรกลาง',c:COL.mid,gap:190,
+     items:[['อย่า','เอก'],['อยู่','เอก'],['อย่าง','เอก'],['อยาก','เอก']],foot:'จำว่า: “อย่าอยู่อย่างอยาก”'}
+  ];
+  panels.forEach(pn=>anim(P(t,pn.s),()=>{
+    box(pn.x,580,820,740,pn.c);
+    txt(pn.title,pn.x,300,{size:50,bold:true,color:pn.c,maxW:760});
+    txt(pn.rule,pn.x,375,{size:38,color:COL.grayA});
+    pn.items.forEach(([w,tn],k)=>{
+      const x=pn.x+(k-(pn.items.length-1)/2)*pn.gap, s=pn.s+0.6+k*0.4;
+      anim(P(t,s),()=>{ txt(w,x,520,{size:84,bold:true,color:TC[tn]}); txt(tn,x,620,{size:30,color:TC[tn]}); },0,30);
+      contour(tn,x,700,140,60,P(t,s+0.3,0.8),TC[tn],false);
+    });
+    anim(P(t,pn.s+2.2),()=>txt(pn.foot,pn.x,850,{size:38,color:COL.yellow,maxW:760}));
+  },pn.x<CX?-60:60,0));
+});
+
+// 15) Summary table
+S('ตารางสรุป',14,
+ 'ตารางสรุปการผันวรรณยุกต์ทั้งหมด กรอบสีขาวคือพื้นเสียง หรือคำที่ไม่มีรูปวรรณยุกต์',
+ t=>{
+  head(t,'ตารางสรุปการผันวรรณยุกต์');
+  const xs=[250,620,880,1140,1400,1660];
+  anim(P(t,0.6),()=>{
+    txt('ประเภท',xs[0],195,{size:34,bold:true,color:COL.gray});
+    TONES.forEach((tn,i)=>txt(tn,xs[i+1],195,{size:36,bold:true,color:TC[tn]}));
+  });
+  const rows=[
+    ['กลาง • เป็น',COL.mid,['ปา','ป่า','ป้า','ป๊า','ป๋า'],0],
+    ['กลาง • ตาย',COL.mid,['','จะ','จ้ะ','จ๊ะ','จ๋ะ'],1],
+    ['สูง • เป็น',COL.high,['','ข่า','ข้า','','ขา'],4],
+    ['สูง • ตาย',COL.high,['','ขะ','ข้ะ','',''],1],
+    ['ต่ำ • เป็น',COL.low,['คา','','ค่า','ค้า',''],0],
+    ['ต่ำ • ตาย (สั้น)',COL.low,['','','ค่ะ','คะ',''],3],
+    ['ต่ำ • ตาย (ยาว)',COL.low,['','','โชค','โช้ค',''],2]
+  ];
+  rows.forEach(([label,c,words,base],r)=>{
+    const y=280+r*98;
+    anim(P(t,1+r*0.35),()=>{
+      ctx.save(); ctx.globalAlpha*=(r%2?0.16:0.09); ctx.fillStyle=c; rrPath(CX,y,1800,88,14); ctx.fill(); ctx.restore();
+      txt(label,xs[0],y,{size:34,bold:true,color:c,maxW:380});
+      words.forEach((w,k)=>{
+        const x=xs[k+1];
+        if(w){
+          txt(w,x,y,{size:48,bold:true,color:TC[TONES[k]]});
+          if(k===base){ const bw=mw(w,48,true)+40; ctx.strokeStyle='#fff'; ctx.lineWidth=2.5; rrPath(x,y,bw,72,12); ctx.stroke(); }
+        } else txt('—',x,y,{size:36,color:COL.grayD});
+      });
+    },-60,0);
+  });
+  anim(P(t,4),()=>txt('กรอบสีขาว = พื้นเสียง (คำที่ไม่มีรูปวรรณยุกต์)',CX,1010,{size:34,color:COL.gray}));
+});
+
+// 16) Outro
+S('สรุป',9,
+ 'สรุป การผันวรรณยุกต์ให้ถูก ต้องดูสามอย่าง คือ ไตรยางศ์ คำเป็นคำตาย และรูปวรรณยุกต์ ขอบคุณที่รับชม',
+ t=>{
+  writeText(P(t,0.2,1.2),'สรุป: ผันวรรณยุกต์ให้ถูก ดู 3 อย่าง',CX,250,{size:70,bold:true});
+  [['1. ไตรยางศ์',COL.mid],['2. คำเป็น / คำตาย',COL.high],['3. รูปวรรณยุกต์',COL.low]]
+    .forEach(([s,c],i)=>anim(P(t,1.4+i*0.4),()=>chip(s,CX,430+i*130,600,100,c,44),0,40));
+  anim(P(t,3.6),()=>{
+    const sc=1+0.04*Math.sin(t*3);
+    ctx.save(); ctx.translate(CX,900); ctx.scale(sc,sc);
+    txt('ขอบคุณที่รับชม 🙏',0,0,{size:56,bold:true,color:COL.yellow});
+    ctx.restore();
+  });
+});
+
+/* ================= PLAYER ================= */
+const starts=[]; let total=0;
+scenes.forEach(s=>{ starts.push(total); total+=s.dur; });
+
+const $=id=>document.getElementById(id);
+const playBtn=$('play'), seek=$('seek'), timeEl=$('time'), chap=$('chap'),
+      ttsBtn=$('tts'), recBtn=$('rec'), statusEl=$('status');
+seek.max=total;
+scenes.forEach((s,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${i+1}. ${s.title}`; chap.appendChild(o); });
+
+let time=0, playing=false, last=performance.now(), dragging=false;
+let ttsOn=false, lastIdx=-1, recording=false, rec=null, chunks=[];
+
+const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+function sceneAt(tm){ for(let k=0;k<scenes.length;k++) if(tm<starts[k]+scenes[k].dur) return k; return scenes.length-1; }
+
+function speak(s){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(s); u.lang='th-TH';
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith('th'));
+  if(v) u.voice=v;
+  speechSynthesis.speak(u);
+}
+
+function render(){
+  const idx=sceneAt(time), sc=scenes[idx], lt=time-starts[idx];
+  ctx.save();
+  bg(time);
+  if(!playing && time<0.01 && !recording){
+    // Poster frame + play button
+    scenes[0].draw(7);
+    ctx.fillStyle='rgba(2,6,23,0.55)'; ctx.fillRect(0,0,W,H);
+    ctx.beginPath(); ctx.arc(CX,540,90,0,Math.PI*2); ctx.fillStyle='rgba(250,204,21,0.9)'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(CX-30,490); ctx.lineTo(CX+50,540); ctx.lineTo(CX-30,590); ctx.closePath();
+    ctx.fillStyle='#0f172a'; ctx.fill();
+  } else {
+    ctx.globalAlpha = 1 - clamp((lt-(sc.dur-0.5))/0.5);
+    sc.draw(lt);
+  }
+  ctx.restore();
+
+  if(!dragging) seek.value=time;
+  timeEl.textContent=`${fmt(time)} / ${fmt(total)}`;
+  if(chap.selectedIndex!==idx) chap.selectedIndex=idx;
+  if(idx!==lastIdx){ lastIdx=idx; if(playing&&ttsOn) speak(sc.narr); }
+}
+
+function loop(now){
+  const dt=Math.min((now-last)/1000,0.1); last=now;
+  if(playing){
+    time+=dt;
+    if(time>=total){ time=total-0.001; setPlaying(false); if(recording) stopRec(); }
+  }
+  render();
+  requestAnimationFrame(loop);
+}
+
+function setPlaying(v){
+  playing=v;
+  playBtn.textContent=v?'⏸ หยุด':'▶ เล่น';
+  if(v){
+    if(time>=total-0.01) time=0;
+    lastIdx=-1;   // narrate the current scene
+  } else if('speechSynthesis' in window) speechSynthesis.cancel();
+}
+function jump(i){
+  if(recording) return;
+  i=clamp(i,0,scenes.length-1); time=starts[i]+0.001; lastIdx=-1;
+}
+
+playBtn.onclick=()=>{ if(!recording) setPlaying(!playing); };
+cv.onclick=()=>{ if(!recording) setPlaying(!playing); };
+$('prev').onclick=()=>{ const i=sceneAt(time); jump(time-starts[i]>1.5?i:i-1); };
+$('next').onclick=()=>jump(sceneAt(time)+1);
+chap.onchange=()=>jump(+chap.value);
+seek.addEventListener('pointerdown',()=>dragging=true);
+seek.addEventListener('pointerup',()=>dragging=false);
+seek.oninput=()=>{ if(!recording){ time=+seek.value; } };
+$('fs').onclick=()=>{ document.fullscreenElement?document.exitFullscreen():cv.requestFullscreen(); };
+ttsBtn.onclick=()=>{
+  ttsOn=!ttsOn;
+  ttsBtn.textContent=`🔈 เสียงบรรยาย: ${ttsOn?'เปิด':'ปิด'}`;
+  ttsBtn.classList.toggle('on',ttsOn);
+  if(ttsOn&&playing) speak(scenes[sceneAt(time)].narr);
+  else if('speechSynthesis' in window) speechSynthesis.cancel();
+};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT') return;
+  if(e.code==='Space'){ e.preventDefault(); playBtn.click(); }
+  else if(e.code==='ArrowRight') $('next').click();
+  else if(e.code==='ArrowLeft') $('prev').click();
+  else if(e.key==='f'||e.key==='F') $('fs').click();
+});
+if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>{};
+
+/* ================= RECORD TO MP4 / WEBM ================= */
+function startRec(){
+  if(!window.MediaRecorder||!cv.captureStream){ alert('เบราว์เซอร์นี้ไม่รองรับการบันทึกวิดีโอ กรุณาใช้ Chrome หรือ Edge'); return; }
+  const types=['video/mp4;codecs=avc1.640028','video/mp4;codecs=avc1.42E01E','video/mp4',
+               'video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  const mime=types.find(t=>MediaRecorder.isTypeSupported(t))||'';
+  const stream=cv.captureStream(30);
+  rec=new MediaRecorder(stream, mime?{mimeType:mime,videoBitsPerSecond:12_000_000}:{});
+  chunks=[];
+  rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+  rec.onstop=()=>{
+    const type=rec.mimeType||mime||'video/webm';
+    const ext=type.includes('mp4')?'mp4':'webm';
+    const blob=new Blob(chunks,{type});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=`thai-tone-conjugation.${ext}`; a.click();
+    statusEl.textContent = ext==='mp4'
+      ? '✅ บันทึกเสร็จแล้ว ไฟล์ .mp4 ถูกดาวน์โหลด'
+      : '✅ บันทึกเสร็จ (ไฟล์ .webm) แปลงเป็น MP4: ffmpeg -i thai-tone-conjugation.webm -c:v libx264 -pix_fmt yuv420p out.mp4';
+    recBtn.textContent='⏺ บันทึกวิดีโอ (MP4)'; recBtn.classList.remove('on'); seek.disabled=false;
+  };
+  time=0; lastIdx=-1; recording=true;
+  rec.start(1000);
+  setPlaying(true);
+  recBtn.textContent='⏹ หยุดบันทึก'; recBtn.classList.add('on'); seek.disabled=true;
+  statusEl.textContent=`🔴 กำลังบันทึก… (ประมาณ ${fmt(total)}) อย่าสลับแท็บหรือย่อหน้าต่าง`;
+}
+function stopRec(){
+  recording=false;
+  if(rec&&rec.state!=='inactive') rec.stop();
+  setPlaying(false);
+}
+recBtn.onclick=()=>recording?stopRec():startRec();
+
+/* ================= START (wait for Thai font) ================= */
+const sample='กขคปาป่าป้าป๊าป๋า';
+Promise.race([
+  Promise.all([document.fonts.load('400 40px Sarabun',sample),document.fonts.load('700 40px Sarabun',sample)]),
+  new Promise(r=>setTimeout(r,4000))
+]).finally(()=>{ $('loading').remove(); requestAnimationFrame(loop); });
+</script>
+</body>
+</html>
+
+
+
+							<script>
+                            	
+/* ================= SETUP ================= */
+const cv = document.getElementById('stage');
+const ctx = cv.getContext('2d');
+const W = 1920, H = 1080, CX = 960;
+const FONT = '"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif';
+const COL = { mid:'#4ade80', high:'#fb923c', low:'#60a5fa', live:'#34d399', dead:'#f87171',
+              yellow:'#facc15', gray:'#94a3b8', grayA:'#cbd5e1', grayD:'#475569' };
+const TONES = ['สามัญ','เอก','โท','ตรี','จัตวา'];
+const TC = { 'สามัญ':'#e2e8f0', 'เอก':'#facc15', 'โท':'#f472b6', 'ตรี':'#a78bfa', 'จัตวา':'#2dd4bf' };
+const COLX = [360, 660, 960, 1260, 1560];
+// Pitch contour (level 1 = low … 5 = high)
+const CONTOUR = {
+  'สามัญ':[[0,3.1],[1,2.9]],
+  'เอก':[[0,2.3],[1,1.2]],
+  'โท':[[0,4],[0.35,4.6],[1,1.4]],
+  'ตรี':[[0,3.4],[0.6,3.8],[1,4.8]],
+  'จัตวา':[[0,2.4],[0.45,1.2],[1,4.5]]
+};
+
+/* ================= HELPERS ================= */
+const clamp = (x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease = x=>{ x=clamp(x); return 1-Math.pow(1-x,3); };
+const P = (t,s,d=0.6)=>ease((t-s)/d);
+
+function setFont(size,bold){ ctx.font = `${bold?700:400} ${size}px ${FONT}`; }
+function mw(s,size,bold){ setFont(size,bold); return ctx.measureText(s).width; }
+
+function txt(s,x,y,o={}){
+  const {size=40,color='#fff',bold=false,align='center',maxW=0} = o;
+  setFont(size,bold); ctx.fillStyle=color; ctx.textAlign=align; ctx.textBaseline='middle';
+  const w = ctx.measureText(s).width;
+  if(maxW && w>maxW){ ctx.save(); ctx.translate(x,y); ctx.scale(maxW/w,maxW/w); ctx.fillText(s,0,0); ctx.restore(); }
+  else ctx.fillText(s,x,y);
+}
+function writeText(p,s,x,y,o={}){ // left-to-right "write" reveal (centered text)
+  if(p<=0) return;
+  const w = Math.min(mw(s,o.size||40,o.bold), o.maxW||1e9);
+  ctx.save(); ctx.beginPath(); ctx.rect(x-w/2-30,0,(w+60)*p,H); ctx.clip();
+  txt(s,x,y,o); ctx.restore();
+}
+function rrPath(x,y,w,h,r){ // centered rounded rect
+  const l=x-w/2, t=y-h/2;
+  ctx.beginPath(); ctx.moveTo(l+r,t);
+  ctx.arcTo(l+w,t,l+w,t+h,r); ctx.arcTo(l+w,t+h,l,t+h,r);
+  ctx.arcTo(l,t+h,l,t,r); ctx.arcTo(l,t,l+w,t,r); ctx.closePath();
+}
+function box(x,y,w,h,color,{r=24,fillA=0.08,lw=4}={}){
+  rrPath(x,y,w,h,r);
+  ctx.save(); ctx.globalAlpha*=fillA; ctx.fillStyle=color; ctx.fill(); ctx.restore();
+  ctx.lineWidth=lw; ctx.strokeStyle=color; ctx.stroke();
+}
+function chip(label,x,y,w,h,color,size=36,fillA=0.18){
+  box(x,y,w,h,color,{r:18,fillA,lw:3});
+  txt(label,x,y+2,{size,color,bold:true,maxW:w-24});
+}
+function anim(p,fn,dx=0,dy=0){
+  if(p<=0) return;
+  ctx.save(); ctx.globalAlpha*=p; ctx.translate(dx*(1-p),dy*(1-p)); fn(); ctx.restore();
+}
+function head(t,s){
+  anim(P(t,0.1),()=>txt(s,CX,90,{size:58,bold:true,maxW:1760}),0,-30);
+  const p=P(t,0.4,0.8); ctx.fillStyle=COL.yellow; ctx.fillRect(CX-90*p,140,180*p,6);
+}
+
+// Catmull-Rom curve for pitch contours
+function catmull(pts,n=24){
+  const out=[];
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[Math.max(i-1,0)], p1=pts[i], p2=pts[i+1], p3=pts[Math.min(i+2,pts.length-1)];
+    for(let k=0;k<n;k++){
+      const s=k/n, s2=s*s, s3=s2*s;
+      const f=d=>0.5*(2*p1[d]+(-p0[d]+p2[d])*s+(2*p0[d]-5*p1[d]+4*p2[d]-p3[d])*s2+(-p0[d]+3*p1[d]-3*p2[d]+p3[d])*s3);
+      out.push([f(0),f(1)]);
+    }
+  }
+  out.push(pts[pts.length-1]); return out;
+}
+const CURVES = {}; for(const k in CONTOUR) CURVES[k]=catmull(CONTOUR[k]);
+
+function contour(tone,x,y,w,h,p,color,guides=true){
+  if(p<=0) return;
+  const pts=CURVES[tone];
+  const X=a=>x-w/2+a*w, Y=l=>y+h/2-(l-1)/4*h;
+  if(guides){
+    ctx.save(); ctx.globalAlpha*=0.25; ctx.strokeStyle='#64748b'; ctx.lineWidth=1;
+    for(let i=0;i<5;i++){ const yy=y+h/2-i/4*h; ctx.beginPath(); ctx.moveTo(x-w/2,yy); ctx.lineTo(x+w/2,yy); ctx.stroke(); }
+    ctx.restore();
+  }
+  const k=Math.max(2,Math.floor(pts.length*clamp(p)));
+  ctx.beginPath();
+  pts.slice(0,k).forEach(([a,l],i)=> i?ctx.lineTo(X(a),Y(l)):ctx.moveTo(X(a),Y(l)));
+  ctx.strokeStyle=color; ctx.lineWidth=6; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.stroke();
+  const [ea,el]=pts[k-1];
+  ctx.beginPath(); ctx.arc(X(ea),Y(el),8,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+}
+
+function wave(x,y,w,amp,t,color,decay){
+  ctx.beginPath();
+  for(let i=0;i<=120;i++){
+    const u=i/120, env=decay?Math.max(0,1-u*3.2):(0.85+0.15*Math.sin(u*4));
+    const xx=x-w/2+u*w, yy=y+Math.sin(u*30-t*7)*amp*env;
+    i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);
+  }
+  ctx.strokeStyle=color; ctx.lineWidth=4; ctx.lineCap='round'; ctx.stroke();
+}
+
+function bg(gt){
+  const g=ctx.createRadialGradient(CX,380,100,CX,540,1250);
+  g.addColorStop(0,'#1e293b'); g.addColorStop(1,'#0b1120');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<26;i++){
+    const sx=(i*263.7)%W, sy=(i*151.3+80)%H;
+    const x=(sx+gt*(8+(i%5)*6))%W, y=sy+Math.sin(gt*0.5+i)*20;
+    ctx.beginPath(); ctx.arc(x,y,2+(i%3),0,Math.PI*2);
+    ctx.fillStyle=`rgba(148,163,184,${0.05+(i%4)*0.03})`; ctx.fill();
+  }
+}
+
+/* ================= SCENES ================= */
+const scenes=[];
+function S(title,dur,narr,draw){ scenes.push({title,dur,narr,draw}); }
+
+// 1) Title
+S('บทนำ',9,
+ 'การผันวรรณยุกต์ในภาษาไทย คำว่า ปา ป่า ป้า ป๊า ป๋า มีห้าเสียง การผันให้ถูกต้อง ต้องรู้สามอย่าง คือ ไตรยางศ์ คำเป็นคำตาย และรูปวรรณยุกต์',
+ t=>{
+  writeText(P(t,0.2,1.4),'การผันวรรณยุกต์ในภาษาไทย',CX,200,{size:100,bold:true});
+  ['ปา','ป่า','ป้า','ป๊า','ป๋า'].forEach((w,i)=>{
+    const x=CX+(i-2)*330, tn=TONES[i], c=TC[tn];
+    anim(P(t,1.6+i*0.35),()=>txt(w,x,470,{size:150,bold:true,color:c}),0,50);
+    anim(P(t,3.4+i*0.15),()=>txt(tn,x,610,{size:42,color:c}));
+    contour(tn,x,720,200,110,P(t,3.8+i*0.2,0.9),c);
+  });
+  anim(P(t,5.5),()=>txt('ผันให้ถูก ต้องรู้ 3 อย่าง: ไตรยางศ์ • คำเป็น/คำตาย • รูปวรรณยุกต์',CX,920,{size:40,color:COL.gray,maxW:1700}),0,30);
+});
+
+// 2) Tones vs marks
+S('รูปและเสียงวรรณยุกต์',12,
+ 'ภาษาไทยมีเสียงวรรณยุกต์ห้าเสียง คือ สามัญ เอก โท ตรี จัตวา แต่มีรูปวรรณยุกต์เพียงสี่รูป คือ ไม้เอก ไม้โท ไม้ตรี และไม้จัตวา ข้อควรระวังคือ รูปกับเสียงไม่ตรงกันเสมอไป เช่น คำว่า ค่า ใช้ไม้เอก แต่ออกเสียงโท',
+ t=>{
+  head(t,'พื้นฐาน: เสียงวรรณยุกต์ กับ รูปวรรณยุกต์');
+  anim(P(t,0.8),()=>txt('เสียงวรรณยุกต์ 5 เสียง',500,230,{size:46,color:COL.yellow,bold:true}));
+  TONES.forEach((tn,i)=>anim(P(t,1.2+i*0.25),()=>{
+    chip(tn,420,330+i*100,300,80,TC[tn],38);
+    contour(tn,680,330+i*100,140,64,P(t,1.6+i*0.25,0.8),TC[tn],false);
+  },-50,0));
+  anim(P(t,3),()=>txt('รูปวรรณยุกต์ 4 รูป',1420,230,{size:46,color:COL.yellow,bold:true}));
+  [['อ่','ไม้เอก'],['อ้','ไม้โท'],['อ๊','ไม้ตรี'],['อ๋','ไม้จัตวา']].forEach(([m,n],i)=>anim(P(t,3.4+i*0.3),()=>{
+    const y=340+i*118;
+    box(1420,y,520,100,'#475569',{r:18,fillA:0.25,lw:2});
+    txt(m,1260,y+8,{size:84,bold:true});
+    txt(n,1350,y,{size:44,color:COL.grayA,align:'left'});
+  },50,0));
+  anim(P(t,6),()=>{
+    box(CX,975,1520,90,COL.dead,{r:20,fillA:0.12,lw:2});
+    txt('ข้อควรระวัง: รูป ≠ เสียง เสมอไป เช่น “ค่า” ใช้ไม้เอก แต่ออกเสียงโท',CX,977,{size:38,color:'#fca5a5',maxW:1460});
+  },0,30);
+});
+
+// 3) Consonant classes
+S('ไตรยางศ์',13,
+ 'ขั้นที่หนึ่ง ไตรยางศ์ คือการแบ่งพยัญชนะเป็นสามหมู่ อักษรกลางเก้าตัว จำว่า ไก่จิกเด็กตายบนปากโอ่ง อักษรสูงสิบเอ็ดตัว จำว่า ผีฝากถุงข้าวสารให้ฉัน และอักษรต่ำยี่สิบสี่ตัว',
+ t=>{
+  head(t,'ขั้นที่ 1: ไตรยางศ์ (อักษร 3 หมู่)');
+  const cards=[
+    {title:'อักษรกลาง',c:COL.mid,count:'9 ตัว',letters:['ก จ ด ต ฎ','ฏ บ ป อ'],mn:['ไก่ จิก เด็ก ตาย','เฎ็ก ฏาย บน ปาก โอ่ง']},
+    {title:'อักษรสูง',c:COL.high,count:'11 ตัว',letters:['ข ฃ ฉ ฐ ถ ผ','ฝ ศ ษ ส ห'],mn:['ผี ฝาก ถุง ข้าว สาร','ให้ ฉัน']},
+    {title:'อักษรต่ำ',c:COL.low,count:'24 ตัว (คู่ 14 • เดี่ยว 10)',letters:['ค ฅ ฆ ช ซ ฌ ฑ','ฒ ท ธ พ ฟ ภ ฮ','ง ญ ณ น ม ย ร ล ว ฬ'],mn:['เดี่ยว: งู ใหญ่ นอน อยู่ ณ','ริม วัด โม ฬี โลก']}
+  ];
+  cards.forEach((cd,i)=>{
+    const x=340+i*620, s=0.8+i*2.4;
+    anim(P(t,s),()=>{
+      box(x,590,590,800,cd.c);
+      txt(cd.title,x,270,{size:60,bold:true,color:cd.c});
+      txt(cd.count,x,340,{size:32,color:COL.gray,maxW:540});
+      cd.letters.forEach((l,j)=>txt(l,x,440+j*80,{size:54,maxW:540}));
+      const my=440+cd.letters.length*80+40;
+      anim(P(t,s+0.9),()=>{
+        txt('คำช่วยจำ',x,my,{size:26,color:COL.gray});
+        cd.mn.forEach((m,j)=>txt(m,x,my+55+j*52,{size:36,color:cd.c,bold:true,maxW:540}));
+      },0,20);
+    },0,50);
+  });
+});
+
+// 4) Live vs dead syllables
+S('คำเป็น คำตาย',12,
+ 'ขั้นที่สอง คำเป็น คือคำที่ใช้สระเสียงยาว หรือสะกดด้วยแม่กง กน กม เกย เกอว รวมถึงสระ อำ ใอ ไอ เอา ส่วนคำตาย คือคำที่ใช้สระเสียงสั้นไม่มีตัวสะกด หรือสะกดด้วยแม่กก กด กบ',
+ t=>{
+  head(t,'ขั้นที่ 2: คำเป็น กับ คำตาย');
+  const LD=[
+    {x:530,title:'คำเป็น',c:COL.live,decay:false,s:0.8,items:[['สระเสียงยาว ไม่มีตัวสะกด','มา   ปู   ดี'],['สะกดด้วย แม่กง กน กม เกย เกอว','กิน   ลม   สวย'],['มีสระ อำ ใอ ไอ เอา','ขำ   ใจ   ไป   เรา']]},
+    {x:1390,title:'คำตาย',c:COL.dead,decay:true,s:4.2,items:[['สระเสียงสั้น ไม่มีตัวสะกด','จะ   ติ   ดุ'],['สะกดด้วย แม่กก กด กบ','นก   มด   ตบ']]}
+  ];
+  LD.forEach(L=>anim(P(t,L.s),()=>{
+    box(L.x,570,820,740,L.c);
+    txt(L.title,L.x,265,{size:64,bold:true,color:L.c});
+    wave(L.x,345,300,22,t,L.c,L.decay);
+    L.items.forEach(([d,e],j)=>anim(P(t,L.s+0.5+j*0.6),()=>{
+      const y=440+j*160;
+      txt(d,L.x,y,{size:32,color:COL.grayA,maxW:760});
+      txt(e,L.x,y+62,{size:54,bold:true});
+    },0,20));
+  },L.x<CX?-60:60,0));
+  anim(P(t,7),()=>txt('เคล็ดลับ: ลากเสียงยาวได้ = คำเป็น  •  เสียงสั้นห้วน = คำตาย',CX,1000,{size:38,color:COL.yellow,maxW:1700}),0,30);
+});
+
+// 5) Rules intro
+S('กฎการผัน',4,'ขั้นที่สาม มาดูกฎการผันวรรณยุกต์ทั้งเจ็ดแบบกัน',t=>{
+  writeText(P(t,0.2,1.2),'ขั้นที่ 3: กฎการผันวรรณยุกต์ 7 แบบ',CX,490,{size:84,bold:true});
+  anim(P(t,1.4),()=>txt('อักษร 3 หมู่  ×  คำเป็น / คำตาย',CX,600,{size:44,color:COL.gray}),0,20);
+});
+
+// 6–12) The 7 rules
+function rule(step,cls,color,kind,entries,notes,narr){
+  const n=entries.length, tEnd=1.4+n*0.9, dur=tEnd+5.4;
+  S(`${step} ${cls} ${kind}`,dur,narr,t=>{
+    const bw=360, kw=mw(kind,52,true), tot=bw+30+kw, sx=CX-tot/2;
+    anim(P(t,0.1),()=>{
+      chip(cls,sx+bw/2,95,bw,100,color,46,0.25);
+      txt(kind,sx+bw+30,97,{size:52,bold:true,align:'left'});
+    },0,-30);
+    anim(P(t,0.3),()=>txt(step,CX,180,{size:30,color:COL.gray}));
+    TONES.forEach((tn,i)=>anim(P(t,0.5+i*0.08),()=>txt(tn,COLX[i],270,{size:44,bold:true,color:TC[tn]})));
+    const lp=P(t,0.5,0.8);
+    ctx.strokeStyle=COL.grayD; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(CX-800*lp,325); ctx.lineTo(CX+800*lp,325); ctx.stroke();
+
+    const used=new Set();
+    entries.forEach(([tn,word,label],k)=>{
+      const i=TONES.indexOf(tn); used.add(i);
+      const x=COLX[i], c=TC[tn], s=1.4+k*0.9;
+      anim(P(t,s),()=>{
+        box(x,560,270,440,c,{r:22,fillA:0.1,lw:3});
+        txt(word,x,480,{size:130,bold:true,color:c});
+      },0,-60);
+      anim(P(t,s+0.3),()=>txt(label,x,610,{size:34,color:label==='พื้นเสียง'?COL.yellow:COL.grayA,bold:label==='พื้นเสียง',maxW:250}));
+      contour(tn,x,700,170,80,P(t,s+0.4,0.8),c);
+    });
+    const dp=P(t,tEnd);
+    for(let i=0;i<5;i++) if(!used.has(i)) anim(dp,()=>{
+      ctx.setLineDash([12,10]); rrPath(COLX[i],560,270,440,22);
+      ctx.strokeStyle=COL.grayD; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+      txt('—',COLX[i],480,{size:70,color:COL.grayD});
+      txt('ผันไม่ได้',COLX[i],610,{size:28,color:COL.grayD});
+    });
+    notes.forEach((nt,j)=>anim(P(t,tEnd+0.6+j*0.4),()=>txt(nt,CX,880+j*62,{size:42,color:COL.yellow,maxW:1700}),0,30));
+  });
+}
+rule('กฎที่ 1/7','อักษรกลาง',COL.mid,'คำเป็น',
+  [['สามัญ','ปา','พื้นเสียง'],['เอก','ป่า','ไม้เอก'],['โท','ป้า','ไม้โท'],['ตรี','ป๊า','ไม้ตรี'],['จัตวา','ป๋า','ไม้จัตวา']],
+  ['ผันได้ครบ 5 เสียง • พื้นเสียงสามัญ','รูปกับเสียงตรงกันทุกตัว'],
+  'กฎที่หนึ่ง อักษรกลาง คำเป็น ผันได้ครบห้าเสียง พื้นเสียงเป็นเสียงสามัญ เช่น ปา ป่า ป้า ป๊า ป๋า รูปกับเสียงตรงกันทุกตัว');
+rule('กฎที่ 2/7','อักษรกลาง',COL.mid,'คำตาย',
+  [['เอก','จะ','พื้นเสียง'],['โท','จ้ะ','ไม้โท'],['ตรี','จ๊ะ','ไม้ตรี'],['จัตวา','จ๋ะ','ไม้จัตวา']],
+  ['ผันได้ 4 เสียง • พื้นเสียงเอก','(ไม่มีเสียงสามัญ)'],
+  'กฎที่สอง อักษรกลาง คำตาย พื้นเสียงเป็นเสียงเอก ผันได้สี่เสียง เช่น จะ จ้ะ จ๊ะ จ๋ะ');
+rule('กฎที่ 3/7','อักษรสูง',COL.high,'คำเป็น',
+  [['จัตวา','ขา','พื้นเสียง'],['เอก','ข่า','ไม้เอก'],['โท','ข้า','ไม้โท']],
+  ['ผันได้ 3 เสียง • พื้นเสียงจัตวา','ใช้ได้เฉพาะไม้เอก และไม้โท'],
+  'กฎที่สาม อักษรสูง คำเป็น พื้นเสียงเป็นเสียงจัตวา ผันได้สามเสียง เช่น ขา ข่า ข้า');
+rule('กฎที่ 4/7','อักษรสูง',COL.high,'คำตาย',
+  [['เอก','ขะ','พื้นเสียง'],['โท','ข้ะ','ไม้โท']],
+  ['ผันได้ 2 เสียง • พื้นเสียงเอก','ใช้ได้เฉพาะไม้โท'],
+  'กฎที่สี่ อักษรสูง คำตาย พื้นเสียงเป็นเสียงเอก ผันได้สองเสียง เช่น ขะ ข้ะ');
+rule('กฎที่ 5/7','อักษรต่ำ',COL.low,'คำเป็น',
+  [['สามัญ','คา','พื้นเสียง'],['โท','ค่า','ไม้เอก'],['ตรี','ค้า','ไม้โท']],
+  ['ผันได้ 3 เสียง • พื้นเสียงสามัญ','ระวัง! ไม้เอก → เสียงโท   ไม้โท → เสียงตรี'],
+  'กฎที่ห้า อักษรต่ำ คำเป็น พื้นเสียงสามัญ ใส่ไม้เอกเป็นเสียงโท ใส่ไม้โทเป็นเสียงตรี เช่น คา ค่า ค้า');
+rule('กฎที่ 6/7','อักษรต่ำ',COL.low,'คำตาย สระสั้น',
+  [['ตรี','คะ','พื้นเสียง'],['โท','ค่ะ','ไม้เอก']],
+  ['พื้นเสียงตรี • ใส่ไม้เอก → เสียงโท'],
+  'กฎที่หก อักษรต่ำ คำตาย สระเสียงสั้น พื้นเสียงตรี ใส่ไม้เอกเป็นเสียงโท เช่น คะ ค่ะ');
+rule('กฎที่ 7/7','อักษรต่ำ',COL.low,'คำตาย สระยาว',
+  [['โท','โชค','พื้นเสียง'],['ตรี','โช้ค','ไม้โท']],
+  ['พื้นเสียงโท • ใส่ไม้โท → เสียงตรี'],
+  'กฎที่เจ็ด อักษรต่ำ คำตาย สระเสียงยาว พื้นเสียงโท ใส่ไม้โทเป็นเสียงตรี เช่น โชค โช้ค');
+
+// 13) Paired consonants
+S('อักษรคู่',12,
+ 'อักษรต่ำคู่ผันได้แค่สามเสียง แต่เมื่อจับคู่กับอักษรสูงที่ออกเสียงเหมือนกัน เช่น ค กับ ข จะผันได้ครบห้าเสียง คือ คา ข่า ค่า ค้า ขา',
+ t=>{
+  head(t,'เทคนิค: อักษรคู่ ช่วยกันผันให้ครบ 5 เสียง');
+  anim(P(t,0.5),()=>txt('อักษรต่ำ (คู่) + อักษรสูง ที่ออกเสียงเหมือนกัน เช่น ค – ข',CX,190,{size:36,color:COL.gray}));
+  TONES.forEach((tn,i)=>anim(P(t,0.8+i*0.08),()=>txt(tn,COLX[i],290,{size:44,bold:true,color:TC[tn]})));
+  const data=[['คา',COL.low],['ข่า',COL.high],['ค่า',COL.low],['ค้า',COL.low],['ขา',COL.high]];
+  data.forEach(([w,c],i)=>{
+    const s=1.4+i*0.7;
+    anim(P(t,s),()=>{ box(COLX[i],520,270,300,c,{r:22,fillA:0.12,lw:3}); txt(w,COLX[i],500,{size:130,bold:true,color:c}); },0,-60);
+    contour(TONES[i],COLX[i],625,160,60,P(t,s+0.3,0.8),TC[TONES[i]],false);
+  });
+  anim(P(t,5.2),()=>txt('หรือ ข้า',COLX[2],720,{size:38,color:COL.high}));
+  anim(P(t,5.8),()=>{ chip('อักษรต่ำ',CX-180,850,300,80,COL.low,34); chip('อักษรสูง',CX+180,850,300,80,COL.high,34); });
+  anim(P(t,6.6),()=>txt('ผลลัพธ์: ได้ครบ สามัญ – เอก – โท – ตรี – จัตวา',CX,990,{size:40,color:COL.yellow}),0,30);
+});
+
+// 14) Leading consonants
+S('อักษรนำ',12,
+ 'กรณีพิเศษ อักษรนำ ห นำอักษรต่ำเดี่ยว ให้ผันตามอักษรสูง เช่น หมา หน่อย หน้า ส่วน อ นำ ย มีสี่คำ ให้ผันตามอักษรกลาง คือ อย่า อยู่ อย่าง อยาก',
+ t=>{
+  head(t,'กรณีพิเศษ: อักษรนำ');
+  const panels=[
+    {x:530,s:0.8,title:'ห นำ อักษรต่ำเดี่ยว',rule:'→ ผันตามอักษรสูง',c:COL.high,gap:240,
+     items:[['หมา','จัตวา'],['หน่อย','เอก'],['หน้า','โท']],foot:'ห ไม่ออกเสียง แต่เปลี่ยนเสียงวรรณยุกต์'},
+    {x:1390,s:4.2,title:'อ นำ ย (มีแค่ 4 คำ)',rule:'→ ผันตามอักษรกลาง',c:COL.mid,gap:190,
+     items:[['อย่า','เอก'],['อยู่','เอก'],['อย่าง','เอก'],['อยาก','เอก']],foot:'จำว่า: “อย่าอยู่อย่างอยาก”'}
+  ];
+  panels.forEach(pn=>anim(P(t,pn.s),()=>{
+    box(pn.x,580,820,740,pn.c);
+    txt(pn.title,pn.x,300,{size:50,bold:true,color:pn.c,maxW:760});
+    txt(pn.rule,pn.x,375,{size:38,color:COL.grayA});
+    pn.items.forEach(([w,tn],k)=>{
+      const x=pn.x+(k-(pn.items.length-1)/2)*pn.gap, s=pn.s+0.6+k*0.4;
+      anim(P(t,s),()=>{ txt(w,x,520,{size:84,bold:true,color:TC[tn]}); txt(tn,x,620,{size:30,color:TC[tn]}); },0,30);
+      contour(tn,x,700,140,60,P(t,s+0.3,0.8),TC[tn],false);
+    });
+    anim(P(t,pn.s+2.2),()=>txt(pn.foot,pn.x,850,{size:38,color:COL.yellow,maxW:760}));
+  },pn.x<CX?-60:60,0));
+});
+
+// 15) Summary table
+S('ตารางสรุป',14,
+ 'ตารางสรุปการผันวรรณยุกต์ทั้งหมด กรอบสีขาวคือพื้นเสียง หรือคำที่ไม่มีรูปวรรณยุกต์',
+ t=>{
+  head(t,'ตารางสรุปการผันวรรณยุกต์');
+  const xs=[250,620,880,1140,1400,1660];
+  anim(P(t,0.6),()=>{
+    txt('ประเภท',xs[0],195,{size:34,bold:true,color:COL.gray});
+    TONES.forEach((tn,i)=>txt(tn,xs[i+1],195,{size:36,bold:true,color:TC[tn]}));
+  });
+  const rows=[
+    ['กลาง • เป็น',COL.mid,['ปา','ป่า','ป้า','ป๊า','ป๋า'],0],
+    ['กลาง • ตาย',COL.mid,['','จะ','จ้ะ','จ๊ะ','จ๋ะ'],1],
+    ['สูง • เป็น',COL.high,['','ข่า','ข้า','','ขา'],4],
+    ['สูง • ตาย',COL.high,['','ขะ','ข้ะ','',''],1],
+    ['ต่ำ • เป็น',COL.low,['คา','','ค่า','ค้า',''],0],
+    ['ต่ำ • ตาย (สั้น)',COL.low,['','','ค่ะ','คะ',''],3],
+    ['ต่ำ • ตาย (ยาว)',COL.low,['','','โชค','โช้ค',''],2]
+  ];
+  rows.forEach(([label,c,words,base],r)=>{
+    const y=280+r*98;
+    anim(P(t,1+r*0.35),()=>{
+      ctx.save(); ctx.globalAlpha*=(r%2?0.16:0.09); ctx.fillStyle=c; rrPath(CX,y,1800,88,14); ctx.fill(); ctx.restore();
+      txt(label,xs[0],y,{size:34,bold:true,color:c,maxW:380});
+      words.forEach((w,k)=>{
+        const x=xs[k+1];
+        if(w){
+          txt(w,x,y,{size:48,bold:true,color:TC[TONES[k]]});
+          if(k===base){ const bw=mw(w,48,true)+40; ctx.strokeStyle='#fff'; ctx.lineWidth=2.5; rrPath(x,y,bw,72,12); ctx.stroke(); }
+        } else txt('—',x,y,{size:36,color:COL.grayD});
+      });
+    },-60,0);
+  });
+  anim(P(t,4),()=>txt('กรอบสีขาว = พื้นเสียง (คำที่ไม่มีรูปวรรณยุกต์)',CX,1010,{size:34,color:COL.gray}));
+});
+
+// 16) Outro
+S('สรุป',9,
+ 'สรุป การผันวรรณยุกต์ให้ถูก ต้องดูสามอย่าง คือ ไตรยางศ์ คำเป็นคำตาย และรูปวรรณยุกต์ ขอบคุณที่รับชม',
+ t=>{
+  writeText(P(t,0.2,1.2),'สรุป: ผันวรรณยุกต์ให้ถูก ดู 3 อย่าง',CX,250,{size:70,bold:true});
+  [['1. ไตรยางศ์',COL.mid],['2. คำเป็น / คำตาย',COL.high],['3. รูปวรรณยุกต์',COL.low]]
+    .forEach(([s,c],i)=>anim(P(t,1.4+i*0.4),()=>chip(s,CX,430+i*130,600,100,c,44),0,40));
+  anim(P(t,3.6),()=>{
+    const sc=1+0.04*Math.sin(t*3);
+    ctx.save(); ctx.translate(CX,900); ctx.scale(sc,sc);
+    txt('ขอบคุณที่รับชม 🙏',0,0,{size:56,bold:true,color:COL.yellow});
+    ctx.restore();
+  });
+});
+
+/* ================= PLAYER ================= */
+const starts=[]; let total=0;
+scenes.forEach(s=>{ starts.push(total); total+=s.dur; });
+
+const $=id=>document.getElementById(id);
+const playBtn=$('play'), seek=$('seek'), timeEl=$('time'), chap=$('chap'),
+      ttsBtn=$('tts'), recBtn=$('rec'), statusEl=$('status');
+seek.max=total;
+scenes.forEach((s,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${i+1}. ${s.title}`; chap.appendChild(o); });
+
+let time=0, playing=false, last=performance.now(), dragging=false;
+let ttsOn=false, lastIdx=-1, recording=false, rec=null, chunks=[];
+
+const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+function sceneAt(tm){ for(let k=0;k<scenes.length;k++) if(tm<starts[k]+scenes[k].dur) return k; return scenes.length-1; }
+
+function speak(s){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(s); u.lang='th-TH';
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith('th'));
+  if(v) u.voice=v;
+  speechSynthesis.speak(u);
+}
+
+function render(){
+  const idx=sceneAt(time), sc=scenes[idx], lt=time-starts[idx];
+  ctx.save();
+  bg(time);
+  if(!playing && time<0.01 && !recording){
+    // Poster frame + play button
+    scenes[0].draw(7);
+    ctx.fillStyle='rgba(2,6,23,0.55)'; ctx.fillRect(0,0,W,H);
+    ctx.beginPath(); ctx.arc(CX,540,90,0,Math.PI*2); ctx.fillStyle='rgba(250,204,21,0.9)'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(CX-30,490); ctx.lineTo(CX+50,540); ctx.lineTo(CX-30,590); ctx.closePath();
+    ctx.fillStyle='#0f172a'; ctx.fill();
+  } else {
+    ctx.globalAlpha = 1 - clamp((lt-(sc.dur-0.5))/0.5);
+    sc.draw(lt);
+  }
+  ctx.restore();
+
+  if(!dragging) seek.value=time;
+  timeEl.textContent=`${fmt(time)} / ${fmt(total)}`;
+  if(chap.selectedIndex!==idx) chap.selectedIndex=idx;
+  if(idx!==lastIdx){ lastIdx=idx; if(playing&&ttsOn) speak(sc.narr); }
+}
+
+function loop(now){
+  const dt=Math.min((now-last)/1000,0.1); last=now;
+  if(playing){
+    time+=dt;
+    if(time>=total){ time=total-0.001; setPlaying(false); if(recording) stopRec(); }
+  }
+  render();
+  requestAnimationFrame(loop);
+}
+
+function setPlaying(v){
+  playing=v;
+  playBtn.textContent=v?'⏸ หยุด':'▶ เล่น';
+  if(v){
+    if(time>=total-0.01) time=0;
+    lastIdx=-1;   // narrate the current scene
+  } else if('speechSynthesis' in window) speechSynthesis.cancel();
+}
+function jump(i){
+  if(recording) return;
+  i=clamp(i,0,scenes.length-1); time=starts[i]+0.001; lastIdx=-1;
+}
+
+playBtn.onclick=()=>{ if(!recording) setPlaying(!playing); };
+cv.onclick=()=>{ if(!recording) setPlaying(!playing); };
+$('prev').onclick=()=>{ const i=sceneAt(time); jump(time-starts[i]>1.5?i:i-1); };
+$('next').onclick=()=>jump(sceneAt(time)+1);
+chap.onchange=()=>jump(+chap.value);
+seek.addEventListener('pointerdown',()=>dragging=true);
+seek.addEventListener('pointerup',()=>dragging=false);
+seek.oninput=()=>{ if(!recording){ time=+seek.value; } };
+$('fs').onclick=()=>{ document.fullscreenElement?document.exitFullscreen():cv.requestFullscreen(); };
+ttsBtn.onclick=()=>{
+  ttsOn=!ttsOn;
+  ttsBtn.textContent=`🔈 เสียงบรรยาย: ${ttsOn?'เปิด':'ปิด'}`;
+  ttsBtn.classList.toggle('on',ttsOn);
+  if(ttsOn&&playing) speak(scenes[sceneAt(time)].narr);
+  else if('speechSynthesis' in window) speechSynthesis.cancel();
+};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT') return;
+  if(e.code==='Space'){ e.preventDefault(); playBtn.click(); }
+  else if(e.code==='ArrowRight') $('next').click();
+  else if(e.code==='ArrowLeft') $('prev').click();
+  else if(e.key==='f'||e.key==='F') $('fs').click();
+});
+if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>{};
+
+/* ================= RECORD TO MP4 / WEBM ================= */
+function startRec(){
+  if(!window.MediaRecorder||!cv.captureStream){ alert('เบราว์เซอร์นี้ไม่รองรับการบันทึกวิดีโอ กรุณาใช้ Chrome หรือ Edge'); return; }
+  const types=['video/mp4;codecs=avc1.640028','video/mp4;codecs=avc1.42E01E','video/mp4',
+               'video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  const mime=types.find(t=>MediaRecorder.isTypeSupported(t))||'';
+  const stream=cv.captureStream(30);
+  rec=new MediaRecorder(stream, mime?{mimeType:mime,videoBitsPerSecond:12_000_000}:{});
+  chunks=[];
+  rec.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+  rec.onstop=()=>{
+    const type=rec.mimeType||mime||'video/webm';
+    const ext=type.includes('mp4')?'mp4':'webm';
+    const blob=new Blob(chunks,{type});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=`thai-tone-conjugation.${ext}`; a.click();
+    statusEl.textContent = ext==='mp4'
+      ? '✅ บันทึกเสร็จแล้ว ไฟล์ .mp4 ถูกดาวน์โหลด'
+      : '✅ บันทึกเสร็จ (ไฟล์ .webm) แปลงเป็น MP4: ffmpeg -i thai-tone-conjugation.webm -c:v libx264 -pix_fmt yuv420p out.mp4';
+    recBtn.textContent='⏺ บันทึกวิดีโอ (MP4)'; recBtn.classList.remove('on'); seek.disabled=false;
+  };
+  time=0; lastIdx=-1; recording=true;
+  rec.start(1000);
+  setPlaying(true);
+  recBtn.textContent='⏹ หยุดบันทึก'; recBtn.classList.add('on'); seek.disabled=true;
+  statusEl.textContent=`🔴 กำลังบันทึก… (ประมาณ ${fmt(total)}) อย่าสลับแท็บหรือย่อหน้าต่าง`;
+}
+function stopRec(){
+  recording=false;
+  if(rec&&rec.state!=='inactive') rec.stop();
+  setPlaying(false);
+}
+recBtn.onclick=()=>recording?stopRec():startRec();
+
+/* ================= START (wait for Thai font) ================= */
+const sample='กขคปาป่าป้าป๊าป๋า';
+Promise.race([
+  Promise.all([document.fonts.load('400 40px Sarabun',sample),document.fonts.load('700 40px Sarabun',sample)]),
+  new Promise(r=>setTimeout(r,4000))
+]).finally(()=>{ $('loading').remove(); requestAnimationFrame(loop); });
+
+
+							</script>
+                        </body>
+                        </html>
+                    

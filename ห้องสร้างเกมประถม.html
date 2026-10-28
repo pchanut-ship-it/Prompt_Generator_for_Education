@@ -1,0 +1,707 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ห้องสร้างเกมประถม</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Sarabun:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: exercise-book page — graph-paper ground, game catalogue as stickered cards, generator as a worksheet below */
+:root{
+  --paper:#f7f8f3; --grid:#dfe6ee; --ink:#1d2b4f; --ink-soft:#4f5d7d;
+  --card:#ffffff; --line:#cdd6e3;
+  --sun:#ffc93c; --leaf:#3fa66b; --sky:#3b82d6; --berry:#e2557a; --grape:#7a5cd6; --orange:#f08a32;
+  --sel:#1d2b4f; --sel-fg:#fff; --code:#14203d; --code-fg:#e8eefb;
+  --f-display:"Mitr","Sarabun",system-ui,sans-serif;
+  --f-body:"Sarabun",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#111a2e; --grid:#1b2742; --ink:#eaf0fb; --ink-soft:#a9b6d3; --card:#18233d; --line:#2b3a5c;
+  --sel:#ffc93c; --sel-fg:#1d2b4f; --code:#0a1122; --code-fg:#e8eefb; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111a2e; --grid:#1b2742; --ink:#eaf0fb; --ink-soft:#a9b6d3; --card:#18233d; --line:#2b3a5c;
+  --sel:#ffc93c; --sel-fg:#1d2b4f; --code:#0a1122; --code-fg:#e8eefb; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;}
+.wrap{max-width:1120px;margin:0 auto;padding-block:28px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:grid;gap:10px;margin-bottom:28px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(30px,6vw,52px);line-height:1.15;margin:0;text-wrap:balance}
+h1 mark{background:linear-gradient(transparent 55%,var(--sun) 55%);color:inherit;padding:0 4px}
+.lead{max-width:62ch;color:var(--ink-soft);margin:0}
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.steps span{font-family:var(--f-display);font-size:14px;background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:4px 12px}
+.steps b{color:var(--sky)}
+h2{font-family:var(--f-display);font-weight:500;font-size:24px;margin:0;text-wrap:balance}
+.sec-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;margin:8px 0 14px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{font-family:var(--f-body);font-size:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--sel);color:var(--sel-fg);border-color:var(--sel)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.game{position:relative;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 10px 14px;cursor:pointer;color:var(--ink);font:inherit;display:flex;flex-direction:column;gap:8px;transition:transform .15s,border-color .15s}
+.game:hover{transform:translateY(-2px);border-color:var(--ink-soft)}
+.game:focus-visible,.filters button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.game[aria-pressed="true"]{border-color:var(--sel);box-shadow:0 0 0 3px var(--sun)}
+.game[aria-pressed="true"]::after{content:"เลือกแล้ว";position:absolute;top:16px;right:16px;font-family:var(--f-display);font-size:12px;background:var(--sun);color:#1d2b4f;border-radius:6px;padding:2px 8px}
+.game svg{width:100%;height:auto;border-radius:9px;display:block}
+.game .no{font-family:var(--f-mono);font-size:11px;color:var(--ink-soft)}
+.game h3{font-family:var(--f-display);font-weight:500;font-size:18px;margin:0;line-height:1.3}
+.game p{margin:0;font-size:14px;color:var(--ink-soft)}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
+.tags span{font-size:12px;border-radius:5px;padding:1px 7px;background:var(--paper);border:1px solid var(--line)}
+.studio{margin-top:40px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px;align-items:start}
+@media (max-width:860px){.studio{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+.chosen{display:flex;gap:12px;align-items:center;padding-bottom:14px;border-bottom:1.5px dashed var(--line);margin-bottom:14px}
+.chosen svg{width:110px;flex:none;border-radius:8px}
+.chosen h3{font-family:var(--f-display);font-weight:500;margin:0;font-size:18px;line-height:1.3}
+.chosen p{margin:0;font-size:13px;color:var(--ink-soft)}
+form{display:grid;gap:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.row{grid-template-columns:1fr}}
+label{font-family:var(--f-display);font-size:14px;display:grid;gap:4px}
+label small{font-family:var(--f-body);color:var(--ink-soft);font-size:12px}
+input,select,textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+textarea{min-height:96px;resize:vertical}
+fieldset{border:1.5px solid var(--line);border-radius:10px;padding:8px 12px 12px;margin:0}
+legend{font-family:var(--f-display);font-size:14px;padding:0 6px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}
+@media (max-width:420px){.checks{grid-template-columns:1fr}}
+.checks label{font-family:var(--f-body);font-size:14px;display:flex;gap:8px;align-items:center}
+.checks input{width:18px;height:18px;accent-color:var(--sky)}
+.platforms{display:flex;flex-wrap:wrap;gap:6px}
+.platforms label{display:flex;align-items:center;gap:6px;font-family:var(--f-body);border:1.5px solid var(--line);border-radius:999px;padding:3px 12px;cursor:pointer}
+.platforms input{width:auto;accent-color:var(--sky)}
+.out-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.copy{font-family:var(--f-display);font-size:16px;background:var(--sun);color:#1d2b4f;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;box-shadow:0 3px 0 #c99a1d}
+.copy:active{transform:translateY(2px);box-shadow:0 1px 0 #c99a1d}
+.meta{font-family:var(--f-mono);font-size:12px;color:var(--ink-soft)}
+.go-custom{justify-self:start;font-family:var(--f-display);font-size:15px;background:var(--sun);color:#1d2b4f;border:none;border-radius:10px;padding:8px 16px;cursor:pointer;box-shadow:0 3px 0 #c99a1d;margin-top:4px}
+.go-custom:active{transform:translateY(2px);box-shadow:0 1px 0 #c99a1d}
+.custom-card{border-style:dashed}
+.mode{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:4px;margin-bottom:14px}
+.mode button{font-family:var(--f-display);font-size:15px;border:none;background:transparent;color:var(--ink-soft);border-radius:9px;padding:8px 10px;cursor:pointer;line-height:1.35}
+.mode button[aria-selected="true"]{background:var(--sel);color:var(--sel-fg)}
+.design{display:grid;gap:14px;padding-bottom:18px;border-bottom:1.5px dashed var(--line)}
+.design-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.design-head h3{font-family:var(--f-display);font-weight:500;font-size:18px;margin:0;line-height:1.3}
+.design-head p{margin:0;font-size:13px;color:var(--ink-soft)}
+.design-actions{display:flex;gap:6px}
+.design-actions button{font-family:var(--f-body);font-size:13px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.design-actions button:hover{border-color:var(--ink-soft)}
+#chipGroups{display:grid;gap:18px}
+.dsec{display:grid;gap:12px}
+.dsec-title{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;color:var(--ink-soft);display:flex;align-items:center;gap:8px}
+.dsec-title::after{content:"";flex:1;height:1.5px;background:var(--line)}
+.cgroup{display:grid;gap:6px}
+.cgroup > span{font-family:var(--f-display);font-size:14px}
+.cgroup > span small{font-family:var(--f-body);font-size:12px;color:var(--ink-soft);margin-left:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font-family:var(--f-body);font-size:14px;line-height:1.4;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer;transition:background-color .15s,border-color .15s}
+.chips button:hover{border-color:var(--ink-soft)}
+.chips button[aria-pressed="true"]{background:var(--sun);border-color:var(--sun);color:#1d2b4f}
+.chips button[aria-pressed="true"]::before{content:"✓ "}
+@media (min-width:861px){.studio > .panel:last-child{position:sticky;top:16px}.studio > .panel:last-child pre{max-height:calc(100vh - 220px)}}
+@media (prefers-reduced-motion:reduce){.chips button{transition:none}}
+pre{margin:0;background:var(--code);color:var(--code-fg);border-radius:10px;padding:16px;font-family:var(--f-body);font-size:14px;line-height:1.65;white-space:pre-wrap;word-break:break-word;max-height:620px;overflow:auto}
+.tip{margin-top:12px;font-size:14px;color:var(--ink-soft);border-left:4px solid var(--leaf);padding:4px 0 4px 10px}
+footer{margin-top:36px;font-size:13px;color:var(--ink-soft)}
+@media (prefers-reduced-motion:reduce){.game{transition:none}.game:hover{transform:none}}
+/* svg palette */
+.s-bg{fill:#eaf3ff}.s-bg2{fill:#fff6dc}.s-bg3{fill:#e9f7ee}.s-bg4{fill:#f6ecff}.s-bg5{fill:#ffecef}
+.s-ink{fill:#1d2b4f}.s-w{fill:#fff}.s-sun{fill:#ffc93c}.s-leaf{fill:#3fa66b}.s-sky{fill:#3b82d6}.s-berry{fill:#e2557a}.s-grape{fill:#7a5cd6}.s-orange{fill:#f08a32}.s-soft{fill:#cdd6e3}
+.s-txt{font-family:"Mitr",sans-serif;font-size:13px;fill:#1d2b4f}.s-txtw{font-family:"Mitr",sans-serif;font-size:13px;fill:#fff}
+.s-big{font-family:"Mitr",sans-serif;font-size:20px;fill:#1d2b4f}
+.s-line{stroke:#1d2b4f;stroke-width:2;fill:none}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Prompt Generator · เกมการศึกษาระดับประถม ป.1–ป.6</div>
+  <h1>ห้องสร้างเกม<mark>ประถม</mark></h1>
+  <p class="lead">รวม 36 รูปแบบเกมการศึกษาที่ AI สร้างเป็นไฟล์ HTML เปิดเล่นผ่านเบราว์เซอร์ได้ทันที ครูเลือกแบบเกมจากคลัง หรือออกแบบเกมเองทุกส่วน ใส่วิชาและเนื้อหา แล้วคัดลอก prompt ไปวางใน Claude, ChatGPT, Gemini หรือ AI ที่ใช้อยู่</p>
+  <div class="steps"><span><b>1</b> เลือกแบบเกม หรือออกแบบเอง</span><span><b>2</b> กรอกเนื้อหา</span><span><b>3</b> คัดลอก prompt</span><span><b>4</b> วางใน AI แล้วเล่น</span></div>
+  <button type="button" class="go-custom" id="goCustom">ออกแบบเกมเองทุกส่วน →</button>
+</header>
+
+<section>
+  <div class="sec-head">
+    <h2>คลังแบบเกม</h2>
+    <div class="filters" id="filters" role="group" aria-label="กรองตามประเภท"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section class="studio" id="studio">
+  <div class="panel">
+    <div class="mode" role="tablist" aria-label="วิธีสร้างเกม">
+      <button type="button" role="tab" id="tab-lib" aria-selected="true">เลือกจากคลัง 36 แบบ</button>
+      <button type="button" role="tab" id="tab-custom" aria-selected="false">ออกแบบเกมเอง</button>
+    </div>
+    <div class="chosen" id="chosen"></div>
+    <form id="form" autocomplete="off">
+      <div class="design" id="design" hidden>
+        <div class="design-head">
+          <div><h3>ออกแบบเกมของคุณ</h3><p>เลือกส่วนประกอบของเกมทีละหมวด prompt ด้านขวาอัปเดตทันที</p></div>
+          <div class="design-actions"><button type="button" id="rand">สุ่มให้</button><button type="button" id="clear">ล้างตัวเลือก</button></div>
+        </div>
+        <label for="gname">ชื่อเกม <small>เว้นว่างให้ AI ตั้งชื่อ</small><input id="gname" type="text" placeholder="เช่น ลิงน้อยข้ามแม่น้ำ"></label>
+        <label for="idea">ไอเดียเกมของคุณ <small>เล่าสั้น ๆ ว่าอยากให้เกมเป็นอย่างไร เว้นว่างได้</small><textarea id="idea" placeholder="เช่น ช่วยลิงน้อยเก็บกล้วยที่มีคำตอบถูก ตอบถูกยิ่งมาก สะพานข้ามแม่น้ำยิ่งยาว จนลิงข้ามไปหาครอบครัวได้"></textarea></label>
+        <div id="chipGroups"></div>
+      </div>
+      <div class="row">
+        <label for="grade">ระดับชั้น
+          <select id="grade">
+            <option>ป.1</option><option>ป.2</option><option selected>ป.3</option><option>ป.4</option><option>ป.5</option><option>ป.6</option>
+          </select>
+        </label>
+        <label for="subject">วิชา
+          <select id="subject">
+            <option>คณิตศาสตร์</option><option>ภาษาไทย</option><option>ภาษาอังกฤษ</option><option>วิทยาศาสตร์และเทคโนโลยี</option><option>สังคมศึกษา ศาสนา และวัฒนธรรม</option><option>ประวัติศาสตร์</option><option>สุขศึกษาและพลศึกษา</option><option>ศิลปะ</option><option>การงานอาชีพ</option><option>วิทยาการคำนวณ</option>
+          </select>
+        </label>
+      </div>
+      <label for="topic">หัวข้อ / ตัวชี้วัดที่ต้องการฝึก
+        <input id="topic" type="text" value="การคูณเลขหนึ่งหลัก (แม่ 2–9)">
+      </label>
+      <label for="content">เนื้อหาที่ต้องการใส่ในเกม <small>เว้นว่างได้ ถ้าต้องการให้ AI คิดเนื้อหาให้ (ใส่คำถาม คำศัพท์ หรือคู่คำ บรรทัดละ 1 รายการ)</small>
+        <textarea id="content" placeholder="เช่น&#10;3 × 4 = 12&#10;6 × 7 = 42&#10;8 × 9 = 72"></textarea>
+      </label>
+      <div class="row">
+        <label for="count">จำนวนข้อ / ด่าน
+          <select id="count"><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
+        </label>
+        <label for="lang">ภาษาในเกม
+          <select id="lang"><option selected>ไทย</option><option>อังกฤษ</option><option>ไทยและอังกฤษคู่กัน</option></select>
+        </label>
+      </div>
+      <div class="row">
+        <label for="level">ความยาก
+          <select id="level"><option>ง่าย (ทบทวน)</option><option selected>ปานกลาง (ฝึกฝน)</option><option>ท้าทาย (ต่อยอด)</option><option>ไล่ระดับจากง่ายไปยาก</option></select>
+        </label>
+        <label for="theme">ธีม / ตัวละคร
+          <input id="theme" type="text" value="ผจญภัยในสวนสัตว์">
+        </label>
+      </div>
+      <fieldset>
+        <legend>ฟีเจอร์ในเกม</legend>
+        <div class="checks" id="feats"></div>
+      </fieldset>
+      <fieldset>
+        <legend>จะนำไปใช้กับ AI ตัวไหน</legend>
+        <div class="platforms" id="platforms"></div>
+      </fieldset>
+    </form>
+  </div>
+  <div class="panel">
+    <div class="out-head">
+      <div><h2>Prompt พร้อมใช้</h2><div class="meta" id="meta"></div></div>
+      <button class="copy" id="copy" type="button">คัดลอก prompt</button>
+    </div>
+    <pre id="out" tabindex="0"></pre>
+    <p class="tip" id="tip"></p>
+  </div>
+</section>
+
+<footer>ภาพตัวอย่างเป็นภาพจำลองหน้าจอเพื่อให้เห็นรูปแบบเกม ผลงานจริงจาก AI จะต่างกันไปตามแพลตฟอร์ม ควรตรวจความถูกต้องของเนื้อหาทุกครั้งก่อนให้นักเรียนเล่น</footer>
+</div>
+
+<script>
+const V = 'viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img"';
+const GAMES = [
+ {id:"quiz", name:"เกมตอบคำถามแข่งเวลา", en:"Quiz Show", type:"ตอบคำถาม",
+  desc:"คำถามปรนัย 4 ตัวเลือก มีเวลานับถอยหลัง สะสมดาวเมื่อตอบถูก",
+  fit:["ทุกวิชา","ทบทวนบทเรียน"],
+  mech:["แสดงคำถามทีละข้อ พร้อมตัวเลือก 4 ตัวเลือกเป็นปุ่มสีต่างกันขนาดใหญ่","มีแถบเวลานับถอยหลังต่อข้อ (ประมาณ 20 วินาที) หมดเวลาให้ไปข้อถัดไป","ตอบถูกได้ดาว ตอบเร็วได้โบนัส ตอบผิดแสดงคำตอบที่ถูกพร้อมคำอธิบายสั้น ๆ","จบเกมแสดงคะแนนรวม จำนวนดาว และสรุปข้อที่ตอบผิดให้ทบทวน"],
+  svg:`<svg ${V}><rect class="s-bg" width="320" height="200"/><rect x="16" y="14" width="288" height="8" rx="4" class="s-soft"/><rect x="16" y="14" width="190" height="8" rx="4" class="s-orange"/><text x="160" y="58" text-anchor="middle" class="s-big">6 × 7 = ?</text><rect x="16" y="78" width="140" height="44" rx="10" class="s-berry"/><rect x="164" y="78" width="140" height="44" rx="10" class="s-sky"/><rect x="16" y="130" width="140" height="44" rx="10" class="s-leaf"/><rect x="164" y="130" width="140" height="44" rx="10" class="s-grape"/><text x="86" y="105" text-anchor="middle" class="s-txtw">36</text><text x="234" y="105" text-anchor="middle" class="s-txtw">42</text><text x="86" y="157" text-anchor="middle" class="s-txtw">48</text><text x="234" y="157" text-anchor="middle" class="s-txtw">49</text><text x="300" y="192" text-anchor="end" class="s-txt">★ 7</text></svg>`},
+ {id:"sort", name:"เกมลากจัดหมวดหมู่", en:"Drag & Sort", type:"ลากวาง",
+  desc:"ลากบัตรคำหรือภาพไปใส่ตะกร้าที่ถูกหมวด ฝึกการจำแนกประเภท",
+  fit:["วิทยาศาสตร์","ภาษาไทย","สังคมศึกษา"],
+  mech:["มีกล่องหรือตะกร้า 2–4 หมวดด้านล่าง และบัตรคำ/อีโมจิด้านบน","นักเรียนลากบัตรไปวางในหมวดที่ถูก (รองรับทั้งเมาส์และนิ้วบนแท็บเล็ต)","วางถูกบัตรเด้งเข้าตะกร้าพร้อมเสียงดี วางผิดบัตรเด้งกลับพร้อมคำใบ้","จัดครบทุกใบแล้วแสดงผลสรุปและปุ่มเล่นใหม่โดยสุ่มลำดับบัตร"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><rect x="30" y="18" width="70" height="34" rx="8" class="s-w" stroke="#1d2b4f" stroke-width="1.5"/><text x="65" y="40" text-anchor="middle" class="s-txt">กบ</text><rect x="125" y="28" width="70" height="34" rx="8" class="s-sun" transform="rotate(-6 160 45)"/><text x="160" y="50" text-anchor="middle" class="s-txt" transform="rotate(-6 160 45)">ปลาทู</text><rect x="220" y="18" width="70" height="34" rx="8" class="s-w" stroke="#1d2b4f" stroke-width="1.5"/><text x="255" y="40" text-anchor="middle" class="s-txt">ช้าง</text><path d="M160 70 C160 95 90 95 90 120" class="s-line" stroke-dasharray="4 4"/><path d="M28 120 h124 l-12 62 h-100z" class="s-sky"/><path d="M168 120 h124 l-12 62 h-100z" class="s-orange"/><text x="90" y="156" text-anchor="middle" class="s-txtw">สัตว์น้ำ</text><text x="230" y="156" text-anchor="middle" class="s-txtw">สัตว์บก</text></svg>`},
+ {id:"match", name:"เกมเปิดบัตรจับคู่", en:"Memory Match", type:"จับคู่",
+  desc:"เปิดบัตรคว่ำทีละ 2 ใบ หาคู่ที่สัมพันธ์กัน เช่น คำศัพท์–ภาพ โจทย์–คำตอบ",
+  fit:["ภาษาอังกฤษ","คณิตศาสตร์","ภาษาไทย"],
+  mech:["บัตรคว่ำเรียงเป็นตาราง (เช่น 4×3) แต่ละคู่คือข้อมูลที่สัมพันธ์กัน ไม่ใช่ข้อความเหมือนกัน","คลิกเปิดได้ครั้งละ 2 ใบ มีแอนิเมชันพลิกบัตร","ถ้าเป็นคู่กันบัตรค้างไว้และเปลี่ยนสี ถ้าไม่ใช่คู่ให้พลิกกลับหลัง 1 วินาที","นับจำนวนครั้งที่เปิด และให้ดาว 1–3 ดวงตามความแม่นยำ"],
+  svg:`<svg ${V}><rect class="s-bg4" width="320" height="200"/><g><rect x="22" y="18" width="62" height="76" rx="8" class="s-grape"/><rect x="94" y="18" width="62" height="76" rx="8" class="s-w" stroke="#3fa66b" stroke-width="3"/><text x="125" y="62" text-anchor="middle" class="s-txt">cat</text><rect x="166" y="18" width="62" height="76" rx="8" class="s-grape"/><rect x="238" y="18" width="62" height="76" rx="8" class="s-w" stroke="#3fa66b" stroke-width="3"/><text x="269" y="62" text-anchor="middle" class="s-txt">แมว</text><rect x="22" y="106" width="62" height="76" rx="8" class="s-grape"/><rect x="94" y="106" width="62" height="76" rx="8" class="s-grape"/><rect x="166" y="106" width="62" height="76" rx="8" class="s-w" stroke="#1d2b4f" stroke-width="1.5"/><text x="197" y="150" text-anchor="middle" class="s-txt">dog</text><rect x="238" y="106" width="62" height="76" rx="8" class="s-grape"/></g><circle cx="53" cy="56" r="10" class="s-sun"/><circle cx="53" cy="144" r="10" class="s-sun"/><circle cx="125" cy="144" r="10" class="s-sun"/><circle cx="197" cy="56" r="10" class="s-sun"/><circle cx="269" cy="144" r="10" class="s-sun"/></svg>`},
+ {id:"spell", name:"เกมเติมคำ สะกดคำ", en:"Spell It", type:"ภาษา",
+  desc:"ดูภาพหรือฟังเสียง แล้วกดตัวอักษรเรียงให้เป็นคำที่ถูกต้อง",
+  fit:["ภาษาไทย","ภาษาอังกฤษ"],
+  mech:["แสดงภาพ (อีโมจิ) หรือคำใบ้ และปุ่มฟังเสียงอ่านคำด้วย Web Speech API","มีช่องว่างตามจำนวนตัวอักษร และแป้นตัวอักษรที่สลับลำดับให้กดเลือก","สำหรับภาษาไทยให้แยกพยัญชนะ สระ วรรณยุกต์เป็นชิ้นที่กดได้ และแสดงผลประกอบคำถูกต้อง","สะกดถูกให้อ่านออกเสียงคำทั้งคำและฉลอง สะกดผิดให้ช่องที่ผิดสั่นและลองใหม่ได้"],
+  svg:`<svg ${V}><rect class="s-bg2" width="320" height="200"/><circle cx="160" cy="46" r="28" class="s-orange"/><path d="M160 18 q6 -10 14 -6" class="s-line"/><g><rect x="70" y="88" width="38" height="44" rx="6" class="s-w" stroke="#1d2b4f" stroke-width="2"/><text x="89" y="117" text-anchor="middle" class="s-big">ส</text><rect x="114" y="88" width="38" height="44" rx="6" class="s-w" stroke="#1d2b4f" stroke-width="2"/><text x="133" y="117" text-anchor="middle" class="s-big">้</text><rect x="158" y="88" width="38" height="44" rx="6" class="s-w" stroke="#1d2b4f" stroke-width="2"/><text x="177" y="117" text-anchor="middle" class="s-big">ม</text><rect x="202" y="88" width="38" height="44" rx="6" class="s-w" stroke="#3b82d6" stroke-width="2" stroke-dasharray="4 3"/></g><g><rect x="48" y="148" width="40" height="36" rx="8" class="s-sky"/><rect x="96" y="148" width="40" height="36" rx="8" class="s-sky"/><rect x="144" y="148" width="40" height="36" rx="8" class="s-sky"/><rect x="192" y="148" width="40" height="36" rx="8" class="s-sky"/><rect x="240" y="148" width="40" height="36" rx="8" class="s-sky"/><text x="68" y="172" text-anchor="middle" class="s-txtw">โ</text><text x="116" y="172" text-anchor="middle" class="s-txtw">ด</text><text x="164" y="172" text-anchor="middle" class="s-txtw">า</text><text x="212" y="172" text-anchor="middle" class="s-txtw">ต</text><text x="260" y="172" text-anchor="middle" class="s-txtw">ง</text></g></svg>`},
+ {id:"race", name:"เกมแข่งคิดเลขวิ่งเข้าเส้นชัย", en:"Math Race", type:"แข่งขัน",
+  desc:"ตอบโจทย์ถูกแล้วรถหรือสัตว์วิ่งไปข้างหน้า แข่งกับคอมพิวเตอร์หรือเพื่อน",
+  fit:["คณิตศาสตร์","คิดเลขเร็ว"],
+  mech:["มีลู่วิ่ง 2 เลน: ตัวละครของนักเรียน และคู่แข่ง (คอมพิวเตอร์ หรือโหมด 2 ผู้เล่นบนจอเดียว)","แสดงโจทย์ด้านล่างพร้อมแป้นตัวเลขขนาดใหญ่ให้กดคำตอบ","ตอบถูกตัวละครวิ่งไปข้างหน้า ตอบผิดหยุดชั่วครู่ คู่แข่งเดินด้วยความเร็วคงที่ตามระดับความยาก","ใครถึงเส้นชัยก่อนชนะ แสดงสถิติความเร็วเฉลี่ยต่อข้อ"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><rect x="0" y="20" width="320" height="40" class="s-soft"/><rect x="0" y="66" width="320" height="40" class="s-soft"/><rect x="286" y="20" width="10" height="86" class="s-ink"/><rect x="286" y="20" width="5" height="5" class="s-w"/><rect x="291" y="25" width="5" height="5" class="s-w"/><rect x="286" y="30" width="5" height="5" class="s-w"/><circle cx="200" cy="40" r="14" class="s-berry"/><circle cx="130" cy="86" r="14" class="s-sky"/><text x="160" y="140" text-anchor="middle" class="s-big">48 ÷ 6 = ?</text><g><rect x="40" y="154" width="40" height="32" rx="7" class="s-w" stroke="#1d2b4f"/><rect x="86" y="154" width="40" height="32" rx="7" class="s-w" stroke="#1d2b4f"/><rect x="132" y="154" width="40" height="32" rx="7" class="s-sun"/><rect x="178" y="154" width="40" height="32" rx="7" class="s-w" stroke="#1d2b4f"/><rect x="224" y="154" width="56" height="32" rx="7" class="s-leaf"/><text x="60" y="175" text-anchor="middle" class="s-txt">6</text><text x="106" y="175" text-anchor="middle" class="s-txt">7</text><text x="152" y="175" text-anchor="middle" class="s-txt">8</text><text x="198" y="175" text-anchor="middle" class="s-txt">9</text><text x="252" y="175" text-anchor="middle" class="s-txtw">ส่ง</text></g></svg>`},
+ {id:"board", name:"เกมกระดานทอยลูกเต๋า", en:"Dice Board", type:"กระดาน",
+  desc:"เกมบันไดงูทอยเต๋าเดินตามช่อง ช่องพิเศษมีคำถาม ตอบถูกขึ้นบันได",
+  fit:["ทุกวิชา","เล่นเป็นกลุ่ม"],
+  mech:["กระดาน 30 ช่องเรียงแบบงูเลื้อย มีช่องคำถาม ช่องบันได และช่องงู","รองรับผู้เล่น 2–4 คน (ทีม) บนจอเดียว ผลัดกันกดทอยลูกเต๋าที่มีแอนิเมชัน","ตกช่องคำถามต้องตอบ ตอบถูกได้เดินต่อหรือขึ้นบันได ตอบผิดถอยหลัง","เหมาะฉายบนจอหน้าห้องให้ทั้งชั้นเล่นเป็นทีม"],
+  svg:`<svg ${V}><rect class="s-bg2" width="320" height="200"/>${(()=>{let s="";const c=["s-w","s-sun","s-w","s-sky","s-w","s-berry"];for(let r=0;r<4;r++)for(let i=0;i<6;i++)s+=`<rect x="${20+i*38}" y="${18+r*40}" width="36" height="38" rx="5" class="${c[(r+i)%6]}" stroke="#1d2b4f" stroke-width="1"/>`;return s})()}<path d="M58 150 L134 70" stroke="#3fa66b" stroke-width="6"/><path d="M66 154 L142 74" stroke="#3fa66b" stroke-width="6"/><path d="M210 30 q-30 30 0 50 q30 25 -10 60" stroke="#e2557a" stroke-width="7" fill="none" stroke-linecap="round"/><text x="115" y="44" text-anchor="middle" class="s-big">?</text><rect x="258" y="70" width="48" height="48" rx="10" class="s-w" stroke="#1d2b4f" stroke-width="2"/><circle cx="270" cy="82" r="4" class="s-ink"/><circle cx="282" cy="94" r="4" class="s-ink"/><circle cx="294" cy="106" r="4" class="s-ink"/><text x="282" y="140" text-anchor="middle" class="s-txt">ทอย</text></svg>`},
+ {id:"maze", name:"เกมเขาวงกตตอบถูกเปิดทาง", en:"Quiz Maze", type:"ผจญภัย",
+  desc:"พาตัวละครเดินในเขาวงกต เจอประตูต้องตอบคำถามจึงผ่านไปได้",
+  fit:["คณิตศาสตร์","ภาษาอังกฤษ","วิทยาศาสตร์"],
+  mech:["เขาวงกตแบบตาราง ควบคุมตัวละครด้วยปุ่มลูกศรบนคีย์บอร์ด และปุ่มลูกศรบนจอสำหรับแท็บเล็ต","มีประตูล็อกกระจายในเส้นทาง เดินชนประตูจะมีคำถามเด้งขึ้นมา","ตอบถูกประตูเปิด ตอบผิดเสียหัวใจ 1 ดวง (มี 3 ดวง) และได้คำถามใหม่","เก็บเหรียญระหว่างทาง ถึงทางออกแล้วไปด่านถัดไปที่ซับซ้อนขึ้น"],
+  svg:`<svg ${V}><rect class="s-bg" width="320" height="200"/><path d="M20 20 H300 V180 H20 Z M20 60 H120 M160 20 V100 H240 M200 60 H300 M60 100 V180 M60 140 H160 M200 140 V180 M240 100 V140 H300" stroke="#1d2b4f" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="152" y="104" width="16" height="32" rx="3" class="s-orange"/><text x="160" y="125" text-anchor="middle" class="s-txtw">?</text><circle cx="40" cy="40" r="11" class="s-sky"/><circle cx="100" cy="120" r="6" class="s-sun"/><circle cx="220" cy="40" r="6" class="s-sun"/><rect x="276" y="150" width="20" height="26" rx="3" class="s-leaf"/><text x="248" y="196" class="s-txt" font-size="11">♥ ♥ ♥</text></svg>`},
+ {id:"whack", name:"เกมตีตุ่นเลือกคำตอบ", en:"Whack-a-Mole", type:"ตอบไว",
+  desc:"ตุ่นโผล่จากรูพร้อมคำตอบ ให้ตีเฉพาะตุ่นที่ถือคำตอบถูก ฝึกความไว",
+  fit:["คณิตศาสตร์","ภาษาอังกฤษ","ภาษาไทย"],
+  mech:["แสดงโจทย์หรือเงื่อนไขด้านบน เช่น 'ตีจำนวนคู่' หรือ 'ตีคำที่เป็นคำนาม'","มีรู 9 รู ตุ่นโผล่ขึ้นแบบสุ่มพร้อมป้ายคำตอบ อยู่ประมาณ 1.5 วินาที","ตีถูกได้คะแนนพร้อมเอฟเฟกต์ ตีผิดเสียคะแนนและแสดงเหตุผลสั้น ๆ","รอบละ 60 วินาที เปลี่ยนโจทย์ทุกรอบ ความเร็วเพิ่มขึ้นตามด่าน"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><rect x="40" y="10" width="240" height="30" rx="8" class="s-w" stroke="#1d2b4f"/><text x="160" y="30" text-anchor="middle" class="s-txt">ตีเฉพาะ "จำนวนคู่"</text>${(()=>{let s="";const L=["7","","12","","9","","","24",""];for(let i=0;i<9;i++){const x=55+(i%3)*105,y=78+Math.floor(i/3)*44;s+=`<ellipse cx="${x}" cy="${y+12}" rx="34" ry="9" class="s-ink"/>`;if(L[i])s+=`<path d="M${x-20} ${y+12} v-18 a20 20 0 0 1 40 0 v18z" class="s-orange"/><rect x="${x-18}" y="${y-10}" width="36" height="18" rx="4" class="s-w"/><text x="${x}" y="${y+4}" text-anchor="middle" class="s-txt">${L[i]}</text>`}return s})()}<path d="M250 150 l30 -30" stroke="#7a5cd6" stroke-width="6" stroke-linecap="round"/><rect x="270" y="104" width="30" height="18" rx="4" class="s-grape" transform="rotate(45 285 113)"/></svg>`},
+ {id:"order", name:"เกมเรียงลำดับเหตุการณ์", en:"Sequence It", type:"ลากวาง",
+  desc:"ลากเรียงขั้นตอน วัฏจักร หรือเหตุการณ์ทางประวัติศาสตร์ให้ถูกลำดับ",
+  fit:["วิทยาศาสตร์","ประวัติศาสตร์","ภาษาไทย"],
+  mech:["แสดงบัตรเหตุการณ์ 4–6 ใบที่สลับลำดับ แต่ละใบมีอีโมจิหรือภาพประกอบและข้อความสั้น","นักเรียนลากสลับตำแหน่งบัตรบนเส้นเวลาหรือวงจร (รองรับการสัมผัส)","กดปุ่มตรวจ บัตรที่อยู่ถูกตำแหน่งเป็นสีเขียว ผิดเป็นสีส้มให้แก้ไขต่อ","เรียงถูกทั้งหมดแล้วเล่นแอนิเมชันอธิบายลำดับทั้งหมดอีกครั้ง"],
+  svg:`<svg ${V}><rect class="s-bg4" width="320" height="200"/><path d="M30 120 H290" stroke="#1d2b4f" stroke-width="3" stroke-dasharray="6 5"/><g><rect x="14" y="62" width="66" height="80" rx="8" class="s-w" stroke="#3fa66b" stroke-width="3"/><circle cx="47" cy="90" r="12" class="s-sun"/><text x="47" y="130" text-anchor="middle" class="s-txt" font-size="11">ไข่</text><rect x="90" y="62" width="66" height="80" rx="8" class="s-w" stroke="#3fa66b" stroke-width="3"/><path d="M110 92 q13 -14 26 0 q-13 10 -26 0" class="s-leaf"/><text x="123" y="130" text-anchor="middle" class="s-txt" font-size="11">หนอน</text><rect x="166" y="52" width="66" height="80" rx="8" class="s-w" stroke="#f08a32" stroke-width="3" transform="rotate(5 199 92)"/><text x="199" y="125" text-anchor="middle" class="s-txt" font-size="11">ผีเสื้อ</text><path d="M186 82 q13 -16 13 4 q0 -20 13 -4 q-6 14 -13 2 q-7 12 -13 -2" class="s-grape"/><rect x="242" y="62" width="66" height="80" rx="8" class="s-w" stroke="#1d2b4f" stroke-dasharray="4 3"/></g><text x="160" y="176" text-anchor="middle" class="s-txt">วัฏจักรชีวิตผีเสื้อ</text></svg>`},
+ {id:"lab", name:"เกมห้องทดลองจำลอง", en:"Virtual Lab", type:"จำลอง",
+  desc:"ปรับค่าด้วยแถบเลื่อนแล้วดูผลทันที เช่น วงจรไฟฟ้า การละลาย การเจริญเติบโตของพืช",
+  fit:["วิทยาศาสตร์","คณิตศาสตร์"],
+  mech:["มีฉากจำลองเรียบง่ายที่วาดด้วย Canvas หรือ SVG และตัวควบคุมแถบเลื่อน 2–3 ตัว","เมื่อปรับค่า ผลในฉากเปลี่ยนแบบเห็นได้ชัดทันที พร้อมคำอธิบายสั้น ๆ","มีภารกิจให้ทำ 3–5 ข้อ เช่น 'ทำให้หลอดไฟสว่างที่สุด' แล้วตรวจว่าทำสำเร็จหรือไม่","ให้นักเรียนตอบคำถามสรุปหลังทดลอง เพื่อเชื่อมผลการทดลองกับแนวคิด"],
+  svg:`<svg ${V}><rect class="s-bg" width="320" height="200"/><circle cx="90" cy="70" r="28" class="s-sun"/><path d="M80 98 h20 v14 h-20z" class="s-soft"/><path d="M90 30 v-14 M60 44 l-10 -10 M120 44 l10 -10" stroke="#ffc93c" stroke-width="4" stroke-linecap="round"/><path d="M90 112 V150 H220 V70 H118" class="s-line" stroke-width="3"/><rect x="196" y="100" width="48" height="30" rx="4" class="s-ink"/><rect x="200" y="104" width="12" height="22" class="s-orange"/><rect x="214" y="104" width="12" height="22" class="s-orange"/><rect x="228" y="104" width="12" height="22" class="s-soft"/><g><rect x="30" y="168" width="260" height="6" rx="3" class="s-soft"/><rect x="30" y="168" width="170" height="6" rx="3" class="s-sky"/><circle cx="200" cy="171" r="9" class="s-w" stroke="#3b82d6" stroke-width="3"/></g><text x="264" y="60" text-anchor="middle" class="s-txt">2 ก้อน</text></svg>`},
+ {id:"escape", name:"เกมห้องปริศนาหาทางออก", en:"Escape Room", type:"ผจญภัย",
+  desc:"สำรวจห้อง คลิกสิ่งของเพื่อเจอปริศนา ไขให้ครบเพื่อได้รหัสเปิดประตู",
+  fit:["ทุกวิชา","คิดวิเคราะห์"],
+  mech:["ฉากห้อง 1–3 ห้องที่วาดด้วย SVG มีสิ่งของคลิกได้ 4–6 จุด (ตู้ นาฬิกา หนังสือ กล่อง)","แต่ละจุดมีปริศนาจากเนื้อหาบทเรียน ไขได้แล้วได้ตัวเลขหรือตัวอักษร 1 ตัวของรหัส","ใส่รหัสครบที่แป้นประตูเพื่อออกจากห้อง มีปุ่มขอคำใบ้ (ใช้แล้วหักเวลา)","มีเรื่องเล่าเปิดเรื่องสั้น ๆ และฉากฉลองเมื่อออกจากห้องได้"],
+  svg:`<svg ${V}><rect class="s-bg5" width="320" height="200"/><rect x="0" y="150" width="320" height="50" class="s-soft"/><rect x="220" y="40" width="72" height="110" rx="4" class="s-orange"/><circle cx="278" cy="98" r="5" class="s-sun"/><rect x="232" y="60" width="48" height="26" rx="3" class="s-ink"/><text x="256" y="78" text-anchor="middle" class="s-txtw" font-size="12">_ 4 _</text><rect x="26" y="40" width="80" height="110" class="s-grape"/><rect x="34" y="50" width="64" height="4" class="s-w"/><rect x="34" y="84" width="64" height="4" class="s-w"/><rect x="40" y="58" width="8" height="26" class="s-sun"/><rect x="50" y="62" width="8" height="22" class="s-sky"/><rect x="60" y="60" width="8" height="24" class="s-berry"/><circle cx="160" cy="62" r="22" class="s-w" stroke="#1d2b4f" stroke-width="3"/><path d="M160 62 V48 M160 62 h10" class="s-line"/><rect x="134" y="120" width="52" height="34" rx="4" class="s-leaf"/><text x="160" y="143" text-anchor="middle" class="s-txtw">?</text><text x="66" y="125" text-anchor="middle" class="s-big" fill="#fff">?</text></svg>`},
+ {id:"story", name:"นิทานโต้ตอบเลือกทางเดิน", en:"Choose Your Path", type:"เรื่องเล่า",
+  desc:"อ่านนิทานแล้วเลือกการตัดสินใจ แต่ละทางนำไปสู่ตอนจบต่างกัน ฝึกการอ่านและคุณธรรม",
+  fit:["ภาษาไทย","สังคมศึกษา","สุขศึกษา"],
+  mech:["นิทานแบ่งเป็นฉาก 6–10 ฉาก แต่ละฉากมีภาพประกอบ (SVG หรืออีโมจิ) และข้อความไม่เกิน 3 ประโยค","ท้ายฉากมีทางเลือก 2–3 ทาง ทางเลือกนำไปสู่ฉากต่างกัน และมีตอนจบอย่างน้อย 3 แบบ","มีคำถามความเข้าใจการอ่านแทรกระหว่างเรื่อง และปุ่มฟังเสียงอ่าน","ตอนจบสรุปข้อคิดของเรื่อง และให้นักเรียนย้อนกลับไปลองเลือกทางอื่นได้"],
+  svg:`<svg ${V}><rect class="s-bg2" width="320" height="200"/><rect x="18" y="14" width="284" height="86" rx="10" class="s-sky"/><circle cx="270" cy="38" r="12" class="s-sun"/><path d="M18 100 l60 -40 l40 26 l50 -38 l60 52z" class="s-leaf"/><circle cx="110" cy="80" r="10" class="s-orange"/><rect x="18" y="108" width="284" height="34" rx="6" class="s-w"/><text x="30" y="130" class="s-txt" font-size="12">กระต่ายน้อยเจอทางแยก จะเดินทางไหนดี?</text><rect x="18" y="150" width="138" height="36" rx="10" class="s-berry"/><rect x="164" y="150" width="138" height="36" rx="10" class="s-grape"/><text x="87" y="173" text-anchor="middle" class="s-txtw">ทางป่าลึก</text><text x="233" y="173" text-anchor="middle" class="s-txtw">ทางริมลำธาร</text></svg>`},
+ {id:"cross", name:"ปริศนาอักษรไขว้", en:"Crossword", type:"ภาษา",
+  desc:"อ่านคำใบ้แนวตั้งและแนวนอน แล้วเติมคำศัพท์ลงตารางให้ตัดกันพอดี",
+  fit:["ภาษาอังกฤษ","วิทยาศาสตร์","ภาษาไทย"],
+  mech:["สร้างตารางอักษรไขว้อัตโนมัติจากรายการคำและคำใบ้ 6–10 คำ ให้คำตัดกันอย่างน้อย 1 ตัวอักษร","คลิกช่องแล้วพิมพ์ตัวอักษร มีแป้นตัวอักษรบนจอสำหรับแท็บเล็ต และรายการคำใบ้แนวนอน/แนวตั้งด้านข้าง","คลิกคำใบ้แล้วไฮไลต์ช่องของคำนั้น เติมครบคำแล้วตรวจทันที ถูกเป็นสีเขียว","สำหรับภาษาไทยให้ 1 ช่องเท่ากับ 1 พยางค์ แทน 1 ตัวอักษร เพื่อไม่ให้สระและวรรณยุกต์แตกช่อง"],
+  svg:`<svg ${V}><rect class="s-bg" width="320" height="200"/>${(()=>{let s="";const cells=[[1,0,"C"],[1,1,"A"],[1,2,"T"],[0,1,""],[2,1,"P"],[3,1,""],[2,2,""],[2,3,""],[3,3,""],[4,3,""]];cells.forEach(([r,c,l],i)=>{const x=24+c*32,y=16+r*32;s+=`<rect x="${x}" y="${y}" width="30" height="30" class="${l?'s-sun':'s-w'}" stroke="#1d2b4f" stroke-width="1.5"/>`;if(l)s+=`<text x="${x+15}" y="${y+21}" text-anchor="middle" class="s-txt">${l}</text>`});return s})()}<text x="27" y="62" class="s-txt" font-size="9">1</text><text x="59" y="30" class="s-txt" font-size="9">2</text><rect x="168" y="16" width="136" height="168" rx="10" class="s-w" stroke="#cdd6e3"/><text x="180" y="40" class="s-txt" font-size="12">แนวนอน</text><text x="180" y="60" class="s-txt" font-size="11">1. แมว</text><text x="180" y="78" class="s-txt" font-size="11">3. ปากกา</text><text x="180" y="108" class="s-txt" font-size="12">แนวตั้ง</text><text x="180" y="128" class="s-txt" font-size="11">2. แอปเปิล</text><text x="180" y="146" class="s-txt" font-size="11">4. ไข่</text></svg>`},
+ {id:"wsearch", name:"เกมค้นหาคำศัพท์", en:"Word Search", type:"ภาษา",
+  desc:"หาคำที่ซ่อนอยู่ในตารางตัวอักษร ลากผ่านตัวอักษรเพื่อวงคำที่พบ",
+  fit:["ภาษาอังกฤษ","ภาษาไทย"],
+  mech:["ตารางตัวอักษร 8×8 ถึง 10×10 ซ่อนคำ 6–10 คำในแนวนอน แนวตั้ง และแนวทแยง (ป.1–ป.2 ใช้แค่แนวนอนและแนวตั้ง)","ลากนิ้วหรือเมาส์ผ่านตัวอักษรเพื่อเลือกคำ คำที่ถูกถูกวงด้วยแถบสีและขีดฆ่าในรายการคำ","รายการคำแสดงพร้อมภาพหรือความหมาย เพื่อให้เด็กได้ทบทวนความหมายไปพร้อมกัน","หาครบทุกคำแล้วแสดงเวลาที่ใช้ สุ่มตารางใหม่ทุกครั้งที่เล่น"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/>${(()=>{const g=["SUNCAT","OBIRDX","APPLEM","KFISHO","EGGRTN","LDOGQS"];let s="";g.forEach((row,r)=>[...row].forEach((ch,c)=>{s+=`<text x="${30+c*28}" y="${36+r*28}" text-anchor="middle" class="s-txt">${ch}</text>`}));return s})()}<rect x="16" y="78" width="148" height="24" rx="12" fill="none" stroke="#e2557a" stroke-width="3"/><rect x="44" y="50" width="120" height="24" rx="12" fill="none" stroke="#3b82d6" stroke-width="3"/><rect x="198" y="16" width="106" height="168" rx="10" class="s-w"/><text x="212" y="44" class="s-txt" font-size="12" text-decoration="line-through">APPLE</text><text x="212" y="68" class="s-txt" font-size="12" text-decoration="line-through">BIRD</text><text x="212" y="92" class="s-txt" font-size="12">FISH</text><text x="212" y="116" class="s-txt" font-size="12">DOG</text><text x="212" y="140" class="s-txt" font-size="12">SUN</text></svg>`},
+ {id:"balloon", name:"เกมยิงลูกโป่งคำตอบ", en:"Balloon Pop", type:"ตอบไว",
+  desc:"ลูกโป่งที่มีคำตอบลอยขึ้นจากด้านล่าง แตะลูกโป่งที่ถูกก่อนจะลอยหลุดจอ",
+  fit:["คณิตศาสตร์","ภาษาอังกฤษ"],
+  mech:["แสดงโจทย์ด้านบน ลูกโป่งสีต่าง ๆ พร้อมคำตอบลอยขึ้นจากล่างจอด้วยความเร็วต่างกัน","แตะลูกโป่งที่ถูกเพื่อให้แตกพร้อมเสียงป๊อปและได้คะแนน แตะผิดเสียหัวใจ","ถ้าลูกโป่งคำตอบถูกลอยหลุดจอไปให้แสดงโจทย์เดิมซ้ำอีกครั้งในภายหลัง","จำนวนลูกโป่งและความเร็วเพิ่มขึ้นทุก 5 ข้อ"],
+  svg:`<svg ${V}><rect class="s-bg" width="320" height="200"/><rect x="70" y="10" width="180" height="30" rx="8" class="s-w"/><text x="160" y="30" text-anchor="middle" class="s-txt">9 + 8 = ?</text>${[[60,110,"s-berry","15"],[130,80,"s-sun","17"],[200,130,"s-leaf","18"],[265,90,"s-grape","16"]].map(([x,y,c,t])=>`<ellipse cx="${x}" cy="${y}" rx="26" ry="31" class="${c}"/><path d="M${x} ${y+31} l-4 6 h8z" class="${c}"/><path d="M${x} ${y+37} q6 14 -2 30" stroke="#1d2b4f" fill="none"/><text x="${x}" y="${y+6}" text-anchor="middle" class="s-big" fill="#fff">${t}</text>`).join("")}<g transform="translate(130 80)"><path d="M-36 -34 l-8 -8 M36 -34 l8 -8 M0 -44 v-10" stroke="#f08a32" stroke-width="3" stroke-linecap="round"/></g></svg>`},
+ {id:"catch", name:"เกมรับของตกจากฟ้า", en:"Catch It", type:"ตอบไว",
+  desc:"เลื่อนตะกร้ารับเฉพาะสิ่งที่ตรงกับเงื่อนไข เช่น อาหารหมู่ 5 หรือคำที่มีสระอา",
+  fit:["สุขศึกษา","ภาษาไทย","วิทยาศาสตร์"],
+  mech:["แสดงเงื่อนไขด้านบน เช่น 'รับเฉพาะผักและผลไม้' ของต่าง ๆ (อีโมจิหรือบัตรคำ) ตกลงจากด้านบน","เลื่อนตะกร้าซ้าย-ขวาด้วยการลากนิ้ว เมาส์ หรือปุ่มลูกศร","รับของถูกได้คะแนน รับของผิดเสียหัวใจและแสดงเหตุผลสั้น ๆ ว่าทำไมไม่เข้าเงื่อนไข","เปลี่ยนเงื่อนไขทุกด่าน ด่านหลังของตกเร็วขึ้น"],
+  svg:`<svg ${V}><rect class="s-bg2" width="320" height="200"/><rect x="60" y="8" width="200" height="26" rx="8" class="s-leaf"/><text x="160" y="26" text-anchor="middle" class="s-txtw" font-size="12">รับเฉพาะผักและผลไม้</text><circle cx="70" cy="70" r="14" class="s-berry"/><path d="M70 56 q4 -8 10 -6" stroke="#3fa66b" stroke-width="3" fill="none"/><path d="M160 90 l-10 30 h20z" class="s-orange"/><path d="M156 84 l4 6 l4 -6" stroke="#3fa66b" stroke-width="3" fill="none"/><rect x="236" y="52" width="34" height="22" rx="4" class="s-sun"/><path d="M236 52 q17 -14 34 0" class="s-sun"/><path d="M70 92 v8 M253 82 v8" stroke="#1d2b4f" stroke-dasharray="3 3"/><path d="M120 158 h80 l-8 30 h-64z" class="s-sky"/><path d="M118 158 h84" stroke="#1d2b4f" stroke-width="3"/><text x="300" y="192" text-anchor="end" class="s-txt" font-size="11">♥ ♥</text></svg>`},
+ {id:"pizza", name:"ร้านพิซซ่าเศษส่วน", en:"Fraction Pizza", type:"จำลอง",
+  desc:"ตัดพิซซ่าและแบ่งชิ้นตามออร์เดอร์ลูกค้า ทำให้เศษส่วนเป็นสิ่งที่จับต้องได้",
+  fit:["คณิตศาสตร์","เศษส่วน"],
+  mech:["ลูกค้าสั่งพิซซ่าเป็นเศษส่วน เช่น 'ขอ 3/4 ถาด' หรือ 'หน้าเห็ด 1/2 หน้าไก่ 1/4'","นักเรียนเลือกจำนวนชิ้นที่จะตัด แล้วแตะชิ้นเพื่อใส่ท็อปปิ้งหรือหยิบใส่กล่อง","กดเสิร์ฟเพื่อตรวจ ลูกค้ายิ้มถ้าถูก ถ้าผิดลูกค้าบอกว่าได้มากไปหรือน้อยไป","ด่านหลังมีเศษส่วนที่เท่ากัน (2/4 = 1/2) และการบวกเศษส่วนตัวส่วนเท่ากัน"],
+  svg:`<svg ${V}><rect class="s-bg5" width="320" height="200"/><circle cx="110" cy="104" r="76" class="s-orange"/><circle cx="110" cy="104" r="66" class="s-sun"/><path d="M110 104 L110 38 A66 66 0 0 1 176 104 Z" fill="#e2557a" opacity=".85"/><path d="M110 104 L176 104 A66 66 0 0 1 110 170 Z" fill="#e2557a" opacity=".85"/><path d="M110 38 V170 M44 104 H176" stroke="#1d2b4f" stroke-width="2.5"/><circle cx="85" cy="80" r="6" class="s-berry"/><circle cx="80" cy="130" r="6" class="s-berry"/><rect x="204" y="34" width="104" height="66" rx="12" class="s-w" stroke="#1d2b4f" stroke-width="1.5"/><path d="M216 100 l-6 12 l18 -12" class="s-w" stroke="#1d2b4f" stroke-width="1.5"/><text x="256" y="62" text-anchor="middle" class="s-txt" font-size="12">ขอหน้าแฮม</text><text x="256" y="86" text-anchor="middle" class="s-big">2/4</text><rect x="214" y="140" width="84" height="36" rx="10" class="s-leaf"/><text x="256" y="163" text-anchor="middle" class="s-txtw">เสิร์ฟ</text></svg>`},
+ {id:"shop", name:"ร้านค้าจำลองทอนเงิน", en:"Little Shop", type:"จำลอง",
+  desc:"เป็นแม่ค้าพ่อค้า ลากเหรียญและธนบัตรเพื่อจ่ายเงินหรือทอนเงินให้ลูกค้า",
+  fit:["คณิตศาสตร์","เงินและการซื้อขาย"],
+  mech:["ใช้เหรียญและธนบัตรไทย (1, 2, 5, 10 บาท, 20, 50, 100 บาท) วาดด้วย SVG แยกขนาดและสีให้ชัด","ลูกค้ามาซื้อของ 1–3 ชิ้นพร้อมป้ายราคา นักเรียนต้องรวมราคาและลากเงินทอนลงถาด","กดยืนยันเพื่อตรวจ แสดงวิธีคิดเมื่อทอนผิด เช่น 100 − 65 = 35","ด่านแรกจ่ายเงินพอดี ด่านหลังต้องทอนเงิน และใช้จำนวนเหรียญน้อยที่สุดเพื่อโบนัส"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><rect x="16" y="14" width="288" height="18" class="s-berry"/><path d="M16 32 q18 14 36 0 q18 14 36 0 q18 14 36 0 q18 14 36 0 q18 14 36 0 q18 14 36 0 q18 14 36 0 q18 14 36 0" class="s-berry"/><rect x="34" y="58" width="56" height="42" rx="6" class="s-w"/><text x="62" y="84" text-anchor="middle" class="s-txt" font-size="12">นม 15฿</text><rect x="100" y="58" width="64" height="42" rx="6" class="s-w"/><text x="132" y="84" text-anchor="middle" class="s-txt" font-size="12">ขนม 20฿</text><rect x="196" y="56" width="108" height="46" rx="8" class="s-ink"/><text x="250" y="85" text-anchor="middle" class="s-txtw">ทอน ? ฿</text><rect x="16" y="120" width="288" height="66" rx="10" class="s-w" stroke="#cdd6e3"/><rect x="30" y="134" width="74" height="38" rx="4" class="s-sky"/><text x="67" y="158" text-anchor="middle" class="s-txtw" font-size="12">50</text><circle cx="140" cy="153" r="18" class="s-soft" stroke="#1d2b4f"/><text x="140" y="158" text-anchor="middle" class="s-txt" font-size="12">10</text><circle cx="186" cy="153" r="14" class="s-sun" stroke="#1d2b4f"/><text x="186" y="158" text-anchor="middle" class="s-txt" font-size="11">5</text><circle cx="224" cy="153" r="12" class="s-soft" stroke="#1d2b4f"/><text x="224" y="157" text-anchor="middle" class="s-txt" font-size="10">1</text></svg>`},
+ {id:"clock", name:"เกมหมุนเข็มนาฬิกา", en:"Clock Master", type:"จำลอง",
+  desc:"ลากเข็มนาฬิกาให้ตรงกับเวลาที่โจทย์บอก หรืออ่านเวลาจากหน้าปัด",
+  fit:["คณิตศาสตร์","เวลา"],
+  mech:["นาฬิกาเข็มขนาดใหญ่วาดด้วย SVG ลากเข็มสั้นและเข็มยาวหมุนได้ด้วยนิ้วหรือเมาส์","โหมด 1: ตั้งเวลาตามโจทย์ (เช่น 'เข้าแถวเวลา 7 นาฬิกา 45 นาที') โหมด 2: ดูหน้าปัดแล้วเลือกเวลาที่ถูก","เข็มสั้นเลื่อนตามเข็มยาวอย่างสมจริง และแสดงเวลาแบบดิจิทัลเทียบเมื่อตรวจคำตอบ","ใช้สถานการณ์ในชีวิตประจำวันของเด็กไทย และอธิบายการอ่านเวลาแบบไทย (โมงเช้า บ่าย ทุ่ม) เมื่อเหมาะกับระดับชั้น"],
+  svg:`<svg ${V}><rect class="s-bg4" width="320" height="200"/><circle cx="104" cy="100" r="80" class="s-w" stroke="#7a5cd6" stroke-width="8"/>${[...Array(12)].map((_,i)=>{const a=(i+1)*Math.PI/6,x=104+62*Math.sin(a),y=100-62*Math.cos(a);return `<text x="${x.toFixed(1)}" y="${(y+5).toFixed(1)}" text-anchor="middle" class="s-txt">${i+1}</text>`}).join("")}<path d="M104 100 L104 46" stroke="#e2557a" stroke-width="5" stroke-linecap="round" transform="rotate(270 104 100)"/><path d="M104 100 L104 66" stroke="#1d2b4f" stroke-width="7" stroke-linecap="round" transform="rotate(232 104 100)"/><circle cx="104" cy="100" r="6" class="s-ink"/><rect x="204" y="44" width="104" height="58" rx="10" class="s-w"/><text x="256" y="68" text-anchor="middle" class="s-txt" font-size="11">ตั้งเวลา</text><text x="256" y="92" text-anchor="middle" class="s-big">7:45</text><rect x="214" y="126" width="84" height="36" rx="10" class="s-sun"/><text x="256" y="149" text-anchor="middle" class="s-txt">ตรวจ</text></svg>`},
+ {id:"robot", name:"เกมสั่งหุ่นยนต์เดิน", en:"Code Robot", type:"วิทยาการคำนวณ",
+  desc:"ต่อบล็อกคำสั่งลูกศรให้หุ่นยนต์เดินเก็บของถึงเป้าหมาย ฝึกคิดเป็นลำดับขั้น",
+  fit:["วิทยาการคำนวณ","อัลกอริทึม"],
+  mech:["กระดานตาราง 6×6 มีหุ่นยนต์ สิ่งกีดขวาง ของที่ต้องเก็บ และธงเป้าหมาย","นักเรียนกดหรือลากบล็อกคำสั่ง (เดินหน้า เลี้ยวซ้าย เลี้ยวขวา เก็บของ) มาเรียงเป็นโปรแกรมก่อนกดรัน","หุ่นยนต์ทำทีละคำสั่งแบบมีแอนิเมชัน ไฮไลต์บล็อกที่กำลังทำงาน ถ้าชนให้หยุดและบอกขั้นที่ผิด","ด่านหลังมีบล็อกวนซ้ำ 'ทำซ้ำ n ครั้ง' และให้ดาวพิเศษเมื่อใช้บล็อกน้อยที่สุด"],
+  svg:`<svg ${V}><rect class="s-bg" width="320" height="200"/>${(()=>{let s="";for(let r=0;r<5;r++)for(let c=0;c<5;c++)s+=`<rect x="${14+c*34}" y="${14+r*34}" width="32" height="32" rx="4" class="${(r===2&&c===2)||(r===1&&c===3)?'s-ink':'s-w'}"/>`;return s})()}<rect x="18" y="154" width="24" height="24" rx="5" class="s-sky"/><circle cx="25" cy="164" r="3" class="s-w"/><circle cx="35" cy="164" r="3" class="s-w"/><path d="M30 154 v-6" stroke="#1d2b4f" stroke-width="2"/><path d="M30 166 V30 H160" stroke="#3b82d6" stroke-width="2" stroke-dasharray="4 4" fill="none" opacity=".7"/><rect x="152" y="18" width="3" height="24" class="s-ink"/><path d="M155 18 h14 l-4 6 l4 6 h-14z" class="s-berry"/><circle cx="64" cy="98" r="7" class="s-sun"/>${["↑ เดิน","↑ เดิน","↑ เดิน","→ เลี้ยว","↻ ซ้ำ 3"].map((t,i)=>`<rect x="198" y="${16+i*34}" width="108" height="28" rx="8" class="${i===4?'s-grape':i===3?'s-orange':'s-leaf'}"/><text x="212" y="${35+i*34}" class="s-txtw" font-size="12">${t}</text>`).join("")}</svg>`},
+ {id:"map", name:"นักสำรวจแผนที่", en:"Map Explorer", type:"ผจญภัย",
+  desc:"ตามหาสถานที่ ภาค หรือทิศบนแผนที่ ฝึกทักษะภูมิศาสตร์และการอ่านแผนที่",
+  fit:["สังคมศึกษา","ภูมิศาสตร์"],
+  mech:["แผนที่แบบเรียบง่ายวาดด้วย SVG (เช่น แผนที่ชุมชน โรงเรียน หรือ 6 ภาคของไทย) มีเข็มทิศบอกทิศ","ภารกิจให้ทำ เช่น 'ไปที่ตลาดซึ่งอยู่ทางทิศเหนือของวัด' หรือ 'แตะภาคที่มีจังหวัดเชียงใหม่'","แตะถูกได้แสตมป์สะสมในพาสปอร์ต แตะผิดแสดงชื่อพื้นที่ที่แตะและคำใบ้ทิศ","ป.1–ป.3 ใช้แผนที่ชุมชนและทิศหลัก ป.4–ป.6 ใช้ภาคของไทย ทิศรอง และสัญลักษณ์บนแผนที่"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><path d="M0 140 q60 -20 120 10 t140 -10 l60 0 v60 h-320z" class="s-sky"/><rect x="40" y="40" width="54" height="40" rx="6" class="s-sun"/><text x="67" y="65" text-anchor="middle" class="s-txt" font-size="12">โรงเรียน</text><rect x="140" y="20" width="54" height="40" rx="6" class="s-berry"/><text x="167" y="45" text-anchor="middle" class="s-txtw" font-size="12">ตลาด</text><rect x="140" y="90" width="54" height="40" rx="6" class="s-orange"/><text x="167" y="115" text-anchor="middle" class="s-txtw" font-size="12">วัด</text><path d="M94 60 H140 M167 60 V90" stroke="#1d2b4f" stroke-width="3" stroke-dasharray="6 4"/><circle cx="270" cy="56" r="34" class="s-w" stroke="#1d2b4f" stroke-width="2"/><path d="M270 28 l8 28 l-8 -6 l-8 6z" class="s-berry"/><path d="M270 84 l8 -28 l-8 6 l-8 -6z" class="s-ink"/><text x="270" y="24" text-anchor="middle" class="s-txt" font-size="11">น</text><path d="M167 8 l-6 10 h12z" class="s-leaf"/></svg>`},
+ {id:"garden", name:"สวนผักสะสมความรู้", en:"Knowledge Garden", type:"สะสมแต้ม",
+  desc:"ตอบถูกได้น้ำและปุ๋ย ปลูกต้นไม้ให้โตทีละขั้น ใช้ทบทวนบทเรียนทุกวัน",
+  fit:["ทุกวิชา","ทบทวนต่อเนื่อง"],
+  mech:["มีแปลงผัก 4–6 แปลง แต่ละแปลงคือหัวข้อย่อยของบทเรียน","ตอบคำถามถูกได้หยดน้ำ ใช้รดน้ำแปลงที่เลือก ต้นไม้โตทีละขั้น (เมล็ด → ต้นอ่อน → ออกดอก → ออกผล)","ถ้าแปลงไหนตอบผิดบ่อย ให้แปลงนั้นเหี่ยวเพื่อบอกว่าควรทบทวนหัวข้อไหน","บันทึกความคืบหน้าใน localStorage ให้กลับมาเล่นต่อได้ และมีปุ่มเก็บเกี่ยวเมื่อทุกแปลงออกผล"],
+  svg:`<svg ${V}><rect class="s-bg2" width="320" height="200"/><rect x="0" y="130" width="320" height="70" class="s-orange" opacity=".55"/>${[[50,1],[130,2],[210,3],[280,0]].map(([x,st])=>`<rect x="${x-30}" y="140" width="60" height="18" rx="9" class="s-orange"/><path d="M${x} 140 V${140-st*30}" stroke="#3fa66b" stroke-width="4"/>${st>=1?`<path d="M${x} ${132} q-14 -4 -16 -16 q14 2 16 16" class="s-leaf"/>`:`<circle cx="${x}" cy="138" r="5" class="s-ink"/>`}${st>=2?`<path d="M${x} ${112} q14 -4 16 -16 q-14 2 -16 16" class="s-leaf"/><circle cx="${x}" cy="${140-st*30}" r="9" class="s-berry"/>`:""}${st>=3?`<circle cx="${x-14}" cy="74" r="7" class="s-berry"/><circle cx="${x+12}" cy="66" r="7" class="s-berry"/>`:""}`).join("")}<path d="M290 70 q8 14 0 20 q-8 -6 0 -20" class="s-sky"/><text x="16" y="28" class="s-txt">💧 × 12</text></svg>`},
+ {id:"tf", name:"จริงหรือไม่จริง", en:"True or False", type:"ตอบคำถาม",
+  desc:"อ่านข้อความแล้วปัดซ้ายหรือขวา ฝึกแยกข้อเท็จจริงและแก้ความเข้าใจผิด",
+  fit:["วิทยาศาสตร์","สังคมศึกษา","สุขศึกษา"],
+  mech:["แสดงข้อความทีละใบแบบการ์ด เช่น 'ค้างคาวเป็นนก' ปัดขวา = จริง ปัดซ้าย = ไม่จริง (มีปุ่มกดด้วย)","การ์ดพลิกด้านหลังเพื่อแสดงคำอธิบายสั้น ๆ พร้อมภาพประกอบทุกครั้ง ทั้งตอนตอบถูกและผิด","ใช้ความเข้าใจผิดที่พบบ่อยของเด็กวัยนี้เป็นโจทย์ส่วนหนึ่ง","จบเกมสรุปเป็นการ์ดสะสม 'เรื่องจริงที่ได้รู้วันนี้'"],
+  svg:`<svg ${V}><rect class="s-bg5" width="320" height="200"/><rect x="92" y="26" width="140" height="150" rx="14" class="s-soft" transform="rotate(-5 162 101)"/><rect x="90" y="22" width="140" height="150" rx="14" class="s-w" stroke="#1d2b4f" stroke-width="2" transform="rotate(8 160 97)"/><text x="160" y="80" text-anchor="middle" class="s-txt" transform="rotate(8 160 97)">ค้างคาว</text><text x="160" y="102" text-anchor="middle" class="s-txt" transform="rotate(8 160 97)">เป็นนก</text><text x="160" y="140" text-anchor="middle" class="s-big" transform="rotate(8 160 97)">🦇</text><circle cx="40" cy="100" r="26" class="s-berry"/><text x="40" y="106" text-anchor="middle" class="s-big" fill="#fff">✕</text><circle cx="280" cy="100" r="26" class="s-leaf"/><text x="280" y="107" text-anchor="middle" class="s-big" fill="#fff">✓</text><text x="40" y="146" text-anchor="middle" class="s-txt" font-size="11">ไม่จริง</text><text x="280" y="146" text-anchor="middle" class="s-txt" font-size="11">จริง</text></svg>`},
+ {id:"bingo", name:"บิงโกทั้งห้อง", en:"Class Bingo", type:"กระดาน",
+  desc:"ครูสุ่มโจทย์บนจอ นักเรียนหาคำตอบในตารางบิงโกของตัวเอง ได้ครบแถวตะโกนบิงโก",
+  fit:["ทุกวิชา","เล่นทั้งห้อง"],
+  mech:["มี 2 หน้า: หน้าครูสำหรับฉายบนจอ (ปุ่มสุ่มโจทย์ทีละข้อ) และหน้านักเรียน (ตาราง 4×4 หรือ 5×5 ที่สุ่มคำตอบไม่ซ้ำกัน)","ครูกดสุ่มโจทย์ นักเรียนแตะช่องที่เป็นคำตอบในตารางของตัวเอง","ได้ครบแถว แนวตั้ง หรือแนวทแยงแล้วปุ่มบิงโกเรืองแสง หน้าครูมีปุ่มตรวจรายการโจทย์ที่ออกแล้ว","มีปุ่มพิมพ์ตารางบิงโกหลายแบบ (สร้างเป็นหน้าใหม่) สำหรับห้องที่ไม่มีอุปกรณ์ครบ"],
+  svg:`<svg ${V}><rect class="s-bg4" width="320" height="200"/><rect x="16" y="14" width="120" height="172" rx="12" class="s-ink"/><text x="76" y="44" text-anchor="middle" class="s-txtw" font-size="11">โจทย์ข้อที่ 7</text><text x="76" y="96" text-anchor="middle" class="s-txtw" font-size="22">5 × 6</text><rect x="36" y="134" width="80" height="32" rx="8" class="s-sun"/><text x="76" y="155" text-anchor="middle" class="s-txt">สุ่ม</text>${(()=>{const n=[12,30,8,45,27,16,9,36,20,18,24,40,6,35,14,28];let s="";n.forEach((v,i)=>{const r=Math.floor(i/4),c=i%4,x=152+c*38,y=22+r*40,on=[1,5,9,13].includes(i);s+=`<rect x="${x}" y="${y}" width="34" height="36" rx="6" class="${on?'s-berry':'s-w'}"/><text x="${x+17}" y="${y+23}" text-anchor="middle" class="${on?'s-txtw':'s-txt'}" font-size="12">${v}</text>`});return s})()}<path d="M207 30 V170" stroke="#ffc93c" stroke-width="3" opacity=".9"/></svg>`},
+ {id:"numline", name:"กบกระโดดเส้นจำนวน", en:"Number Line Hop", type:"คณิตคิดสนุก",
+  desc:"สั่งกบกระโดดไปข้างหน้าหรือถอยหลังบนเส้นจำนวน เห็นการบวกลบเป็นภาพ",
+  fit:["คณิตศาสตร์","บวก ลบ","จำนวนลบ"],
+  mech:["เส้นจำนวน 0–20 (ป.1–ป.2) หรือ 0–100 แบบช่วงละ 10 (ป.3 ขึ้นไป) มีกบนั่งอยู่ที่จำนวนเริ่มต้น","โจทย์เช่น '8 + 5' นักเรียนกดปุ่มกระโดดทีละช่องหรือช่วงละ 5/10 กบกระโดดเป็นเส้นโค้งพร้อมนับเสียงดัง","เมื่อหยุดที่จำนวนคำตอบแล้วกดยืนยัน แสดงเส้นทางการกระโดดทั้งหมดเป็นภาพสรุปวิธีคิด","มีใบบัวเป็นจุดพักและแมลงให้เก็บ ด่านหลังฝึกการคูณเป็นการกระโดดซ้ำช่วงเท่ากัน"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><rect x="0" y="120" width="320" height="80" class="s-sky" opacity=".45"/><path d="M20 130 H300" stroke="#1d2b4f" stroke-width="3"/>${[...Array(11)].map((_,i)=>`<path d="M${20+i*28} 124 v12" stroke="#1d2b4f" stroke-width="2"/><text x="${20+i*28}" y="154" text-anchor="middle" class="s-txt" font-size="11">${i+5}</text>`).join("")}<path d="M104 120 q14 -30 28 0 M132 120 q14 -30 28 0 M160 120 q14 -30 28 0" stroke="#e2557a" stroke-width="2.5" fill="none" stroke-dasharray="4 3"/><ellipse cx="188" cy="112" rx="14" ry="10" class="s-leaf"/><circle cx="182" cy="102" r="4" class="s-w"/><circle cx="194" cy="102" r="4" class="s-w"/><circle cx="182" cy="102" r="2" class="s-ink"/><circle cx="194" cy="102" r="2" class="s-ink"/><rect x="100" y="20" width="120" height="34" rx="8" class="s-w"/><text x="160" y="43" text-anchor="middle" class="s-big">8 + 3</text></svg>`},
+ {id:"baseten", name:"ต่อบล็อกหลักหน่วยหลักสิบ", en:"Base-Ten Builder", type:"คณิตคิดสนุก",
+  desc:"ลากแท่งร้อย แท่งสิบ และก้อนหน่วยมาประกอบเป็นจำนวน เข้าใจค่าประจำหลัก",
+  fit:["คณิตศาสตร์","ค่าประจำหลัก"],
+  mech:["มีบล็อก 3 แบบ: แผ่นร้อย แท่งสิบ ก้อนหน่วย ลากลงช่องหลักร้อย หลักสิบ หลักหน่วย","โจทย์ให้สร้างจำนวน เช่น 245 หรือแสดงบล็อกแล้วให้บอกจำนวนและเขียนเป็นตัวหนังสือภาษาไทย","ถ้าก้อนหน่วยครบ 10 ให้กดรวมเป็นแท่งสิบได้ (มีแอนิเมชัน) และแตกแท่งสิบเป็นหน่วยเพื่อฝึกการยืม","ตัวเลขด้านบนเปลี่ยนตามบล็อกที่วางแบบเรียลไทม์ เพื่อเชื่อมภาพกับสัญลักษณ์"],
+  svg:`<svg ${V}><rect class="s-bg2" width="320" height="200"/><text x="160" y="34" text-anchor="middle" class="s-big">2 4 5</text>${["ร้อย","สิบ","หน่วย"].map((t,i)=>`<rect x="${16+i*100}" y="48" width="92" height="138" rx="10" class="s-w" stroke="#cdd6e3"/><text x="${62+i*100}" y="176" text-anchor="middle" class="s-txt" font-size="11">${t}</text>`).join("")}<rect x="26" y="60" width="44" height="44" class="s-sky" stroke="#fff"/><rect x="40" y="110" width="44" height="44" class="s-sky" stroke="#fff"/>${[0,1,2,3].map(i=>`<rect x="${128+i*16}" y="62" width="12" height="94" rx="2" class="s-leaf"/>`).join("")}${[0,1,2,3,4].map(i=>`<rect x="${226+(i%3)*22}" y="${70+Math.floor(i/3)*24}" width="16" height="16" rx="2" class="s-orange"/>`).join("")}</svg>`},
+ {id:"tangram", name:"แทนแกรมต่อรูปทรง", en:"Shape Puzzle", type:"คณิตคิดสนุก",
+  desc:"ลาก หมุน และพลิกชิ้นรูปเรขาคณิตให้ลงเงาพอดี ฝึกมิติสัมพันธ์",
+  fit:["คณิตศาสตร์","เรขาคณิต"],
+  mech:["มีเงารูปเป้าหมาย (บ้าน ปลา จรวด) และชิ้นรูปทรง 7 ชิ้นแบบแทนแกรม หรือรูปทรงพื้นฐานสำหรับ ป.1","ลากชิ้นส่วน แตะเพื่อหมุน 45° และกดปุ่มพลิก ชิ้นที่ใกล้ตำแหน่งถูกให้ดูดเข้าที่ (snap)","ถามชื่อรูปทรงและจำนวนด้าน มุม ระหว่างทาง เพื่อเชื่อมการเล่นกับเนื้อหา","ต่อครบแล้วรูประบายสีและขยับเป็นแอนิเมชัน ปลดล็อกรูปถัดไป"],
+  svg:`<svg ${V}><rect class="s-bg4" width="320" height="200"/><path d="M40 100 L100 40 L160 100 V170 H40Z" fill="#cdd6e3"/><path d="M40 100 L100 40 L160 100Z" class="s-berry"/><rect x="40" y="100" width="60" height="70" class="s-sky"/><path d="M100 100 H160 L100 170Z" class="s-sun"/><path d="M100 170 L160 100 V170Z" fill="#cdd6e3" stroke="#1d2b4f" stroke-dasharray="4 3"/><path d="M220 120 L280 120 L250 70Z" class="s-leaf" transform="rotate(20 250 100)"/><rect x="222" y="148" width="46" height="26" class="s-grape" transform="skewX(-20)"/><path d="M260 40 l18 18 l-18 18 l-18 -18z" class="s-orange"/><path d="M286 84 a12 12 0 1 1 -6 -10" stroke="#1d2b4f" stroke-width="2" fill="none"/></svg>`},
+ {id:"scale", name:"ตาชั่งสมดุล", en:"Balance Scale", type:"คณิตคิดสนุก",
+  desc:"วางตุ้มน้ำหนักให้ตาชั่งสองข้างเท่ากัน ฝึกการหาค่าที่ไม่ทราบและการชั่งตวง",
+  fit:["คณิตศาสตร์","สมการ","การชั่ง"],
+  mech:["ตาชั่งสองแขนวาดด้วย SVG เอียงตามน้ำหนักจริงแบบมีแอนิเมชัน","ข้างหนึ่งมีของพร้อมน้ำหนัก (หรือกล่อง ? สำหรับ ป.4 ขึ้นไป) อีกข้างให้ลากตุ้มน้ำหนักมาวาง","ตาชั่งตั้งตรงเมื่อสมดุล แล้วให้เขียนประโยคสัญลักษณ์ เช่น 5 + □ = 12","ด่านต้นเปรียบเทียบมากกว่า น้อยกว่า ด่านหลังใช้หน่วยกิโลกรัมและกรัม"],
+  svg:`<svg ${V}><rect class="s-bg" width="320" height="200"/><path d="M160 60 V176 M120 176 H200" stroke="#1d2b4f" stroke-width="6" stroke-linecap="round"/><path d="M60 72 L260 48" stroke="#1d2b4f" stroke-width="5" stroke-linecap="round"/><circle cx="160" cy="60" r="7" class="s-sun" stroke="#1d2b4f" stroke-width="2"/><path d="M60 72 l-28 50 h56z M260 48 l-28 50 h56z" stroke="#1d2b4f" fill="none" stroke-width="1.5"/><path d="M28 122 h64 a32 10 0 0 1 -64 0z M228 98 h64 a32 10 0 0 1 -64 0z" class="s-soft"/><rect x="40" y="94" width="40" height="28" rx="4" class="s-berry"/><text x="60" y="113" text-anchor="middle" class="s-txtw" font-size="12">12</text><rect x="236" y="76" width="22" height="22" rx="3" class="s-ink"/><text x="247" y="92" text-anchor="middle" class="s-txtw" font-size="11">5</text><rect x="262" y="76" width="22" height="22" rx="3" class="s-orange"/><text x="273" y="92" text-anchor="middle" class="s-txtw" font-size="12">?</text><text x="160" y="28" text-anchor="middle" class="s-txt">5 + □ = 12</text></svg>`},
+ {id:"graph", name:"นักสำรวจสร้างกราฟ", en:"Graph Maker", type:"คณิตคิดสนุก",
+  desc:"นับของในภาพ แล้วลากแท่งสร้างแผนภูมิ ตอบคำถามจากข้อมูลที่ได้",
+  fit:["คณิตศาสตร์","สถิติ","วิทยาศาสตร์"],
+  mech:["ฉากสวนหรือห้องเรียนที่มีของหลายชนิดกระจายอยู่ แตะเพื่อนับ ระบบใส่รอยติ๊กให้ทุกครั้งที่นับ","ลากความสูงแท่งของแผนภูมิแท่ง (ป.4 ขึ้นไป) หรือวางรูปในแผนภูมิรูปภาพ (ป.1–ป.3) ให้ตรงกับที่นับ","หลังสร้างแผนภูมิครบ ตอบคำถามอ่านข้อมูล เช่น 'อะไรมากที่สุด' 'มากกว่ากันกี่ตัว'","ด่านท้ายให้แปลความหมาย เช่น 'ถ้าจะซื้อขนมให้ทั้งห้อง ควรซื้อรสไหนมากที่สุด'"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><path d="M40 20 V170 H300" stroke="#1d2b4f" stroke-width="2.5" fill="none"/>${[0,1,2,3,4,5].map(i=>`<path d="M36 ${170-i*25} H300" stroke="#cdd6e3" stroke-width="1"/><text x="28" y="${174-i*25}" text-anchor="end" class="s-txt" font-size="10">${i}</text>`).join("")}${[[70,4,"s-berry"],[130,2,"s-sun"],[190,5,"s-leaf"],[250,3,"s-sky"]].map(([x,h,c])=>`<rect x="${x}" y="${170-h*25}" width="36" height="${h*25}" rx="3" class="${c}"/>`).join("")}<path d="M268 95 v-14 M262 87 l6 -8 l6 8" stroke="#1d2b4f" stroke-width="2" fill="none"/><text x="88" y="186" text-anchor="middle" class="s-txt" font-size="10">🍓</text><text x="148" y="186" text-anchor="middle" class="s-txt" font-size="10">🍌</text><text x="208" y="186" text-anchor="middle" class="s-txt" font-size="10">🍏</text><text x="268" y="186" text-anchor="middle" class="s-txt" font-size="10">🫐</text></svg>`},
+ {id:"sentence", name:"เรียงคำเป็นประโยค", en:"Sentence Builder", type:"ภาษา",
+  desc:"ลากบัตรคำที่สลับกันมาเรียงเป็นประโยคที่ถูกต้อง ฝึกโครงสร้างประโยค",
+  fit:["ภาษาไทย","ภาษาอังกฤษ"],
+  mech:["แสดงภาพประกอบเหตุการณ์ และบัตรคำที่สลับลำดับ ใช้สีบัตรต่างกันตามหน้าที่ (ประธาน กริยา กรรม) สำหรับ ป.3 ขึ้นไป","ลากบัตรเรียงบนเส้นบรรทัด แตะบัตรเพื่อฟังเสียงอ่านคำนั้น","กดตรวจแล้วอ่านออกเสียงประโยคทั้งประโยค ถ้าผิดให้ไฮไลต์บัตรที่อยู่ผิดตำแหน่ง","ด่านหลังมีบัตรคำหลอก 1 ใบที่ไม่ต้องใช้ และประโยคที่ยาวขึ้น"],
+  svg:`<svg ${V}><rect class="s-bg2" width="320" height="200"/><rect x="16" y="14" width="288" height="66" rx="10" class="s-sky" opacity=".35"/><circle cx="100" cy="47" r="20" class="s-orange"/><path d="M130 60 q30 -26 60 0" stroke="#3fa66b" stroke-width="8" fill="none"/><circle cx="220" cy="50" r="12" class="s-berry"/><path d="M24 136 H296" stroke="#1d2b4f" stroke-width="2" stroke-dasharray="6 4"/><rect x="24" y="100" width="56" height="32" rx="8" class="s-berry"/><text x="52" y="121" text-anchor="middle" class="s-txtw">น้องแมว</text><rect x="86" y="100" width="48" height="32" rx="8" class="s-leaf"/><text x="110" y="121" text-anchor="middle" class="s-txtw">กระโดด</text><rect x="140" y="100" width="40" height="32" rx="8" class="s-w" stroke="#1d2b4f" stroke-dasharray="4 3"/><rect x="60" y="152" width="40" height="32" rx="8" class="s-sky"/><text x="80" y="173" text-anchor="middle" class="s-txtw">ข้าม</text><rect x="110" y="152" width="44" height="32" rx="8" class="s-sky" transform="rotate(-4 132 168)"/><text x="132" y="173" text-anchor="middle" class="s-txtw" transform="rotate(-4 132 168)">รั้ว</text><rect x="164" y="152" width="44" height="32" rx="8" class="s-soft"/><text x="186" y="173" text-anchor="middle" class="s-txt">ปลา</text></svg>`},
+ {id:"listen", name:"ฟังเสียงแล้วเลือกภาพ", en:"Listen & Tap", type:"ภาษา",
+  desc:"กดฟังคำหรือประโยค แล้วแตะภาพที่ตรงกับสิ่งที่ได้ยิน ฝึกทักษะการฟัง",
+  fit:["ภาษาอังกฤษ","ภาษาไทย","ป.1–ป.3"],
+  mech:["ปุ่มลำโพงขนาดใหญ่ อ่านคำหรือประโยคด้วย Web Speech API (ตั้งภาษา en-US หรือ th-TH ให้ตรงกับเนื้อหา) และปุ่มฟังช้า","แสดงภาพ 4 ภาพ (อีโมจิขนาดใหญ่หรือภาพวาด SVG) ให้แตะภาพที่ตรงกับเสียง","ตอบถูกให้อ่านคำซ้ำพร้อมแสดงตัวสะกด ตอบผิดให้อ่านชื่อภาพที่แตะ เพื่อให้เด็กได้ยินความต่าง","ด่านหลังใช้คำที่เสียงคล้ายกัน (เช่น ship/sheep หรือ ไก่/ไข่) และประโยคคำสั่งสั้น ๆ"],
+  svg:`<svg ${V}><rect class="s-bg4" width="320" height="200"/><circle cx="160" cy="44" r="30" class="s-grape"/><path d="M146 36 h8 l10 -8 v32 l-10 -8 h-8z" class="s-w"/><path d="M170 34 q6 10 0 20 M176 28 q12 16 0 32" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>${[["🐔",28],["🥚",100],["🐟",172],["🍌",244]].map(([e,x],i)=>`<rect x="${x}" y="94" width="64" height="72" rx="12" class="s-w" ${i===1?'stroke="#3fa66b" stroke-width="4"':'stroke="#cdd6e3" stroke-width="2"'}/><text x="${x+32}" y="${142}" text-anchor="middle" font-size="30">${e}</text>`).join("")}<text x="132" y="186" text-anchor="middle" class="s-txt" font-size="12">ไข่</text></svg>`},
+ {id:"label", name:"ติดป้ายชื่อส่วนประกอบ", en:"Label It", type:"ลากวาง",
+  desc:"ลากป้ายชื่อไปติดที่ส่วนต่าง ๆ ของภาพ เช่น ส่วนของพืช อวัยวะ หรือแผนผัง",
+  fit:["วิทยาศาสตร์","สุขศึกษา","ภาษาอังกฤษ"],
+  mech:["ภาพหลักวาดด้วย SVG แบบเรียบง่าย (ต้นไม้ ร่างกาย ดอกไม้ ระบบสุริยะ) มีจุดวงกลมพร้อมเส้นชี้ 4–8 จุด","ป้ายชื่อเรียงอยู่ด้านข้าง ลากไปวางที่จุด ป้ายที่ถูกติดแน่นและจุดเปลี่ยนเป็นสีเขียว","แตะป้ายที่ติดแล้วเพื่อดูหน้าที่ของส่วนนั้นใน 1 ประโยค","โหมดท้าทาย: ซ่อนรายการป้าย ให้พิมพ์ชื่อเอง"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><path d="M90 176 V100" stroke="#3fa66b" stroke-width="6"/><path d="M90 140 q-30 -4 -36 -26 q26 2 36 26 M90 124 q30 -4 36 -26 q-26 2 -36 26" class="s-leaf"/>${[0,1,2,3,4,5].map(i=>{const a=i*Math.PI/3;return `<ellipse cx="${(90+20*Math.cos(a)).toFixed(1)}" cy="${(70+20*Math.sin(a)).toFixed(1)}" rx="14" ry="9" class="s-berry" transform="rotate(${i*60} ${(90+20*Math.cos(a)).toFixed(1)} ${(70+20*Math.sin(a)).toFixed(1)})"/>`}).join("")}<circle cx="90" cy="70" r="11" class="s-sun"/><path d="M90 176 l-14 14 M90 176 l14 14 M90 176 v18" stroke="#f08a32" stroke-width="3"/><path d="M110 70 H170 M126 104 H170 M98 186 H170" stroke="#1d2b4f" stroke-width="1.5"/><circle cx="170" cy="70" r="5" class="s-leaf"/><circle cx="170" cy="104" r="5" class="s-w" stroke="#1d2b4f"/><circle cx="170" cy="186" r="5" class="s-w" stroke="#1d2b4f"/><rect x="180" y="58" width="62" height="24" rx="6" class="s-leaf"/><text x="211" y="75" text-anchor="middle" class="s-txtw" font-size="12">ดอก</text><rect x="246" y="120" width="58" height="24" rx="6" class="s-sky"/><text x="275" y="137" text-anchor="middle" class="s-txtw" font-size="12">ราก</text><rect x="246" y="152" width="58" height="24" rx="6" class="s-sky"/><text x="275" y="169" text-anchor="middle" class="s-txtw" font-size="12">ใบ</text></svg>`},
+ {id:"foodchain", name:"ต่อห่วงโซ่อาหาร", en:"Food Chain", type:"จำลอง",
+  desc:"ลากสิ่งมีชีวิตมาเรียงว่าใครกินใคร แล้วดูว่าระบบนิเวศเปลี่ยนไปอย่างไร",
+  fit:["วิทยาศาสตร์","ระบบนิเวศ"],
+  mech:["มีแหล่งที่อยู่ เช่น ป่า ทุ่งนา หรือป่าชายเลน พร้อมสิ่งมีชีวิต 5–8 ชนิด (อีโมจิหรือภาพวาด)","ลากสิ่งมีชีวิตมาวางในช่องห่วงโซ่ แล้วลูกศรแสดงทิศการถ่ายทอดพลังงานจากผู้ถูกกิน → ผู้กิน","แท็กบทบาทผู้ผลิต ผู้บริโภคพืช ผู้บริโภคสัตว์ ผู้ย่อยสลาย เมื่อวางถูก","โหมดทดลอง: ลบสิ่งมีชีวิตหนึ่งชนิดออก แล้วเห็นจำนวนสิ่งมีชีวิตอื่นเพิ่มหรือลดเป็นแอนิเมชัน"],
+  svg:`<svg ${V}><rect class="s-bg3" width="320" height="200"/><rect x="0" y="150" width="320" height="50" class="s-leaf" opacity=".4"/>${[["🌾",44,"ผู้ผลิต"],["🦗",124,"กินพืช"],["🐸",204,"กินสัตว์"],["",284,""]].map(([e,x,t],i)=>`<circle cx="${x}" cy="90" r="30" class="${e?'s-w':'s-soft'}" stroke="#1d2b4f" ${e?'stroke-width="2"':'stroke-dasharray="5 4"'}/><text x="${x}" y="101" text-anchor="middle" font-size="28">${e||""}</text>${t?`<text x="${x}" y="142" text-anchor="middle" class="s-txt" font-size="11">${t}</text>`:""}`).join("")}<path d="M78 90 h12 M158 90 h12 M238 90 h12" stroke="#e2557a" stroke-width="4"/><path d="M88 84 l8 6 l-8 6 M168 84 l8 6 l-8 6 M248 84 l8 6 l-8 6" class="s-berry"/><text x="284" y="99" text-anchor="middle" class="s-big">?</text><text x="160" y="28" text-anchor="middle" class="s-txt">ใครกินใครในทุ่งนา</text></svg>`},
+ {id:"colorby", name:"ระบายสีตามคำตอบ", en:"Color by Answer", type:"สะสมแต้ม",
+  desc:"ตอบโจทย์ในแต่ละช่อง แล้วระบายสีตามรหัสคำตอบ จนเห็นภาพซ่อนอยู่",
+  fit:["คณิตศาสตร์","ภาษาไทย","ศิลปะ"],
+  mech:["ภาพแบบพิกเซลอาร์ต 10×10 หรือภาพที่แบ่งเป็นพื้นที่ ทุกช่องมีโจทย์สั้น ๆ","จานสีด้านข้างกำหนดรหัส เช่น 'คำตอบ 12 = สีแดง' หรือ 'คำนาม = สีฟ้า'","แตะช่องเพื่อเปิดโจทย์ ระบายสีที่ตรงกับคำตอบ ถ้าระบายผิดสีจะซีดและให้ลองใหม่","ระบายครบแล้วภาพที่ซ่อนอยู่ขยับเป็นแอนิเมชัน และบันทึกภาพไว้ในแกลเลอรีผลงาน"],
+  svg:`<svg ${V}><rect class="s-bg5" width="320" height="200"/>${(()=>{const m=["..YYYY..",".YYYYYY.","YYKYYKYY","YYYYYYYY","YKYYYYKY","YYKKKKYY",".YYYYYY.","..YYYY.."];let s="";m.forEach((row,r)=>[...row].forEach((ch,c)=>{const x=20+c*20,y=16+r*21;const filled=r<6;const cls=ch==="Y"?(filled?"s-sun":"s-w"):ch==="K"?(filled?"s-ink":"s-w"):"s-sky";s+=`<rect x="${x}" y="${y}" width="19" height="20" class="${cls}" stroke="#cdd6e3" stroke-width=".5"/>`;if(!filled&&ch!==".")s+=`<text x="${x+10}" y="${y+14}" text-anchor="middle" class="s-txt" font-size="9">${ch==="Y"?"3×4":"2×7"}</text>`}));return s})()}<rect x="200" y="30" width="104" height="120" rx="10" class="s-w"/><circle cx="218" cy="60" r="10" class="s-sun"/><text x="236" y="65" class="s-txt" font-size="12">= 12</text><circle cx="218" cy="92" r="10" class="s-ink"/><text x="236" y="97" class="s-txt" font-size="12">= 14</text><circle cx="218" cy="124" r="10" class="s-sky"/><text x="236" y="129" class="s-txt" font-size="12">= 10</text></svg>`},
+ {id:"wheel", name:"วงล้อสุ่มคำถาม", en:"Spin the Wheel", type:"กระดาน",
+  desc:"ครูหมุนวงล้อบนจอหน้าห้อง ช่องที่ตกได้คือหมวดคำถาม หรือชื่อกลุ่มที่ต้องตอบ",
+  fit:["ทุกวิชา","เล่นทั้งห้อง"],
+  mech:["วงล้อ 6–10 ช่อง แต่ละช่องเป็นหมวดคำถาม คะแนน หรือช่องพิเศษ (คะแนน x2, ส่งต่อให้ทีมอื่น)","กดหมุน วงล้อหมุนด้วยแอนิเมชันชะลอความเร็วสมจริง และมีเสียงติ๊กเมื่อผ่านแต่ละช่อง","เมื่อหยุดแสดงคำถามจากหมวดนั้นแบบเต็มจอ มีปุ่มเฉลยและปุ่มให้คะแนนทีม","หน้าครูตั้งชื่อทีม ใส่รายชื่อนักเรียนเพื่อสุ่มคนตอบ และนำช่องที่ใช้แล้วออกได้"],
+  svg:`<svg ${V}><rect class="s-bg2" width="320" height="200"/>${(()=>{const c=["#e2557a","#ffc93c","#3b82d6","#3fa66b","#7a5cd6","#f08a32"],L=["บวก","x2","ลบ","คูณ","หาร","?"];let s="";for(let i=0;i<6;i++){const a1=i*Math.PI/3-Math.PI/2,a2=a1+Math.PI/3,cx=120,cy=104,r=82;s+=`<path d="M${cx} ${cy} L${(cx+r*Math.cos(a1)).toFixed(1)} ${(cy+r*Math.sin(a1)).toFixed(1)} A${r} ${r} 0 0 1 ${(cx+r*Math.cos(a2)).toFixed(1)} ${(cy+r*Math.sin(a2)).toFixed(1)}Z" fill="${c[i]}" stroke="#fff" stroke-width="2"/>`;const am=(a1+a2)/2;s+=`<text x="${(cx+52*Math.cos(am)).toFixed(1)}" y="${(cy+52*Math.sin(am)+5).toFixed(1)}" text-anchor="middle" class="s-txtw">${L[i]}</text>`}return s})()}<circle cx="120" cy="104" r="14" class="s-w" stroke="#1d2b4f" stroke-width="2"/><path d="M120 14 l-10 -10 h20z" class="s-ink" transform="translate(0 6)"/><rect x="222" y="40" width="84" height="40" rx="10" class="s-ink"/><text x="264" y="66" text-anchor="middle" class="s-txtw">หมุน!</text><rect x="222" y="96" width="84" height="76" rx="10" class="s-w"/><text x="234" y="118" class="s-txt" font-size="11">ทีมช้าง 12</text><text x="234" y="140" class="s-txt" font-size="11">ทีมม้า 9</text><text x="234" y="162" class="s-txt" font-size="11">ทีมเสือ 7</text></svg>`},
+ {id:"spot", name:"นักสืบจับผิดภาพ", en:"Spot the Difference", type:"ผจญภัย",
+  desc:"เทียบภาพสองภาพ หาจุดที่ต่างกันหรือจุดที่ผิดหลักความปลอดภัย แล้วอธิบายเหตุผล",
+  fit:["สุขศึกษา","วิทยาศาสตร์","สังคมศึกษา"],
+  mech:["ภาพสองภาพวาดด้วย SVG วางคู่กัน (บนจอแคบให้วางบน-ล่าง) มีจุดต่าง 5–7 จุด","โหมดความรู้: ภาพเดียวที่มีจุดอันตรายหรือจุดผิด เช่น 'หาสิ่งที่ไม่ปลอดภัยในครัว' หรือ 'หาการทิ้งขยะผิดถังขยะ'","แตะเจอจุดที่ถูกให้วงกลมสีแดงพร้อมคำอธิบายว่าทำไมผิด และวิธีที่ถูกต้อง","มีแว่นขยายเป็นคำใบ้ 3 ครั้ง และจับเวลาแบบไม่บังคับ"],
+  svg:`<svg ${V}><rect class="s-bg" width="320" height="200"/>${[0,1].map(k=>{const o=k*156;return `<rect x="${12+o}" y="20" width="140" height="160" rx="10" class="s-w" stroke="#cdd6e3" stroke-width="2"/><rect x="${24+o}" y="120" width="116" height="48" rx="4" class="s-soft"/><rect x="${34+o}" y="104" width="30" height="16" rx="3" class="s-orange"/><circle cx="${110+o}" cy="60" r="16" class="${k?'s-berry':'s-sun'}"/><rect x="${30+o}" y="40" width="40" height="40" rx="4" class="s-sky"/>${k?`<path d="M${88+o} 120 l14 -26 l14 26z" class="s-leaf"/>`:`<rect x="${92+o}" y="96" width="20" height="24" rx="3" class="s-leaf"/>`}`}).join("")}<circle cx="266" cy="60" r="22" fill="none" stroke="#e2557a" stroke-width="3"/><circle cx="258" cy="110" r="22" fill="none" stroke="#e2557a" stroke-width="3" stroke-dasharray="5 4"/><text x="160" y="196" text-anchor="middle" class="s-txt" font-size="11">พบแล้ว 1 / 5</text></svg>`}
+];
+
+const FEATS = [
+ ["sound","เสียงประกอบ (สร้างด้วย Web Audio ไม่ใช้ไฟล์)",true],
+ ["stars","คะแนน ดาว และเหรียญรางวัล",true],
+ ["feedback","คำอธิบายเมื่อตอบผิด",true],
+ ["hint","ปุ่มคำใบ้",true],
+ ["timer","จับเวลา",false],
+ ["tts","ปุ่มฟังเสียงอ่านคำถาม",false],
+ ["teams","โหมดแข่งเป็นทีมบนจอหน้าห้อง",false],
+ ["editor","หน้าครูแก้ไขคำถามได้เอง",true],
+ ["report","สรุปผลท้ายเกมให้ครูดู",false],
+ ["levels","หลายด่าน ยากขึ้นเรื่อย ๆ",false],
+];
+const FEAT_TXT = {
+ sound:"เสียงประกอบสั้น ๆ ตอนตอบถูก ตอบผิด และจบเกม สร้างด้วย Web Audio API (ไม่ใช้ไฟล์เสียงภายนอก) มีปุ่มปิดเสียง",
+ stars:"ระบบคะแนน ดาว และเหรียญรางวัลท้ายเกม พร้อมข้อความชมเชยเชิงบวก",
+ feedback:"เมื่อตอบผิดให้แสดงคำตอบที่ถูกพร้อมคำอธิบายสั้นที่เด็กเข้าใจได้ ห้ามใช้ข้อความที่ทำให้เด็กรู้สึกแย่",
+ hint:"ปุ่มคำใบ้ที่ช่วยคิดโดยไม่บอกคำตอบตรง ๆ",
+ timer:"ตัวจับเวลาที่มองเห็นชัด และครูเปิด/ปิดได้จากหน้าตั้งค่า",
+ tts:"ปุ่มฟังเสียงอ่านคำถามด้วย Web Speech API (speechSynthesis) เลือกเสียงภาษาที่ตรงกับเนื้อหา",
+ teams:"โหมดแข่ง 2–4 ทีมบนจอเดียว มีกระดานคะแนนแต่ละทีม เหมาะฉายโปรเจกเตอร์หน้าห้อง",
+ editor:"หน้าสำหรับครู (ปุ่มรูปเฟืองมุมจอ) ให้แก้ไข เพิ่ม ลบ คำถามได้เอง และเก็บไว้ใน localStorage",
+ report:"หน้าสรุปผลท้ายเกม แสดงข้อที่ตอบถูก/ผิด เวลาที่ใช้ และปุ่มคัดลอกผลเป็นข้อความเพื่อส่งครู",
+ levels:"แบ่งเป็นหลายด่าน ด่านแรกง่ายเพื่อสร้างความมั่นใจ แล้วค่อยยากขึ้น ปลดล็อกด่านถัดไปเมื่อผ่านด่านก่อนหน้า"
+};
+const PLATFORMS = [
+ ["claude","Claude","สร้างผลงานเป็น Artifact แบบ HTML เพื่อให้เล่นได้ทันทีในหน้าแชท","ใน Claude วาง prompt แล้วเกมจะแสดงเป็น Artifact ด้านข้าง กดเล่นได้ทันที และกด Publish เพื่อได้ลิงก์ส่งให้นักเรียน"],
+ ["chatgpt","ChatGPT","เปิด Canvas แล้วเขียนเป็นโค้ด HTML ไฟล์เดียว และกด Preview ให้ฉันดูผล","ใน ChatGPT ให้เลือกเครื่องมือ Canvas ก่อนส่ง prompt แล้วกด Preview เพื่อเล่น ถ้าไม่มีปุ่ม Preview ให้คัดลอกโค้ดไปบันทึกเป็นไฟล์ .html"],
+ ["gemini","Gemini","ใช้ Canvas สร้างเป็นแอป HTML ไฟล์เดียว และแสดงตัวอย่างให้เล่นได้","ใน Gemini ให้เปิด Canvas ก่อนส่ง prompt เกมจะแสดงในแท็บ Preview และแชร์ลิงก์ให้นักเรียนได้"],
+ ["other","อื่น ๆ","ส่งโค้ด HTML ไฟล์เดียวที่สมบูรณ์ในกล่องโค้ดเดียว","คัดลอกโค้ดจาก AI ไปวางใน Notepad บันทึกเป็นไฟล์ game.html แล้วดับเบิลคลิกเปิดในเบราว์เซอร์ หรือวางในเว็บอย่าง CodePen เพื่อแชร์"]
+];
+const AGE = {"ป.1":"6–7","ป.2":"7–8","ป.3":"8–9","ป.4":"9–10","ป.5":"10–11","ป.6":"11–12"};
+
+const $ = s => document.querySelector(s);
+let current = GAMES[0], filter = "ทั้งหมด";
+
+function renderFilters(){
+  const types = ["ทั้งหมด",...new Set(GAMES.map(g=>g.type))];
+  $("#filters").innerHTML = types.map(t=>`<button type="button" aria-pressed="${t===filter}" data-t="${t}">${t}</button>`).join("");
+}
+const CUSTOM = [
+ {sec:"การเล่น", id:"mech", label:"กลไกหลัก", multi:true, max:2, def:["sort"], opts:[
+   ["quiz","ตอบคำถามเลือกตอบ","ตอบคำถามแบบเลือกตอบ 3–4 ตัวเลือก"],
+   ["sort","ลากจัดหมวดหมู่","ลากวัตถุไปวางในหมวดหมู่ที่ถูกต้อง"],
+   ["match","จับคู่","จับคู่สิ่งที่สัมพันธ์กัน เช่น คำกับภาพ โจทย์กับคำตอบ"],
+   ["order","เรียงลำดับ","ลากเรียงขั้นตอนหรือเหตุการณ์ให้ถูกลำดับ"],
+   ["type","สะกดหรือพิมพ์คำ","กดหรือพิมพ์ตัวอักษรเพื่อสะกดคำตอบ"],
+   ["find","หาของในฉาก","สำรวจฉากแล้วแตะหาสิ่งที่ตรงกับโจทย์"],
+   ["collect","บังคับตัวละครเก็บของ","บังคับตัวละครเคลื่อนที่ไปเก็บคำตอบที่ถูกและหลบคำตอบที่ผิด"],
+   ["build","ประกอบชิ้นส่วน","ประกอบชิ้นส่วนให้เป็นรูป จำนวน หรือสิ่งของตามโจทย์"],
+   ["sim","ทดลองปรับค่า","ปรับค่าด้วยแถบเลื่อนแล้วสังเกตผลที่เปลี่ยนไป"],
+   ["story","เลือกทางในเรื่องเล่า","อ่านเรื่องแล้วเลือกการตัดสินใจ แต่ละทางพาไปสู่ตอนจบต่างกัน"]
+ ]},
+ {sec:"การเล่น", id:"ctrl", label:"วิธีควบคุม", multi:true, def:["tap","drag"], opts:[
+   ["tap","แตะหรือคลิก","แตะหรือคลิกเลือก"],
+   ["drag","ลากวาง","ลากและวาง รองรับทั้งเมาส์และนิ้ว"],
+   ["keys","ปุ่มลูกศร","ปุ่มลูกศรบนคีย์บอร์ด และมีปุ่มลูกศรบนจอสำหรับแท็บเล็ต"],
+   ["typing","พิมพ์","พิมพ์คำตอบ มีแป้นบนจอสำหรับแท็บเล็ต"],
+   ["swipe","ปัดหน้าจอ","ปัดซ้าย-ขวา พร้อมปุ่มกดสำรอง"]
+ ]},
+ {sec:"การเล่น", id:"goal", label:"เป้าหมายของเกม", def:["help"], opts:[
+   ["all","ทำโจทย์ให้ครบ","ทำโจทย์ให้ครบทุกข้อ"],
+   ["score","ทำคะแนนถึงเป้า","ทำคะแนนให้ถึงเป้าหมายที่กำหนด"],
+   ["finish","ไปถึงเส้นชัย","พาตัวละครไปถึงเส้นชัยหรือทางออก ต้องตอบถูกจึงเดินหน้าได้"],
+   ["help","ช่วยตัวละคร","ช่วยตัวละครแก้ปัญหาในเรื่อง ทุกคำตอบที่ถูกพาเรื่องเดินหน้า"],
+   ["set","สะสมให้ครบชุด","สะสมของหรือชิ้นส่วนให้ครบชุด"],
+   ["beat","เอาชนะคู่แข่ง","แข่งกับคู่แข่งคอมพิวเตอร์หรือเพื่อนให้ชนะ"]
+ ]},
+ {sec:"การเล่น", id:"wrong", label:"เมื่อตอบผิด", def:["hint"], opts:[
+   ["retry","ลองใหม่ได้ทันที","ให้ลองใหม่ได้ทันทีโดยไม่เสียอะไร"],
+   ["explain","เฉลยพร้อมอธิบาย","แสดงคำตอบที่ถูกพร้อมคำอธิบายสั้น ๆ ที่เด็กเข้าใจ แล้วไปข้อถัดไป"],
+   ["hint","คำใบ้แล้วลองใหม่","ให้คำใบ้แล้วให้ลองใหม่ ถ้าผิดครั้งที่สองให้แสดงเฉลยพร้อมคำอธิบาย"],
+   ["hearts","เสียหัวใจ","เสียหัวใจ 1 ดวงจาก 3 ดวง หมดหัวใจแล้วเริ่มด่านใหม่ พร้อมทบทวนข้อที่ผิด"]
+ ]},
+ {sec:"การเล่น", id:"time", label:"การจับเวลา", def:["none"], opts:[
+   ["none","ไม่จับเวลา","ไม่จับเวลา ให้เด็กคิดได้เต็มที่"],
+   ["total","แสดงเวลาที่ใช้","แสดงเวลาที่ใช้ทั้งเกมอย่างเดียว ไม่บังคับ ครูปิดได้"],
+   ["each","นับถอยหลังต่อข้อ","นับถอยหลังต่อข้อประมาณ 20 วินาที ครูปรับหรือปิดได้จากหน้าตั้งค่า"]
+ ]},
+ {sec:"การเล่น", id:"stage", label:"โครงสร้างด่าน", def:["levels"], opts:[
+   ["one","ด่านเดียวจบ","ด่านเดียวจบ เล่นซ้ำได้"],
+   ["levels","หลายด่าน ยากขึ้น","3 ด่านขึ้นไป ด่านแรกง่ายเพื่อสร้างความมั่นใจ แล้วค่อยยากขึ้น ปลดล็อกเมื่อผ่านด่านก่อนหน้า"],
+   ["map","แผนที่เลือกด่าน","มีแผนที่ให้เลือกด่าน แต่ละด่านเป็นหัวข้อย่อยของบทเรียน"],
+   ["endless","สุ่มโจทย์ไม่รู้จบ","สุ่มโจทย์ต่อเนื่องไม่รู้จบ เพื่อฝึกซ้ำ"]
+ ]},
+ {sec:"แรงจูงใจ", id:"reward", label:"ระบบรางวัล", multi:true, def:["stars","grow"], opts:[
+   ["stars","ดาว","ดาว 1–3 ดวงตามความแม่นยำ"],
+   ["coins","เหรียญ","เหรียญสะสมจากการตอบถูก"],
+   ["stickers","สติกเกอร์สะสม","สมุดสติกเกอร์สะสม ได้สติกเกอร์ใหม่ทุกด่าน"],
+   ["unlock","ปลดล็อกตัวละคร","ปลดล็อกตัวละครหรือชุดแต่งกายใหม่"],
+   ["grow","สิ่งที่ค่อย ๆ เติบโต","มีสิ่งที่ค่อย ๆ สร้างหรือเติบโตตามคำตอบที่ถูก เช่น ต้นไม้ สะพาน หรือบ้าน"],
+   ["cert","เกียรติบัตรท้ายเกม","หน้าเกียรติบัตรท้ายเกมที่พิมพ์ชื่อเล่นได้ (ไม่บันทึกชื่อ)"]
+ ]},
+ {sec:"แรงจูงใจ", id:"players", label:"ผู้เล่น", def:["solo"], opts:[
+   ["solo","คนเดียว","เล่นคนเดียว"],
+   ["pair","2 คนผลัดกัน","2 คนผลัดกันเล่นบนเครื่องเดียว คะแนนแยกกัน"],
+   ["teams","แข่งเป็นทีมหน้าห้อง","แข่ง 2–4 ทีมบนจอหน้าห้อง มีกระดานคะแนนแต่ละทีม ครูเป็นผู้กด"],
+   ["coop","ช่วยกันทั้งห้อง","ทั้งห้องช่วยกันเล่นเป็นทีมเดียว ครูควบคุมบนจอหน้าห้อง"]
+ ]},
+ {sec:"หน้าตา", id:"scene", label:"ฉาก", def:["forest"], opts:[
+   ["forest","ป่า","ป่าเขียวชอุ่ม"],["sea","ใต้ทะเล","ใต้ทะเล"],["space","อวกาศ","อวกาศและดาวเคราะห์"],["market","ตลาดและชุมชน","ตลาดและชุมชนไทย"],
+   ["school","โรงเรียน","โรงเรียน"],["farm","ฟาร์มและทุ่งนา","ฟาร์มและทุ่งนา"],["castle","ปราสาทเทพนิยาย","ปราสาทในเทพนิยาย"],["lab","ห้องทดลอง","ห้องทดลองวิทยาศาสตร์"]
+ ]},
+ {sec:"หน้าตา", id:"style", label:"สไตล์ภาพ", def:["cute"], opts:[
+   ["cute","การ์ตูนน่ารัก","การ์ตูนน่ารัก เส้นโค้งมน สีสดใส"],
+   ["pixel","พิกเซลอาร์ต","พิกเซลอาร์ตแบบเกมย้อนยุค"],
+   ["paper","กระดาษตัดแปะ","ภาพกระดาษตัดแปะ มีเงาเล็กน้อย"],
+   ["pastel","พาสเทลนุ่มนวล","โทนพาสเทลนุ่มนวล สบายตา"],
+   ["flat","เรียบง่าย","กราฟิกเรียบง่าย รูปทรงพื้นฐาน ใช้สีน้อย"],
+   ["bold","สีจัด คอนทราสต์สูง","สีจัด คอนทราสต์สูง มองเห็นชัดจากระยะไกล"]
+ ]},
+ {sec:"การใช้งาน", id:"length", label:"ความยาวการเล่น", def:["10"], opts:[
+   ["5","5 นาที","ประมาณ 5 นาที"],["10","10 นาที","ประมาณ 10 นาที"],["15","15 นาที","ประมาณ 15 นาที"],["20","20 นาทีขึ้นไป","20 นาทีขึ้นไป มีจุดพักระหว่างด่าน"]
+ ]},
+ {sec:"การใช้งาน", id:"device", label:"อุปกรณ์หลัก", multi:true, def:["pc","tablet"], opts:[
+   ["pc","คอมพิวเตอร์","คอมพิวเตอร์ (เมาส์และคีย์บอร์ด)"],["tablet","แท็บเล็ต","แท็บเล็ต (สัมผัส)"],["phone","มือถือ","มือถือ (จอเล็ก แนวตั้ง)"],["projector","จอโปรเจกเตอร์","จอโปรเจกเตอร์หน้าห้อง (มองจากระยะไกล ตัวอักษรต้องใหญ่มาก)"]
+ ]}
+];
+const COVERED = ["stars","feedback","timer","teams","levels"];
+const SECS = [...new Set(CUSTOM.map(g=>g.sec))];
+let mode = "lib";
+const pick = {}; CUSTOM.forEach(g=>pick[g.id]=[...g.def]);
+
+const CUSTOM_SVG = `<svg ${V}><rect class="s-bg" width="320" height="200"/><path d="M0 40H320M0 80H320M0 120H320M0 160H320M40 0V200M80 0V200M120 0V200M160 0V200M200 0V200M240 0V200M280 0V200" stroke="#cdd6e3" stroke-width="1"/><rect x="22" y="22" width="152" height="100" rx="12" class="s-w" stroke="#3b82d6" stroke-width="2.5" stroke-dasharray="7 5"/><circle cx="98" cy="72" r="24" class="s-sun"/><path d="M98 60V84M86 72H110" stroke="#1d2b4f" stroke-width="4" stroke-linecap="round"/>${[["กลไก","s-leaf",22],["เป้าหมาย","s-berry",54],["รางวัล","s-grape",86],["ฉาก","s-orange",118]].map(([t,c,y])=>`<rect x="192" y="${y}" width="108" height="26" rx="13" class="${c}"/><text x="246" y="${y+18}" text-anchor="middle" class="s-txtw">${t}</text>`).join("")}<rect x="22" y="136" width="152" height="44" rx="10" class="s-ink"/><text x="98" y="163" text-anchor="middle" class="s-txtw">สร้าง prompt</text><g transform="rotate(-35 250 168)"><rect x="206" y="160" width="76" height="16" rx="3" class="s-sun"/><rect x="206" y="160" width="12" height="16" rx="2" class="s-berry"/><path d="M282 160L298 168L282 176Z" fill="#f4d8a8"/><path d="M292 165L298 168L292 171Z" class="s-ink"/></g></svg>`;
+
+const scrollToStudio = () => { const st=$("#studio"); if(st) st.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); };
+
+function renderGrid(){
+  const customCard = `<button class="game custom-card" type="button" data-id="__custom" aria-pressed="${mode==="custom"}">${CUSTOM_SVG.replace('role="img"','role="img" aria-label="ภาพตัวอย่างการออกแบบเกมเอง"')}<span class="no">00 · Your Design</span><h3>ออกแบบเกมเอง</h3><p>เลือกกลไก เป้าหมาย รางวัล ฉาก และสไตล์ภาพเองทุกส่วน แล้วระบบสร้าง prompt ให้</p><span class="tags"><span>กำหนดเอง</span><span>ทุกวิชา</span></span></button>`;
+  $("#grid").innerHTML = customCard + GAMES.map((g,i)=> (filter==="ทั้งหมด"||g.type===filter) ? `
+   <button class="game" type="button" data-id="${g.id}" aria-pressed="${mode==="lib" && g.id===current.id}">
+     ${g.svg.replace('role="img"',`role="img" aria-label="ภาพตัวอย่างหน้าจอ${g.name}"`)}
+     <span class="no">${String(i+1).padStart(2,"0")} · ${g.en}</span>
+     <h3>${g.name}</h3><p>${g.desc}</p>
+     <span class="tags">${[g.type,...g.fit].map(t=>`<span>${t}</span>`).join("")}</span>
+   </button>`:"").join("");
+}
+function renderChosen(){
+  $("#chosen").innerHTML = `${current.svg}<div><p>เกมที่เลือก</p><h3>${current.name}</h3><p>${current.en} · ${current.type}</p></div>`;
+}
+function renderDesign(){
+  $("#chipGroups").innerHTML = SECS.map(sec=>`<div class="dsec"><div class="dsec-title">${sec}</div>${CUSTOM.filter(g=>g.sec===sec).map(g=>`<div class="cgroup" role="group" aria-labelledby="cg-${g.id}"><span id="cg-${g.id}">${g.label}<small>${g.max?`เลือกได้ 1–${g.max} แบบ`:g.multi?"เลือกได้หลายข้อ":"เลือก 1 ข้อ"}</small></span><div class="chips">${g.opts.map(([k,l])=>`<button type="button" data-g="${g.id}" data-k="${k}" aria-pressed="false">${l}</button>`).join("")}</div></div>`).join("")}</div>`).join("");
+  syncChips();
+}
+function syncChips(){
+  document.querySelectorAll("#chipGroups button[data-g]").forEach(b=>b.setAttribute("aria-pressed", String(pick[b.dataset.g].includes(b.dataset.k))));
+}
+$("#feats").innerHTML = FEATS.map(([k,l,on])=>`<label data-k="${k}"><input type="checkbox" id="f-${k}" ${on?"checked":""}>${l}</label>`).join("");
+$("#platforms").innerHTML = PLATFORMS.map(([k,l],i)=>`<label><input type="radio" name="plat" id="p-${k}" value="${k}" ${i===0?"checked":""}>${l}</label>`).join("");
+
+const grp = id => CUSTOM.find(x=>x.id===id);
+const chosenOpts = id => pick[id].map(k=>grp(id).opts.find(o=>o[0]===k)).filter(Boolean);
+const optLine = id => { const o=chosenOpts(id); return `- ${grp(id).label}: ${o.length ? o.map(x=>x[2]).join(", ") : "ให้เลือกแบบที่เหมาะกับเนื้อหาและวัยของผู้เรียน"}`; };
+
+function build(){
+  const v = id => $("#"+id).value.trim();
+  const grade=v("grade"), subj=v("subject"), topic=v("topic")||"ตามที่เหมาะสมกับระดับชั้น", n=v("count"), lang=v("lang"), level=v("level"), theme=v("theme");
+  const content = $("#content").value.trim();
+  const plat = PLATFORMS.find(p=>p[0]===(document.querySelector('input[name="plat"]:checked')||{}).value) || PLATFORMS[0];
+  const custom = mode==="custom";
+  const feats = FEATS.filter(([k])=>$("#f-"+k).checked && !(custom && COVERED.includes(k))).map(([k])=>FEAT_TXT[k]);
+  const L = [];
+  L.push(`คุณเป็นนักพัฒนาเกมการศึกษาสำหรับเด็กประถม ที่เชี่ยวชาญทั้งการออกแบบการเรียนรู้และการเขียนเว็บเกม`);
+  L.push(``);
+  L.push(`## งานที่ต้องทำ`);
+  if(custom){
+    const gname=v("gname"), idea=v("idea");
+    L.push(`ออกแบบและสร้างเกมการศึกษาตามที่ครูกำหนดไว้ด้านล่าง${gname?` ชื่อเกม "${gname}"`:` และตั้งชื่อเกมที่น่าสนใจและเหมาะกับวัย`} เป็นเว็บเกมไฟล์ HTML เดียว (รวม HTML, CSS, JavaScript ไว้ในไฟล์เดียว) เปิดเล่นผ่านเบราว์เซอร์ได้ทันที ${plat[2]}`);
+    if(idea){ L.push(``); L.push(`## ไอเดียจากครู`); L.push(idea); L.push(`ยึดไอเดียนี้เป็นแกนของเกม และใช้ตัวเลือกในหัวข้อถัดไปเป็นรายละเอียด`); }
+  } else {
+    L.push(`สร้าง "${current.name}" (${current.en}) เป็นเว็บเกมไฟล์ HTML เดียว (รวม HTML, CSS, JavaScript ไว้ในไฟล์เดียว) เปิดเล่นผ่านเบราว์เซอร์ได้ทันที ${plat[2]}`);
+  }
+  L.push(``);
+  L.push(`## ผู้เรียนและเนื้อหา`);
+  L.push(`- ผู้เล่น: นักเรียนชั้น ${grade} (อายุประมาณ ${AGE[grade]} ปี)`);
+  L.push(`- วิชา: ${subj}`);
+  L.push(`- หัวข้อ/ตัวชี้วัด: ${topic}`);
+  L.push(`- ระดับความยาก: ${level}`);
+  L.push(`- จำนวนข้อ/ด่าน: ${n}`);
+  L.push(`- ภาษาที่ใช้ในเกม: ${lang}`);
+  if(theme && !custom) L.push(`- ธีมและตัวละคร: ${theme}`);
+  L.push(``);
+  if(content){
+    L.push(`## เนื้อหาที่ต้องใช้ (ใช้ตามนี้ ห้ามเปลี่ยนคำตอบ)`);
+    L.push(content);
+    L.push(`ถ้าข้อมูลข้างบนไม่ครบ ${n} ข้อ ให้สร้างเพิ่มในแนวเดียวกันจนครบ`);
+  } else {
+    L.push(`## เนื้อหา`);
+    L.push(`สร้างเนื้อหา ${n} ข้อเอง ให้สอดคล้องกับหลักสูตรแกนกลางการศึกษาขั้นพื้นฐานของไทยสำหรับชั้น ${grade} ใช้คำศัพท์และตัวอย่างใกล้ตัวเด็กไทย ตรวจความถูกต้องของทุกคำตอบก่อนใส่ในเกม`);
+  }
+  L.push(``);
+  const common = [`- มีหน้าจอเริ่มเกม (ชื่อเกม วิธีเล่นสั้น ๆ ปุ่มเริ่ม) และหน้าจบเกมที่มีปุ่มเล่นอีกครั้ง`,`- สุ่มลำดับคำถามและตัวเลือกทุกครั้งที่เริ่มเกมใหม่`];
+  if(custom){
+    L.push(`## การออกแบบการเล่น`);
+    L.push(optLine("mech"));
+    if(chosenOpts("mech").length>1) L.push(`- ผสานกลไกทั้งสองให้เป็นการเล่นเดียวที่ต่อเนื่อง ไม่ใช่สองเกมแยกกัน`);
+    ["ctrl","goal","wrong","time","stage","players"].forEach(id=>L.push(optLine(id)));
+    L.push(`- การกระทำหลักของผู้เล่นต้องใช้ความรู้ตามหัวข้อ ไม่ใช่ชนะได้ด้วยการเดาหรือความเร็วมือ`);
+    common.forEach(c=>L.push(c));
+    L.push(``);
+    L.push(`## รางวัลและแรงจูงใจ`);
+    const rw = chosenOpts("reward");
+    if(rw.length) rw.forEach(o=>L.push(`- ${o[2]}`)); else L.push(`- ให้เลือกระบบรางวัลที่เหมาะกับวัย`);
+    L.push(`- ใช้ข้อความชมเชยเชิงบวก ไม่ใช้ข้อความที่ทำให้เด็กรู้สึกแย่เมื่อตอบผิด`);
+    L.push(``);
+    L.push(`## ฉากและหน้าตา`);
+    L.push(optLine("scene"));
+    if(theme) L.push(`- ธีมและตัวละคร: ${theme}`);
+    L.push(optLine("style"));
+    L.push(`- วาดภาพทั้งหมดด้วย SVG, CSS หรืออีโมจิ ไม่ใช้รูปภาพหรือไฟล์จากภายนอก`);
+    L.push(``);
+    L.push(`## เวลาและอุปกรณ์`);
+    L.push(optLine("length"));
+    L.push(optLine("device"));
+    L.push(``);
+  } else {
+    L.push(`## กติกาและการเล่น`);
+    current.mech.forEach(m=>L.push(`- ${m}`));
+    common.forEach(c=>L.push(c));
+    L.push(``);
+  }
+  if(feats.length){
+    L.push(`## ฟีเจอร์เพิ่มเติม`);
+    feats.forEach(f=>L.push(`- ${f}`));
+    L.push(``);
+  }
+  const devs = custom ? chosenOpts("device") : [];
+  L.push(`## การออกแบบสำหรับเด็ก${grade}`);
+  L.push(`- ตัวอักษรใหญ่อ่านง่าย (ข้อความหลักอย่างน้อย 22px) ใช้ฟอนต์ภาษาไทยจาก Google Fonts เช่น Mitr หรือ Sarabun`);
+  L.push(`- ปุ่มใหญ่กดง่าย (อย่างน้อย 56px) สีสดใสแต่ไม่ลายตา ตัวอักษรตัดกับพื้นหลังชัดเจน`);
+  L.push(`- คำสั่งในเกมสั้น ใช้คำง่ายระดับ${grade} ประกอบอีโมจิหรือภาพวาด SVG แทนรูปภาพจากภายนอก`);
+  L.push(devs.length ? `- ปรับหน้าจอให้ใช้งานได้ดีบน${devs.map(d=>d[1]).join(" ")} รองรับทั้งเมาส์และการสัมผัส` : `- ใช้งานได้ทั้งคอมพิวเตอร์ แท็บเล็ต และจอโปรเจกเตอร์ รองรับทั้งเมาส์และการสัมผัส`);
+  L.push(`- เอฟเฟกต์ฉลองเมื่อทำได้ดี (เช่น พลุกระดาษ) แต่ไม่กะพริบแรงหรือรบกวนสมาธิ`);
+  L.push(``);
+  L.push(`## ข้อกำหนดทางเทคนิค`);
+  L.push(`- ไฟล์เดียว ไม่ต้องติดตั้ง ไม่ใช้ server ไม่ต้องล็อกอิน ไม่เก็บข้อมูลส่วนตัวของนักเรียน`);
+  L.push(`- เก็บข้อมูลคำถามไว้ใน array ที่ส่วนบนสุดของ JavaScript พร้อมคอมเมนต์ภาษาไทย เพื่อให้ครูแก้ไขเองได้ง่าย`);
+  L.push(`- เขียนโค้ดให้ครบ ทำงานได้จริง ไม่มีส่วนที่เว้นไว้ให้เติมเอง`);
+  L.push(``);
+  L.push(`## ก่อนส่งงาน`);
+  L.push(`ตรวจว่าทุกคำตอบถูกต้อง ทุกปุ่มกดได้ และเล่นจนจบเกมได้โดยไม่มี error จากนั้นอธิบายสั้น ๆ ว่าครูจะแก้ไขคำถามได้ที่ส่วนไหนของโค้ด`);
+  const txt = L.join("\n");
+  $("#out").textContent = txt;
+  const head = custom ? `ออกแบบเอง · ${chosenOpts("mech").map(o=>o[1]).join(" + ")||"ยังไม่เลือกกลไก"}` : current.en;
+  $("#meta").textContent = `${head} · ${grade} · ${subj} · ${txt.length.toLocaleString()} ตัวอักษร`;
+  $("#tip").textContent = plat[3];
+}
+
+function save(){ try{ localStorage.setItem("eg-mode",mode); localStorage.setItem("eg-pick",JSON.stringify(pick)); }catch(e){} }
+function setMode(m){
+  mode = m;
+  $("#tab-lib").setAttribute("aria-selected", String(m==="lib"));
+  $("#tab-custom").setAttribute("aria-selected", String(m==="custom"));
+  $("#chosen").hidden = m!=="lib";
+  $("#design").hidden = m!=="custom";
+  document.querySelectorAll("#feats label[data-k]").forEach(l=>{ l.hidden = m==="custom" && COVERED.includes(l.dataset.k); });
+  renderGrid(); build(); save();
+}
+function select(id){
+  current = GAMES.find(g=>g.id===id) || current;
+  renderChosen();
+  try{ localStorage.setItem("eg-game", id) }catch(e){}
+  setMode("lib");
+}
+$("#grid").addEventListener("click",e=>{
+  const b = e.target.closest(".game"); if(!b) return;
+  if(b.dataset.id==="__custom"){ setMode("custom"); scrollToStudio(); return; }
+  select(b.dataset.id);
+  if(window.innerWidth<860) scrollToStudio();
+});
+$("#filters").addEventListener("click",e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  filter = b.dataset.t; renderFilters(); renderGrid();
+});
+$("#tab-lib").addEventListener("click",()=>setMode("lib"));
+$("#tab-custom").addEventListener("click",()=>setMode("custom"));
+$("#goCustom").addEventListener("click",()=>{ setMode("custom"); scrollToStudio(); });
+$("#chipGroups").addEventListener("click",e=>{
+  const b = e.target.closest("button[data-g]"); if(!b) return;
+  const g = grp(b.dataset.g), k = b.dataset.k, cur = pick[g.id];
+  if(g.multi){
+    if(cur.includes(k)) pick[g.id] = cur.filter(x=>x!==k);
+    else { cur.push(k); if(g.max && cur.length>g.max) cur.shift(); }
+  } else pick[g.id] = cur[0]===k ? [] : [k];
+  syncChips(); build(); save();
+});
+$("#rand").addEventListener("click",()=>{
+  CUSTOM.forEach(g=>{
+    const ks = g.opts.map(o=>o[0]).sort(()=>Math.random()-.5);
+    const nPick = g.multi ? 1+Math.floor(Math.random()*Math.min(g.max||2,2)) : 1;
+    pick[g.id] = ks.slice(0,nPick);
+  });
+  syncChips(); build(); save();
+});
+$("#clear").addEventListener("click",()=>{ CUSTOM.forEach(g=>pick[g.id]=[]); syncChips(); build(); save(); });
+$("#form").addEventListener("input",build);
+$("#form").addEventListener("change",build);
+$("#form").addEventListener("submit",e=>e.preventDefault());
+$("#copy").addEventListener("click",()=>{
+  const txt = $("#out").textContent, btn=$("#copy");
+  const done = ok => { btn.textContent = ok ? "คัดลอกแล้ว ✓" : "เลือกข้อความแล้ว กด Ctrl+C"; setTimeout(()=>btn.textContent="คัดลอก prompt",2200) };
+  const fallback = () => { const r=document.createRange(); r.selectNodeContents($("#out")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); done(false) };
+  try{ navigator.clipboard.writeText(txt).then(()=>done(true),fallback) }catch(e){ fallback() }
+});
+
+let saved=null, savedMode=null, savedPick=null;
+try{ saved=localStorage.getItem("eg-game"); savedMode=localStorage.getItem("eg-mode"); savedPick=JSON.parse(localStorage.getItem("eg-pick")||"null"); }catch(e){}
+if(saved && GAMES.some(g=>g.id===saved)) current = GAMES.find(g=>g.id===saved);
+if(savedPick && typeof savedPick==="object") CUSTOM.forEach(g=>{ if(Array.isArray(savedPick[g.id])) pick[g.id]=savedPick[g.id].filter(k=>g.opts.some(o=>o[0]===k)); });
+renderFilters(); renderChosen(); renderDesign(); setMode(savedMode==="custom" ? "custom" : "lib");
+</script>
+
+</body></html>
