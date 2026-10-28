@@ -24,6 +24,7 @@ import {
   Joystick,
   Languages,
   Search,
+  LayoutTemplate,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,6 +61,7 @@ export interface StudioMenuItem {
   fileUrl: string;
   fileName: string;
   isExternal?: boolean;
+  cannotEmbedInIframe?: boolean;
   icon: React.ElementType;
   accentTag: string;
   idealFor: string;
@@ -286,8 +288,33 @@ const STUDIO_MENUS: StudioMenuItem[] = [
     idealFor: "ภาพประกอบสไลด์และใบงาน • บัตรคำศัพท์ (Flashcards) • แผนภาพและอินโฟกราฟิก",
   },
   {
-    id: "edu-prompt-library",
+    id: "poster-toolkit",
     number: "08",
+    category: "multimedia",
+    categoryLabel: "สื่อมัลติมีเดีย ภาพ และเสียง",
+    menuTitle: "สร้างโปสเตอร์สื่อการเรียนรู้",
+    englishSubtitle: "Educational Poster Toolkit",
+    badgeText: "Infographic & Learning Poster Studio",
+    description:
+      "เครื่องมือออกแบบและสร้าง Prompt สำหรับผลิตโปสเตอร์สื่อการเรียนรู้และอินโฟกราฟิกสรุปบทเรียน ช่วยจัดวางโครงสร้างเนื้อหา ลำดับความสำคัญของข้อมูล และสไตล์ภาพให้น่าสนใจเข้าใจง่าย",
+    highlights: [
+      "มีโครงสร้างการจัดวางเลย์เอาต์ (Layout) และองค์ประกอบโปสเตอร์เพื่อการศึกษา",
+      "กำหนดโทนสี สไตล์กราฟิก และหัวข้อความรู้ให้เหมาะกับระดับชั้นของผู้เรียน",
+      "ช่วยให้ครูสร้างโปสเตอร์สรุปความรู้ติดบอร์ดห้องเรียนหรือสไลด์ออนไลน์ได้อย่างมืออาชีพ",
+    ],
+    coverImage: "./public/images/cover-poster.jpg",
+    fallbackCoverImage: "./images/cover-poster.jpg",
+    fileUrl: "https://examintime.my.canva.site/poster-toolkit-v17-html",
+    fileName: "examintime.my.canva.site/poster-toolkit-v17-html",
+    isExternal: true,
+    cannotEmbedInIframe: true,
+    icon: LayoutTemplate,
+    accentTag: "EDUCATIONAL POSTER TOOLKIT",
+    idealFor: "โปสเตอร์สรุปบทเรียน • อินโฟกราฟิกความรู้ • สื่อติดบอร์ดห้องเรียนและออนไลน์",
+  },
+  {
+    id: "edu-prompt-library",
+    number: "09",
     category: "teacher",
     categoryLabel: "งานครูและแผนการสอน",
     menuTitle: "การเตรียมสอน/งานทั่วไปสำหรับครู",
@@ -360,6 +387,9 @@ export function App() {
     setActiveIframeTitle(studio.menuTitle);
     setIsFullscreenModal(false);
     setMobileMenuOpen(false);
+    if (studio.cannotEmbedInIframe) {
+      handleOpenBrowserPopupWindow(studio.fileUrl, studio.menuTitle);
+    }
   };
 
   const handleOpenBrowserPopupWindow = (
@@ -396,7 +426,7 @@ export function App() {
               </div>
               <div>
                 <span className="label-eyebrow text-accent block">
-                  EDUCATIONAL INNOVATION HUB • 8 STUDIOS
+                  EDUCATIONAL INNOVATION HUB • 9 STUDIOS
                 </span>
                 <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-foreground">
                   AI Prompt Generator{" "}
@@ -424,7 +454,7 @@ export function App() {
                 className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-medium shadow-sm hover:opacity-95 transition-opacity"
               >
                 <Compass className="w-3.5 h-3.5 text-accent" />
-                <span>ดูทั้ง 8 เมนูหลัก</span>
+                <span>ดูทั้ง 9 เมนูหลัก</span>
               </a>
             </div>
 
@@ -445,7 +475,7 @@ export function App() {
                 ) : (
                   <>
                     <Menu className="w-4 h-4" />
-                    <span>เมนูทั้งหมด (8)</span>
+                    <span>เมนูทั้งหมด (9)</span>
                   </>
                 )}
               </button>
@@ -453,7 +483,7 @@ export function App() {
           </div>
         </div>
 
-        {/* Mobile Dropdown Navigation (All 8 Menus) */}
+        {/* Mobile Dropdown Navigation (All 9 Menus) */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -464,7 +494,7 @@ export function App() {
             >
               <div className="px-4 py-4 space-y-2 max-h-[75vh] overflow-y-auto">
                 <p className="label-eyebrow text-muted-foreground px-2 pb-1">
-                  เลือกเครื่องมือสร้างสื่อการสอนทั้ง 8 เมนู (SELECT STUDIO)
+                  เลือกเครื่องมือสร้างสื่อการสอนทั้ง 9 เมนู (SELECT STUDIO)
                 </p>
                 {STUDIO_MENUS.map((item) => {
                   const IconComponent = item.icon;
@@ -516,7 +546,7 @@ export function App() {
               >
                 <Wand2 className="w-3.5 h-3.5 text-accent" />
                 <span className="label-eyebrow text-primary">
-                  EMPOWERING EDUCATORS WITH GENERATIVE AI • 8 CREATIVE STUDIOS
+                  EMPOWERING EDUCATORS WITH GENERATIVE AI • 9 CREATIVE STUDIOS
                 </span>
               </motion.div>
 
@@ -541,11 +571,11 @@ export function App() {
                 ศูนย์รวมเครื่องมือสร้าง Prompt และต้นแบบสื่อการเรียนรู้ด้วย AI สำหรับครูยุคใหม่
                 ครอบคลุมทั้ง{" "}
                 <span className="text-foreground font-medium">
-                  Motion Graphic, เกมการเรียนรู้ทั่วไป, เกม AR, เกมภาษาไทย, ต้นแบบเกม, เพลงประกอบ, รูปภาพสื่อการสอน
+                  Motion Graphic, เกมการเรียนรู้ทั่วไป, เกม AR, เกมภาษาไทย, ต้นแบบเกม, เพลงประกอบ, รูปภาพสื่อการสอน, การเตรียมสอน
                 </span>{" "}
-                ไปจนถึง{" "}
+                และ{" "}
                 <span className="text-foreground font-medium">
-                  การเตรียมสอนและงานครู
+                  โปสเตอร์สื่อการเรียนรู้
                 </span>
               </motion.p>
 
@@ -585,7 +615,7 @@ export function App() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
               <span className="label-eyebrow text-accent block mb-2">
-                SELECT YOUR CREATIVE STUDIO • 8 EDUCATIONAL MENUS
+                SELECT YOUR CREATIVE STUDIO • 9 EDUCATIONAL MENUS
               </span>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground">
                 เลือกเครื่องมือสร้างสื่อการเรียนรู้{" "}
@@ -947,15 +977,96 @@ export function App() {
                 </div>
               )}
 
-              {/* Embedded Interactive Studio Iframe */}
+              {/* Embedded Interactive Studio Iframe or External Popup Launch Card */}
               <div className="flex-1 w-full bg-white relative overflow-hidden">
-                <iframe
-                  key={activeIframeUrl}
-                  src={activeIframeUrl}
-                  title={activeIframeTitle}
-                  className="w-full h-full border-0"
-                  allow="camera; microphone; fullscreen; clipboard-read; clipboard-write"
-                />
+                {selectedStudio.cannotEmbedInIframe ? (
+                  <div className="w-full h-full bg-background flex items-center justify-center p-6 overflow-y-auto">
+                    <div className="max-w-2xl w-full rounded-2xl border border-border bg-white shadow-lg overflow-hidden">
+                      <div className="relative aspect-[16/9] w-full bg-surface border-b border-border overflow-hidden">
+                        <img
+                          src={selectedStudio.coverImage}
+                          alt={selectedStudio.menuTitle}
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.dataset.fallback) {
+                              target.dataset.fallback = "true";
+                              target.src = selectedStudio.fallbackCoverImage;
+                            }
+                          }}
+                          className="w-full h-full object-cover object-center"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
+                        <div className="absolute bottom-4 left-5 right-5 text-white">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-white label-eyebrow mb-2 shadow-sm">
+                            <AppWindow className="w-3.5 h-3.5" />
+                            EXTERNAL STUDIO POPUP WINDOW
+                          </span>
+                          <h3 className="font-serif text-2xl font-bold">
+                            {selectedStudio.menuTitle}
+                          </h3>
+                          <p className="text-xs text-white/85">
+                            {selectedStudio.englishSubtitle} • {selectedStudio.fileName}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="p-6 space-y-5">
+                        <div className="p-4 rounded-xl bg-surface/70 border border-border text-sm text-foreground leading-relaxed">
+                          ระบบได้เปิดหน้าต่างแยก (Popup Window) สำหรับ{" "}
+                          <strong className="text-primary font-semibold">
+                            {selectedStudio.menuTitle}
+                          </strong>{" "}
+                          แล้ว (เนื่องจากเว็บไซต์ปลายทางไม่อนุญาตให้แสดงผลผ่านกรอบ Iframe ภายในหน้าเว็บโดยตรง) หากหน้าต่างไม่เด้งขึ้นมา สามารถคลิกปุ่มด้านล่างเพื่อเปิดใช้งานได้ทันทีครับ
+                        </div>
+                        <ul className="space-y-2 text-sm text-muted-foreground">
+                          {selectedStudio.highlights.map((h, i) => (
+                            <li key={i} className="flex items-start gap-2.5">
+                              <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                              <span>{h}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                          <Button
+                            size="lg"
+                            onClick={() =>
+                              handleOpenBrowserPopupWindow(
+                                selectedStudio.fileUrl,
+                                selectedStudio.menuTitle
+                              )
+                            }
+                            className="w-full sm:flex-1 gap-2 shadow-md"
+                          >
+                            <AppWindow className="w-4 h-4 text-accent" />
+                            <span>เปิดหน้าต่าง Popup เครื่องมือนี้</span>
+                          </Button>
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            asChild
+                            className="w-full sm:w-auto gap-2"
+                          >
+                            <a
+                              href={selectedStudio.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <ExternalLink className="w-4 h-4 text-accent" />
+                              <span>เปิดในแท็บใหม่</span>
+                            </a>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <iframe
+                    key={activeIframeUrl}
+                    src={activeIframeUrl}
+                    title={activeIframeTitle}
+                    className="w-full h-full border-0"
+                    allow="camera; microphone; fullscreen; clipboard-read; clipboard-write"
+                  />
+                )}
               </div>
             </>
           )}
