@@ -25,6 +25,7 @@ import {
   Languages,
   Search,
   LayoutTemplate,
+  Clapperboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -336,6 +337,31 @@ const STUDIO_MENUS: StudioMenuItem[] = [
     accentTag: "TEACHER PRODUCTIVITY LIBRARY",
     idealFor: "ออกแบบแผนการจัดการเรียนรู้ • สร้างข้อสอบและ Rubrics • งานบริหารชั้นเรียนและธุรการครู",
   },
+  {
+    id: "google-flow-story",
+    number: "10",
+    category: "multimedia",
+    categoryLabel: "สื่อมัลติมีเดีย ภาพ และเสียง",
+    menuTitle: "สร้างละครด้วย Google Flow",
+    englishSubtitle: "Google Flow Story Prompt Builder",
+    badgeText: "AI Cinematic Story & Drama Builder",
+    description:
+      "เครื่องมือออกแบบโครงเรื่องและสร้าง Prompt สำหรับผลิตละครสั้น นิทานเคลื่อนไหว และวิดีโอเล่าเรื่อง (Storytelling) ด้วย Google Flow กำหนดตัวละคร มุมกล้อง อารมณ์ฉาก และบทสนทนาได้อย่างต่อเนื่อง",
+    highlights: [
+      "วางโครงสร้างการเล่าเรื่อง (Story Arc) และลำดับฉากละครได้อย่างเป็นระบบ",
+      "ควบคุมความต่อเนื่องของตัวละคร (Character Consistency) มุมกล้อง และแสงสีสไตล์ภาพยนตร์",
+      "สร้าง Prompt สำหรับผลิตสื่อวิดีโอละครคุณธรรม นิทาน หรือสถานการณ์จำลองในบทเรียน",
+    ],
+    coverImage: "./public/images/cover-google-flow.jpg",
+    fallbackCoverImage: "./images/cover-google-flow.jpg",
+    fileUrl: "https://examintime.my.canva.site/google-flow-story-prompt-builder-v21-html",
+    fileName: "examintime.my.canva.site/google-flow-story-prompt-builder-v21-html",
+    isExternal: true,
+    cannotEmbedInIframe: true,
+    icon: Clapperboard,
+    accentTag: "GOOGLE FLOW DRAMA STUDIO",
+    idealFor: "ละครสั้นและนิทานคุณธรรม • วิดีโอจำลองสถานการณ์ • สื่อเล่าเรื่องเชิงภาพยนตร์ (Cinematic Storytelling)",
+  },
 ];
 
 const CATEGORIES: { id: StudioCategory; label: string; count: number }[] = [
@@ -426,7 +452,7 @@ export function App() {
               </div>
               <div>
                 <span className="label-eyebrow text-accent block">
-                  EDUCATIONAL INNOVATION HUB • 9 STUDIOS
+                  EDUCATIONAL INNOVATION HUB • 10 STUDIOS
                 </span>
                 <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-foreground">
                   AI Prompt Generator{" "}
@@ -454,7 +480,7 @@ export function App() {
                 className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-medium shadow-sm hover:opacity-95 transition-opacity"
               >
                 <Compass className="w-3.5 h-3.5 text-accent" />
-                <span>ดูทั้ง 9 เมนูหลัก</span>
+                <span>ดูทั้ง 10 เมนูหลัก</span>
               </a>
             </div>
 
@@ -475,7 +501,7 @@ export function App() {
                 ) : (
                   <>
                     <Menu className="w-4 h-4" />
-                    <span>เมนูทั้งหมด (9)</span>
+                    <span>เมนูทั้งหมด (10)</span>
                   </>
                 )}
               </button>
@@ -483,7 +509,7 @@ export function App() {
           </div>
         </div>
 
-        {/* Mobile Dropdown Navigation (All 9 Menus) */}
+        {/* Mobile Dropdown Navigation (All 10 Menus) */}
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div
@@ -494,7 +520,7 @@ export function App() {
             >
               <div className="px-4 py-4 space-y-2 max-h-[75vh] overflow-y-auto">
                 <p className="label-eyebrow text-muted-foreground px-2 pb-1">
-                  เลือกเครื่องมือสร้างสื่อการสอนทั้ง 9 เมนู (SELECT STUDIO)
+                  เลือกเครื่องมือสร้างสื่อการสอนทั้ง 10 เมนู (SELECT STUDIO)
                 </p>
                 {STUDIO_MENUS.map((item) => {
                   const IconComponent = item.icon;
@@ -546,7 +572,7 @@ export function App() {
               >
                 <Wand2 className="w-3.5 h-3.5 text-accent" />
                 <span className="label-eyebrow text-primary">
-                  EMPOWERING EDUCATORS WITH GENERATIVE AI • 9 CREATIVE STUDIOS
+                  EMPOWERING EDUCATORS WITH GENERATIVE AI • 10 CREATIVE STUDIOS
                 </span>
               </motion.div>
 
@@ -571,11 +597,11 @@ export function App() {
                 ศูนย์รวมเครื่องมือสร้าง Prompt และต้นแบบสื่อการเรียนรู้ด้วย AI สำหรับครูยุคใหม่
                 ครอบคลุมทั้ง{" "}
                 <span className="text-foreground font-medium">
-                  Motion Graphic, เกมการเรียนรู้ทั่วไป, เกม AR, เกมภาษาไทย, ต้นแบบเกม, เพลงประกอบ, รูปภาพสื่อการสอน, การเตรียมสอน
+                  Motion Graphic, เกมการเรียนรู้ทั่วไป, เกม AR, เกมภาษาไทย, ต้นแบบเกม, เพลงประกอบ, รูปภาพสื่อการสอน, โปสเตอร์, การเตรียมสอน
                 </span>{" "}
                 และ{" "}
                 <span className="text-foreground font-medium">
-                  โปสเตอร์สื่อการเรียนรู้
+                  สร้างละครด้วย Google Flow
                 </span>
               </motion.p>
 
@@ -615,7 +641,7 @@ export function App() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
               <span className="label-eyebrow text-accent block mb-2">
-                SELECT YOUR CREATIVE STUDIO • 9 EDUCATIONAL MENUS
+                SELECT YOUR CREATIVE STUDIO • 10 EDUCATIONAL MENUS
               </span>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-foreground">
                 เลือกเครื่องมือสร้างสื่อการเรียนรู้{" "}
